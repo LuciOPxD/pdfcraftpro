@@ -1,0 +1,923 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>PDFCraft Pro - Complete Free PDF Editor</title>
+<link rel="icon" href="favicon.svg">
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./style.css">
+</head>
+<body>
+<!-- HEADER -->
+<header>
+ <div class="logo">
+  <img src="logo.svg" alt="PDFCraft" style="height:40px;">
+</div>
+  <div class="header-right">
+    <span class="header-tag">✨ 100% Free</span>
+    <button class="theme-btn" onclick="toggleTheme()">🌙 Theme</button>
+  </div>
+</header>
+
+<div class="app-layout">
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-section">
+    <div class="sidebar-heading">Home</div>
+    <button class="tool-btn active" id="btn-home" onclick="showPanel('home')">
+      <span class="icon">🏠</span> All Tools
+    </button>
+  </div>
+
+  <div class="sidebar-section">
+    <div class="sidebar-heading">Organize</div>
+    <button class="tool-btn" id="btn-merge" onclick="showPanel('merge')"><span class="icon">🔗</span> Merge PDF</button>
+    <button class="tool-btn" id="btn-split" onclick="showPanel('split')"><span class="icon">✂️</span> Split PDF</button>
+    <button class="tool-btn" id="btn-reorder" onclick="showPanel('reorder')"><span class="icon">📑</span> Reorder Pages</button>
+    <button class="tool-btn" id="btn-delete-pages" onclick="showPanel('delete-pages')"><span class="icon">🗑️</span> Delete Pages</button>
+    <button class="tool-btn" id="btn-extract-pages" onclick="showPanel('extract-pages')"><span class="icon">📤</span> Extract Pages</button>
+  </div>
+
+  <div class="sidebar-divider"></div>
+  <div class="sidebar-section">
+    <div class="sidebar-heading">Convert</div>
+    <button class="tool-btn" id="btn-img2pdf" onclick="showPanel('img2pdf')"><span class="icon">🖼️</span> Image → PDF</button>
+    <button class="tool-btn" id="btn-pdf2img" onclick="showPanel('pdf2img')"><span class="icon">📸</span> PDF → Image</button>
+    <button class="tool-btn" id="btn-pdf2txt" onclick="showPanel('pdf2txt')"><span class="icon">📄</span> PDF → Text</button>
+    <button class="tool-btn" id="btn-html2pdf" onclick="showPanel('html2pdf')"><span class="icon">🌐</span> HTML → PDF</button>
+    <button class="tool-btn" id="btn-blank" onclick="showPanel('blank')"><span class="icon">📃</span> Blank PDF</button>
+  </div>
+
+  <div class="sidebar-divider"></div>
+  <div class="sidebar-section">
+    <div class="sidebar-heading">Edit</div>
+    <button class="tool-btn" id="btn-rotate" onclick="showPanel('rotate')"><span class="icon">🔄</span> Rotate</button>
+    <button class="tool-btn" id="btn-compress" onclick="showPanel('compress')"><span class="icon">🗜️</span> Compress</button>
+    <button class="tool-btn" id="btn-watermark" onclick="showPanel('watermark')"><span class="icon">💧</span> Watermark</button>
+    <button class="tool-btn" id="btn-pagenumber" onclick="showPanel('pagenumber')"><span class="icon">🔢</span> Page Numbers</button>
+    <button class="tool-btn" id="btn-crop" onclick="showPanel('crop')"><span class="icon">✂️</span> Crop Pages</button>
+    <button class="tool-btn" id="btn-annotate" onclick="showPanel('annotate')"><span class="icon">💬</span> Annotate</button>
+    <button class="tool-btn" id="btn-redact" onclick="showPanel('redact')"><span class="icon">⬛</span> Redact</button>
+  </div>
+
+  <div class="sidebar-divider"></div>
+  <div class="sidebar-section">
+    <div class="sidebar-heading">Security</div>
+    <button class="tool-btn" id="btn-protect" onclick="showPanel('protect')"><span class="icon">🔐</span> Protect PDF</button>
+    <button class="tool-btn" id="btn-unlock" onclick="showPanel('unlock')"><span class="icon">🔓</span> Unlock PDF</button>
+    <button class="tool-btn" id="btn-sign" onclick="showPanel('sign')"><span class="icon">✍️</span> Sign PDF</button>
+  </div>
+
+  <div class="sidebar-divider"></div>
+  <div class="sidebar-section">
+    <div class="sidebar-heading">Analyze</div>
+    <button class="tool-btn" id="btn-inspect" onclick="showPanel('inspect')"><span class="icon">🔍</span> PDF Inspector</button>
+    <button class="tool-btn" id="btn-ocr" onclick="showPanel('ocr')"><span class="icon">👁️</span> OCR / Text Extract</button>
+    <button class="tool-btn" id="btn-preview" onclick="showPanel('preview')"><span class="icon">👀</span> PDF Preview</button>
+    <button class="tool-btn" id="btn-compare" onclick="showPanel('compare')"><span class="icon">⚖️</span> Compare PDFs</button>
+  </div>
+
+  <div class="sidebar-divider"></div>
+  <div class="sidebar-section">
+    <div class="sidebar-heading">More</div>
+    <button class="tool-btn" id="btn-repair" onclick="showPanel('repair')"><span class="icon">🛠️</span> Repair PDF</button>
+    <button class="tool-btn" id="btn-about" onclick="showPanel('about')"><span class="icon">ℹ️</span> About</button>
+  </div>
+</aside>
+
+<!-- MAIN CONTENT -->
+<main class="main">
+
+<!-- ═══════════ HOME ═══════════ -->
+<div class="panel active" id="panel-home">
+  <div class="home-hero">
+    <div class="home-hero-text">
+      <h1>Every PDF Tool<br>Completely Free 🚀</h1>
+      <p>Merge, split, compress, convert, sign, annotate and more.<br>100% browser-based — aapki files kahi upload nahi hoti.</p>
+      <div class="home-hero-stats">
+        <div class="hero-stat"><div class="num">22+</div><div class="lbl">PDF Tools</div></div>
+        <div class="hero-stat"><div class="num">100%</div><div class="lbl">Free Forever</div></div>
+        <div class="hero-stat"><div class="num">0</div><div class="lbl">File Uploads</div></div>
+        <div class="hero-stat"><div class="num">🔒</div><div class="lbl">Private & Secure</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="home-search">
+    <span>🔍</span>
+    <input type="text" placeholder="Tool search karo..." id="tool-search" oninput="filterTools(this.value)">
+  </div>
+
+  <div class="tool-section-title">📦 Organize</div>
+  <div class="tools-grid" id="organize-grid">
+    <div class="tool-card" onclick="showPanel('merge')" style="--tc:rgba(108,99,255,0.15)"><div class="tc-icon">🔗</div><div class="tc-name">Merge PDF</div><div class="tc-desc">Multiple PDFs join karo</div></div>
+    <div class="tool-card" onclick="showPanel('split')" style="--tc:rgba(255,101,132,0.12)"><div class="tc-icon">✂️</div><div class="tc-name">Split PDF</div><div class="tc-desc">Pages alag karo</div></div>
+    <div class="tool-card" onclick="showPanel('reorder')" style="--tc:rgba(255,159,67,0.12)"><div class="tc-icon">📑</div><div class="tc-name">Reorder Pages</div><div class="tc-desc">Pages ki order badlo</div></div>
+    <div class="tool-card" onclick="showPanel('delete-pages')" style="--tc:rgba(255,77,109,0.1)"><div class="tc-icon">🗑️</div><div class="tc-name">Delete Pages</div><div class="tc-desc">Specific pages hatao</div></div>
+    <div class="tool-card" onclick="showPanel('extract-pages')" style="--tc:rgba(84,160,255,0.12)"><div class="tc-icon">📤</div><div class="tc-name">Extract Pages</div><div class="tc-desc">Pages alag PDF mein</div></div>
+  </div>
+
+  <div class="tool-section-title">🔄 Convert</div>
+  <div class="tools-grid">
+    <div class="tool-card" onclick="showPanel('img2pdf')"><div class="tc-icon">🖼️</div><div class="tc-name">Image → PDF</div><div class="tc-desc">JPG/PNG to PDF</div></div>
+    <div class="tool-card" onclick="showPanel('pdf2img')"><div class="tc-icon">📸</div><div class="tc-name">PDF → Image</div><div class="tc-desc">Pages export karo</div></div>
+    <div class="tool-card" onclick="showPanel('pdf2txt')"><div class="tc-icon">📄</div><div class="tc-name">PDF → Text</div><div class="tc-desc">Text extract karo</div></div>
+    <div class="tool-card" onclick="showPanel('html2pdf')"><div class="tc-icon">🌐</div><div class="tc-name">HTML → PDF</div><div class="tc-desc">HTML se PDF banao</div></div>
+    <div class="tool-card" onclick="showPanel('blank')"><div class="tc-icon">📃</div><div class="tc-name">Blank PDF</div><div class="tc-desc">Empty PDF generate karo</div></div>
+  </div>
+
+  <div class="tool-section-title">✏️ Edit</div>
+  <div class="tools-grid">
+    <div class="tool-card" onclick="showPanel('rotate')"><div class="tc-icon">🔄</div><div class="tc-name">Rotate</div><div class="tc-desc">Pages ghuma do</div></div>
+    <div class="tool-card" onclick="showPanel('compress')"><div class="tc-icon">🗜️</div><div class="tc-name">Compress</div><div class="tc-desc">Size kam karo</div></div>
+    <div class="tool-card" onclick="showPanel('watermark')"><div class="tc-icon">💧</div><div class="tc-name">Watermark</div><div class="tc-desc">Text watermark lagao</div></div>
+    <div class="tool-card" onclick="showPanel('pagenumber')"><div class="tc-icon">🔢</div><div class="tc-name">Page Numbers</div><div class="tc-desc">Numbering add karo</div></div>
+    <div class="tool-card" onclick="showPanel('crop')"><div class="tc-icon">✂️</div><div class="tc-name">Crop Pages</div><div class="tc-desc">Page margins trim karo</div></div>
+    <div class="tool-card" onclick="showPanel('annotate')"><div class="tc-icon">💬</div><div class="tc-name">Annotate</div><div class="tc-desc">Notes & markup</div></div>
+    <div class="tool-card" onclick="showPanel('redact')"><div class="tc-icon">⬛</div><div class="tc-name">Redact</div><div class="tc-desc">Content black out karo</div></div>
+  </div>
+
+  <div class="tool-section-title">🔐 Security</div>
+  <div class="tools-grid">
+    <div class="tool-card" onclick="showPanel('protect')"><div class="tc-icon">🔐</div><div class="tc-name">Protect</div><div class="tc-desc">Password lagao</div></div>
+    <div class="tool-card" onclick="showPanel('unlock')"><div class="tc-icon">🔓</div><div class="tc-name">Unlock</div><div class="tc-desc">Password hatao</div></div>
+    <div class="tool-card" onclick="showPanel('sign')"><div class="tc-icon">✍️</div><div class="tc-name">Sign PDF</div><div class="tc-desc">Signature lagao</div></div>
+  </div>
+
+  <div class="tool-section-title">🔍 Analyze</div>
+  <div class="tools-grid">
+    <div class="tool-card" onclick="showPanel('inspect')"><div class="tc-icon">🔍</div><div class="tc-name">Inspector</div><div class="tc-desc">PDF analyze karo</div></div>
+    <div class="tool-card" onclick="showPanel('ocr')"><div class="tc-icon">👁️</div><div class="tc-name">OCR</div><div class="tc-desc">Scanned text extract</div></div>
+    <div class="tool-card" onclick="showPanel('preview')"><div class="tc-icon">👀</div><div class="tc-name">Preview</div><div class="tc-desc">PDF dekho browser mein</div></div>
+    <div class="tool-card" onclick="showPanel('compare')"><div class="tc-icon">⚖️</div><div class="tc-name">Compare</div><div class="tc-desc">Do PDFs compare karo</div></div>
+    <div class="tool-card" onclick="showPanel('repair')"><div class="tc-icon">🛠️</div><div class="tc-name">Repair PDF</div><div class="tc-desc">Corrupt PDF fix karo</div></div>
+  </div>
+</div>
+
+<!-- ═══════════ MERGE ═══════════ -->
+<div class="panel" id="panel-merge">
+  <h2 class="panel-title">🔗 Merge PDF</h2>
+  <p class="panel-desc">Multiple PDF files ko ek single PDF mein combine karo. Files upload karke "Merge karo" click karo.</p>
+  <div class="dropzone" id="merge-dz">
+    <input type="file" id="merge-input" multiple accept=".pdf" onchange="handleMergeFiles(this.files)">
+    <div class="dz-icon">📂</div>
+    <h3>PDFs yahan drop karo</h3>
+    <p>Click karke ya drag & drop se multiple PDF files choose karo</p>
+    <p class="dz-hint">Ctrl+Click se multiple files select hoti hain</p>
+  </div>
+  <div class="file-list" id="merge-list"></div>
+  <div class="btn-row">
+    <button class="btn btn-primary" onclick="mergePDFs()">🔗 Merge karo</button>
+    <button class="btn btn-secondary" onclick="state.mergeFiles=[];renderMergeList()">🗑️ Clear All</button>
+  </div>
+  <div class="progress-wrap" id="merge-progress"><div class="progress-bar"><div class="progress-fill" id="merge-fill"></div></div><div class="progress-label" id="merge-plab"></div></div>
+  <div class="result-banner" id="merge-result">
+    <div class="res-icon">✅</div>
+    <div class="res-text"><h4>Successfully Merged!</h4><p id="merge-result-text"></p></div>
+    <button class="btn btn-success" id="merge-download">⬇️ Download</button>
+  </div>
+</div>
+
+<!-- ═══════════ SPLIT ═══════════ -->
+<div class="panel" id="panel-split">
+  <h2 class="panel-title">✂️ Split PDF</h2>
+  <p class="panel-desc">PDF ko multiple parts mein split karo — har page alag, ya custom ranges choose karo.</p>
+  <div class="dropzone">
+    <input type="file" id="split-input" accept=".pdf" onchange="handleSingleFile(this,'split')">
+    <div class="dz-icon">📄</div><h3>PDF yahan drop karo</h3><p>Ek PDF file choose karo</p>
+  </div>
+  <div id="split-options" style="display:none;margin-top:1.5rem">
+    <div class="form-group">
+      <label class="form-label">Split Method</label>
+      <div class="options-grid">
+        <div class="option-card selected" id="split-all-pages" onclick="selectSplitMethod('all')"><div class="opt-icon">📄</div><div class="opt-label">All Pages (har alag)</div></div>
+        <div class="option-card" id="split-range" onclick="selectSplitMethod('range')"><div class="opt-icon">📋</div><div class="opt-label">Range specify karo</div></div>
+        <div class="option-card" id="split-select" onclick="selectSplitMethod('select')"><div class="opt-icon">☑️</div><div class="opt-label">Pages select karo</div></div>
+      </div>
+    </div>
+    <div id="split-range-input" style="display:none" class="form-group">
+      <label class="form-label">Page Ranges (e.g. 1-3, 5, 7-9)</label>
+      <input type="text" id="split-range-val" placeholder="1-3, 5, 7-9">
+    </div>
+    <div id="split-page-select" style="display:none">
+      <label class="form-label">Pages choose karo</label>
+      <div class="page-grid" id="split-page-grid"></div>
+    </div>
+    <div class="btn-row"><button class="btn btn-primary" onclick="splitPDF()">✂️ Split karo</button></div>
+  </div>
+  <div class="result-banner" id="split-result">
+    <div class="res-icon">✅</div><div class="res-text"><h4>Split Complete!</h4><p id="split-result-text"></p></div>
+    <button class="btn btn-success" id="split-download">⬇️ Download ZIP</button>
+  </div>
+</div>
+
+<!-- ═══════════ REORDER ═══════════ -->
+<div class="panel" id="panel-reorder">
+  <h2 class="panel-title">📑 Reorder Pages</h2>
+  <p class="panel-desc">PDF pages ki order change karo. New order comma-separated likhao (e.g. 3,1,2,4,5).</p>
+  <div class="dropzone">
+    <input type="file" id="reorder-input" accept=".pdf" onchange="handleSingleFile(this,'reorder')">
+    <div class="dz-icon">📄</div><h3>PDF yahan drop karo</h3>
+  </div>
+  <div id="reorder-options" style="display:none;margin-top:1.5rem">
+    <div class="form-group">
+      <label class="form-label">Current Pages (<span id="reorder-total">?</span> pages hain)</label>
+      <div class="page-grid" id="reorder-page-grid"></div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">New Order (comma separated, e.g. 3,1,2 for 3-page PDF)</label>
+      <input type="text" id="reorder-val" placeholder="e.g. 2,1,3,4">
+      <p style="font-size:0.75rem;color:var(--text2);margin-top:0.3rem">Default: reverse order ke liye "3,2,1" likhao</p>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="reorderPages()">📑 Reorder karo</button>
+      <button class="btn btn-secondary" onclick="reversePages()">🔃 Reverse karo</button>
+    </div>
+  </div>
+  <div class="result-banner" id="reorder-result">
+    <div class="res-icon">✅</div><div class="res-text"><h4>Pages Reordered!</h4><p>PDF ready hai.</p></div>
+    <button class="btn btn-success" id="reorder-download">⬇️ Download</button>
+  </div>
+</div>
+
+<!-- ═══════════ DELETE PAGES ═══════════ -->
+<div class="panel" id="panel-delete-pages">
+  <h2 class="panel-title">🗑️ Delete Pages</h2>
+  <p class="panel-desc">PDF mein se specific pages permanently delete karo.</p>
+  <div class="dropzone">
+    <input type="file" id="delpages-input" accept=".pdf" onchange="handleSingleFile(this,'delpages')">
+    <div class="dz-icon">📄</div><h3>PDF yahan drop karo</h3>
+  </div>
+  <div id="delpages-options" style="display:none;margin-top:1.5rem">
+    <div class="form-group">
+      <label class="form-label">Delete karne wale pages choose karo (click to toggle)</label>
+      <div class="page-grid" id="delpages-page-grid"></div>
+    </div>
+    <p style="font-size:0.75rem;color:var(--orange);margin-bottom:0.75rem">⚠️ Selected pages permanently delete ho jayenge</p>
+    <div class="btn-row"><button class="btn btn-danger" onclick="deletePages()">🗑️ Delete karo</button></div>
+  </div>
+  <div class="result-banner" id="delpages-result">
+    <div class="res-icon">✅</div><div class="res-text"><h4>Pages Deleted!</h4><p id="delpages-result-text"></p></div>
+    <button class="btn btn-success" id="delpages-download">⬇️ Download</button>
+  </div>
+</div>
+
+<!-- ═══════════ EXTRACT PAGES ═══════════ -->
+<div class="panel" id="panel-extract-pages">
+  <h2 class="panel-title">📤 Extract Pages</h2>
+  <p class="panel-desc">PDF mein se specific pages nikaalo aur alag PDF banao.</p>
+  <div class="dropzone">
+    <input type="file" id="extract-input" accept=".pdf" onchange="handleSingleFile(this,'extract')">
+    <div class="dz-icon">📄</div><h3>PDF yahan drop karo</h3>
+  </div>
+  <div id="extract-options" style="display:none;margin-top:1.5rem">
+    <div class="form-group">
+      <label class="form-label">Extract karne wali pages choose karo</label>
+      <div class="page-grid" id="extract-page-grid"></div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Ya range type karo (e.g. 2-5, 8)</label>
+      <input type="text" id="extract-range" placeholder="2-5, 8, 10-12">
+    </div>
+    <div class="btn-row"><button class="btn btn-primary" onclick="extractPages()">📤 Extract karo</button></div>
+  </div>
+  <div class="result-banner" id="extract-result">
+    <div class="res-icon">✅</div><div class="res-text"><h4>Pages Extracted!</h4><p id="extract-result-text"></p></div>
+    <button class="btn btn-success" id="extract-download">⬇️ Download</button>
+  </div>
+</div>
+
+<!-- ═══════════ COMPRESS ═══════════ -->
+<div class="panel" id="panel-compress">
+  <h2 class="panel-title">🗜️ Compress PDF</h2>
+  <p class="panel-desc">PDF file size kam karo — metadata remove karke aur object streams optimize karke.</p>
+  <div class="dropzone">
+    <input type="file" id="compress-input" accept=".pdf" onchange="handleSingleFile(this,'compress')">
+    <div class="dz-icon">📄</div><h3>PDF yahan drop karo</h3><p>Any size PDF supported</p>
+  </div>
+  <div id="compress-options" style="display:none;margin-top:1.5rem">
+    <div class="stats-row" id="compress-stats"></div>
+    <div class="form-group">
+      <label class="form-label">Compression Mode</label>
+      <div class="options-grid">
+        <div class="option-card" onclick="selectOpt(this,'#panel-compress .option-card');state.compressLevel='low'"><div class="opt-icon">🟢</div><div class="opt-label">Light (Best Quality)</div></div>
+        <div class="option-card selected" onclick="selectOpt(this,'#panel-compress .option-card');state.compressLevel='medium'"><div class="opt-icon">🟡</div><div class="opt-label">Medium (Balanced)</div></div>
+        <div class="option-card" onclick="selectOpt(this,'#panel-compress .option-card');state.compressLevel='high'"><div class="opt-icon">🔴</div><div class="opt-label">High (Max Compress)</div></div>
+      </div>
+    </div>
+    <div class="checkbox-row"><input type="checkbox" id="compress-meta" checked><label for="compress-meta">Metadata remove karo (title, author, etc.)</label></div>
+    <div class="btn-row"><button class="btn btn-primary" onclick="compressPDF()">🗜️ Compress karo</button></div>
+  </div>
+  <div class="progress-wrap" id="compress-progress"><div class="progress-bar"><div class="progress-fill" id="compress-fill"></div></div></div>
+  <div class="result-banner" id="compress-result">
+    <div class="res-icon">✅</div><div class="res-text"><h4>Compression Done!</h4><p id="compress-result-text"></p></div>
+    <button class="btn btn-success" id="compress-download">⬇️ Download</button>
+  </div>
+</div>
+
+<!-- ═══════════ ROTATE ═══════════ -->
+<div class="panel" id="panel-rotate">
+  <h2 class="panel-title">🔄 Rotate PDF</h2>
+  <p class="panel-desc">PDF pages ko rotate karo — sab pages ya specific pages ko alag angle par.</p>
+  <div class="dropzone">
+    <input type="file" id="rotate-input" accept=".pdf" onchange="handleSingleFile(this,'rotate')">
+    <div class="dz-icon">📄</div><h3>PDF yahan drop karo</h3>
+  </div>
+  <div id="rotate-options" style="display:none;margin-top:1.5rem">
+    <div class="two-col">
+      <div class="form-group">
+        <label class="form-label">Rotation Angle</label>
+        <div class="options-grid" style="grid-template-columns:1fr 1fr 1fr;">
+          <div class="option-card selected" onclick="selectOpt(this,'#rotate-options .option-card');state.rotateAngle=90"><div class="opt-icon">↩️</div><div class="opt-label">90° CW</div></div>
+          <div class="option-card" onclick="selectOpt(this,'#rotate-options .option-card');state.rotateAngle=180"><div class="opt-icon">🔃</div><div class="opt-label">180°</div></div>
+          <div class="option-card" onclick="selectOpt(this,'#rotate-options .option-card');state.rotateAngle=270"><div class="opt-icon">↪️</div><div class="opt-label">270° CW</div></div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Apply To</label>
+        <select id="rotate-pages">
+          <option value="all">All Pages</option>
+          <option value="odd">Odd Pages Only</option>
+          <option value="even">Even Pages Only</option>
+          <option value="first">First Page Only</option>
+          <option value="last">Last Page Only</option>
+          <option value="custom">Custom Range</option>
+        </select>
+        <input type="text" id="rotate-custom" placeholder="e.g. 1,3,5-8" style="display:none;margin-top:0.5rem" oninput="">
+      </div>
+    </div>
+    <div class="btn-row"><button class="btn btn-primary" onclick="rotatePDF()">🔄 Rotate karo</button></div>
+  </div>
+  <div class="result-banner" id="rotate-result">
+    <div class="res-icon">✅</div><div class="res-text"><h4>Rotation Complete!</h4><p>PDF ready hai.</p></div>
+    <button class="btn btn-success" id="rotate-download">⬇️ Download</button>
+  </div>
+</div>
+
+<!-- ═══════════ WATERMARK ═══════════ -->
+<div class="panel" id="panel-watermark">
+  <h2 class="panel-title">💧 Watermark PDF</h2>
+  <p class="panel-desc">PDF pages par custom text watermark lagao — position, size, color sab customize karo.</p>
+  <div class="dropzone">
+    <input type="file" id="wm-input" accept=".pdf" onchange="handleSingleFile(this,'watermark')">
+    <div class="dz-icon">📄</div><h3>PDF yahan drop karo</h3>
+  </div>
+  <div id="wm-options" style="display:none;margin-top:1.5rem">
+    <div class="two-col">
+      <div>
+        <div class="form-group"><label class="form-label">Watermark Text</label><input type="text" id="wm-text" value="CONFIDENTIAL" placeholder="Watermark text likhao"></div>
+        <div class="form-group"><label class="form-label">Font Size: <span id="wm-size-val">60</span>pt</label><input type="range" id="wm-size" min="12" max="150" value="60" oninput="document.getElementById('wm-size-val').textContent=this.value"></div>
+        <div class="form-group"><label class="form-label">Opacity: <span id="wm-opacity-val">30</span>%</label><input type="range" id="wm-opacity" min="5" max="100" value="30" oninput="document.getElementById('wm-opacity-val').textContent=this.value"></div>
+        <div class="form-group"><label class="form-label">Rotation: <span id="wm-rot-val">45</span>°</label><input type="range" id="wm-rot" min="0" max="360" value="45" oninput="document.getElementById('wm-rot-val').textContent=this.value"></div>
+      </div>
+      <div>
+        <div class="form-group"><label class="form-label">Color</label>
+          <div class="color-row">
+            <input type="color" id="wm-color" value="#ff0000">
+            <div class="color-swatch active" style="background:#ff0000" onclick="document.getElementById('wm-color').value='#ff0000'"></div>
+            <div class="color-swatch" style="background:#0000ff" onclick="document.getElementById('wm-color').value='#0000ff'"></div>
+            <div class="color-swatch" style="background:#000000" onclick="document.getElementById('wm-color').value='#000000'"></div>
+            <div class="color-swatch" style="background:#888888" onclick="document.getElementById('wm-color').value='#888888'"></div>
+          </div>
+        </div>
+        <div class="form-group"><label class="form-label">Position</label>
+          <select id="wm-position">
+            <option value="center">Center (Diagonal)</option>
+            <option value="top">Top</option>
+            <option value="bottom">Bottom</option>
+            <option value="topleft">Top Left</option>
+            <option value="topright">Top Right</option>
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">Apply To</label>
+          <select id="wm-pages"><option value="all">All Pages</option><option value="first">First Page Only</option><option value="odd">Odd Pages</option><option value="even">Even Pages</option></select>
+        </div>
+      </div>
+    </div>
+    <div class="btn-row"><button class="btn btn-primary" onclick="watermarkPDF()">💧 Watermark lagao</button></div>
+  </div>
+  <div class="result-banner" id="watermark-result">
+    <div class="res-icon">✅</div><div class="res-text"><h4>Watermark Added!</h4><p>PDF ready hai.</p></div>
+    <button class="btn btn-success" id="watermark-download">⬇️ Download</button>
+  </div>
+</div>
+
+<!-- ═══════════ PAGE NUMBERS ═══════════ -->
+<div class="panel" id="panel-pagenumber">
+  <h2 class="panel-title">🔢 Page Numbers</h2>
+  <p class="panel-desc">PDF mein automatic page numbers add karo — position, style aur starting number customize karo.</p>
+  <div class="dropzone">
+    <input type="file" id="pn-input" accept=".pdf" onchange="handleSingleFile(this,'pn')">
+    <div class="dz-icon">📄</div><h3>PDF yahan drop karo</h3>
+  </div>
+  <div id="pn-options" style="display:none;margin-top:1.5rem">
+    <div class="two-col">
+      <div>
+        <div class="form-group"><label class="form-label">Position</label>
+          <select id="pn-pos">
+            <option value="bottom-center">Bottom Center</option>
+            <option value="bottom-right">Bottom Right</option>
+            <option value="bottom-left">Bottom Left</option>
+            <option value="top-center">Top Center</option>
+            <option value="top-right">Top Right</option>
+            <option value="top-left">Top Left</option>
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">Starting Number</label><input type="number" id="pn-start" value="1" min="0"></div>
+        <div class="form-group"><label class="form-label">Font Size</label><input type="number" id="pn-size" value="12" min="8" max="24"></div>
+      </div>
+      <div>
+        <div class="form-group"><label class="form-label">Format</label>
+          <select id="pn-format">
+            <option value="num">1, 2, 3...</option>
+            <option value="page-of">Page 1 of 10</option>
+            <option value="dash">- 1 -</option>
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">Color</label><input type="color" id="pn-color" value="#333333"></div>
+        <div class="checkbox-row"><input type="checkbox" id="pn-skip-first"><label for="pn-skip-first">First page skip karo (cover page)</label></div>
+      </div>
+    </div>
+    <div class="btn-row"><button class="btn btn-primary" onclick="addPageNumbers()">🔢 Add Page Numbers</button></div>
+  </div>
+  <div class="result-banner" id="pn-result">
+    <div class="res-icon">✅</div><div class="res-text"><h4>Page Numbers Added!</h4><p>PDF ready hai.</p></div>
+    <button class="btn btn-success" id="pn-download">⬇️ Download</button>
+  </div>
+</div>
+
+<!-- ═══════════ CROP ═══════════ -->
+<div class="panel" id="panel-crop">
+  <h2 class="panel-title">✂️ Crop PDF Pages</h2>
+  <p class="panel-desc">PDF pages ke margins trim karo — top, bottom, left, right alag-alag set karo.</p>
+  <div class="dropzone">
+    <input type="file" id="crop-input" accept=".pdf" onchange="handleSingleFile(this,'crop')">
+    <div class="dz-icon">📄</div><h3>PDF yahan drop karo</h3>
+  </div>
+  <div id="crop-options" style="display:none;margin-top:1.5rem">
+    <p style="color:var(--text2);font-size:0.85rem;margin-bottom:1rem">Margin points mein (72pt = 1 inch, 28pt ≈ 1cm)</p>
+    <div class="options-grid" style="grid-template-columns:1fr 1fr;">
+      <div class="form-group"><label class="form-label">Top Margin (pt)</label><input type="number" id="crop-top" value="0" min="0" max="200"></div>
+      <div class="form-group"><label class="form-label">Bottom Margin (pt)</label><input type="number" id="crop-bottom" value="0" min="0" max="200"></div>
+      <div class="form-group"><label class="form-label">Left Margin (pt)</label><input type="number" id="crop-left" value="0" min="0" max="200"></div>
+      <div class="form-group"><label class="form-label">Right Margin (pt)</label><input type="number" id="crop-right" value="0" min="0" max="200"></div>
+    </div>
+    <div class="btn-row"><button class="btn btn-primary" onclick="cropPDF()">✂️ Crop karo</button></div>
+  </div>
+  <div class="result-banner" id="crop-result">
+    <div class="res-icon">✅</div><div class="res-text"><h4>Pages Cropped!</h4><p>PDF ready hai.</p></div>
+    <button class="btn btn-success" id="crop-download">⬇️ Download</button>
+  </div>
+</div>
+
+<!-- ═══════════ IMAGE TO PDF ═══════════ -->
+<div class="panel" id="panel-img2pdf">
+  <h2 class="panel-title">🖼️ Image to PDF</h2>
+  <p class="panel-desc">JPG, PNG, WebP, GIF images ko PDF mein convert karo. Multiple images ek PDF mein.</p>
+  <div class="dropzone">
+    <input type="file" id="img2pdf-input" multiple accept="image/*" onchange="handleImageFiles(this.files)">
+    <div class="dz-icon">🖼️</div><h3>Images yahan drop karo</h3><p>JPG, PNG, GIF, WebP, BMP — multiple files supported</p>
+  </div>
+  <div class="file-list" id="img2pdf-list"></div>
+  <div id="img2pdf-options" style="display:none">
+    <div class="two-col">
+      <div class="form-group"><label class="form-label">Page Size</label>
+        <select id="img2pdf-size"><option value="A4">A4 (595×842 pt)</option><option value="Letter">Letter (612×792 pt)</option><option value="A3">A3 (842×1191 pt)</option><option value="auto">Image Size ke hisaab se</option></select>
+      </div>
+      <div class="form-group"><label class="form-label">Orientation</label>
+        <select id="img2pdf-orient"><option value="portrait">Portrait</option><option value="landscape">Landscape</option></select>
+      </div>
+      <div class="form-group"><label class="form-label">Margin (pt)</label><input type="number" id="img2pdf-margin" value="20" min="0" max="100"></div>
+      <div class="form-group"><label class="form-label">Image Fit</label>
+        <select id="img2pdf-fit"><option value="fit">Fit to page (maintain ratio)</option><option value="stretch">Stretch to fill</option><option value="original">Original size</option></select>
+      </div>
+    </div>
+    <div class="btn-row"><button class="btn btn-primary" onclick="imageToPDF()">🖼️ Convert karo</button></div>
+  </div>
+  <div class="result-banner" id="img2pdf-result">
+    <div class="res-icon">✅</div><div class="res-text"><h4>PDF Ready!</h4><p id="img2pdf-result-text"></p></div>
+    <button class="btn btn-success" id="img2pdf-download">⬇️ Download PDF</button>
+  </div>
+</div>
+
+<!-- ═══════════ PDF TO IMAGE ═══════════ -->
+<div class="panel" id="panel-pdf2img">
+  <h2 class="panel-title">📸 PDF to Image</h2>
+  <p class="panel-desc">PDF pages ko high-quality PNG ya JPEG images mein convert karo.</p>
+  <div class="dropzone">
+    <input type="file" id="pdf2img-input" accept=".pdf" onchange="handleSingleFile(this,'pdf2img')">
+    <div class="dz-icon">📄</div><h3>PDF yahan drop karo</h3>
+  </div>
+  <div id="pdf2img-options" style="display:none;margin-top:1.5rem">
+    <div class="two-col">
+      <div class="form-group"><label class="form-label">Format</label>
+        <select id="pdf2img-format"><option value="png">PNG (Best Quality)</option><option value="jpeg">JPEG (Smaller Size)</option></select>
+      </div>
+      <div class="form-group"><label class="form-label">Scale / Resolution</label>
+        <select id="pdf2img-scale">
+          <option value="1">1x — Screen (72 DPI equiv)</option>
+          <option value="2" selected>2x — Good (150 DPI equiv)</option>
+          <option value="3">3x — Print (220 DPI equiv)</option>
+          <option value="4">4x — High Res</option>
+        </select>
+      </div>
+      <div class="form-group"><label class="form-label">Pages</label>
+        <select id="pdf2img-pages"><option value="all">All Pages</option><option value="first">First Page Only</option><option value="last">Last Page Only</option></select>
+      </div>
+    </div>
+    <div class="btn-row"><button class="btn btn-primary" onclick="pdfToImages()">📸 Convert karo</button></div>
+  </div>
+  <div id="pdf2img-progress" style="display:none;margin-top:1rem">
+    <p style="color:var(--text2);font-size:0.85rem;margin-bottom:0.5rem">🔄 Converting pages...</p>
+    <div class="progress-bar"><div class="progress-fill" id="pdf2img-fill" style="width:0%"></div></div>
+  </div>
+  <div id="pdf2img-preview" style="display:none;margin-top:1.5rem">
+    <label class="form-label">Preview</label>
+    <div class="pdf-preview-box" id="pdf2img-canvas-area"></div>
+    <div class="btn-row" style="margin-top:1rem">
+      <button class="btn btn-success" onclick="downloadAllImages()">⬇️ Download All (ZIP)</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ PDF TO TEXT ═══════════ -->
+<div class="panel" id="panel-pdf2txt">
+  <h2 class="panel-title">📄 PDF to Text</h2>
+  <p class="panel-desc">PDF se text extract karo — copy, edit, ya .txt file download karo. PDF.js engine use hota hai.</p>
+  <div class="dropzone">
+    <input type="file" id="pdf2txt-input" accept=".pdf" onchange="extractText(this)">
+    <div class="dz-icon">📄</div><h3>PDF yahan drop karo</h3><p>Text automatically extract hoga</p>
+  </div>
+  <div id="pdf2txt-output" style="display:none;margin-top:1.5rem">
+    <div class="stats-row" id="txt-stats"></div>
+    <div class="form-group">
+      <label class="form-label">Extracted Text</label>
+      <textarea id="txt-area" style="min-height:320px;" readonly></textarea>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="navigator.clipboard.writeText(document.getElementById('txt-area').value);toast('Copied!','📋')">📋 Copy Text</button>
+      <button class="btn btn-success" onclick="downloadText()">⬇️ Download .txt</button>
+      <button class="btn btn-secondary" onclick="document.getElementById('txt-area').readOnly=!document.getElementById('txt-area').readOnly;this.textContent=document.getElementById('txt-area').readOnly?'✏️ Edit':'🔒 Lock'">✏️ Edit</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ HTML TO PDF ═══════════ -->
+<div class="panel" id="panel-html2pdf">
+  <h2 class="panel-title">🌐 HTML to PDF</h2>
+  <p class="panel-desc">HTML ya plain text content ko PDF mein convert karo. Tags strip hokar text PDF mein add hoga.</p>
+  <div class="two-col">
+    <div>
+      <div class="form-group"><label class="form-label">HTML / Text Content</label>
+        <textarea id="html2pdf-content" style="min-height:280px;font-family:monospace;font-size:0.82rem" placeholder="&lt;h1&gt;Title&lt;/h1&gt;&#10;&lt;p&gt;Apna content yahan paste karo...&lt;/p&gt;"></textarea>
+      </div>
+    </div>
+    <div>
+      <div class="form-group"><label class="form-label">Page Size</label><select id="html2pdf-size"><option value="A4">A4</option><option value="Letter">Letter</option><option value="A3">A3</option></select></div>
+      <div class="form-group"><label class="form-label">Font Size</label><input type="number" id="html2pdf-fontsize" value="11" min="8" max="20"></div>
+      <div class="form-group"><label class="form-label">Margin (pt)</label><input type="number" id="html2pdf-margin" value="50" min="0" max="150"></div>
+      <div class="form-group"><label class="form-label">Title</label><input type="text" id="html2pdf-title" placeholder="Document title (optional)"></div>
+    </div>
+  </div>
+  <div class="btn-row"><button class="btn btn-primary" onclick="htmlToPDF()">🌐 Convert karo</button></div>
+  <div class="result-banner" id="html2pdf-result">
+    <div class="res-icon">✅</div><div class="res-text"><h4>PDF Ready!</h4><p id="html2pdf-result-text"></p></div>
+    <button class="btn btn-success" id="html2pdf-download">⬇️ Download</button>
+  </div>
+</div>
+
+<!-- ═══════════ BLANK PDF ═══════════ -->
+<div class="panel" id="panel-blank">
+  <h2 class="panel-title">📃 Blank PDF Generator</h2>
+  <p class="panel-desc">Custom size aur page count ke saath blank PDF generate karo.</p>
+  <div class="two-col" style="max-width:600px">
+    <div class="form-group"><label class="form-label">Number of Pages</label><input type="number" id="blank-pages" value="1" min="1" max="500"></div>
+    <div class="form-group"><label class="form-label">Page Size</label>
+      <select id="blank-size"><option value="A4">A4 (210×297 mm)</option><option value="Letter">Letter (8.5×11 in)</option><option value="A3">A3 (297×420 mm)</option><option value="A5">A5 (148×210 mm)</option><option value="Legal">Legal (8.5×14 in)</option></select>
+    </div>
+    <div class="form-group"><label class="form-label">Orientation</label>
+      <select id="blank-orient"><option value="portrait">Portrait</option><option value="landscape">Landscape</option></select>
+    </div>
+    <div class="form-group"><label class="form-label">Background Color</label><input type="color" id="blank-color" value="#ffffff"></div>
+    <div class="form-group"><label class="form-label">Add Lines (Ruled)</label>
+      <select id="blank-lines"><option value="none">No Lines (Plain)</option><option value="ruled">Ruled Lines</option><option value="grid">Grid</option><option value="dotted">Dotted Grid</option></select>
+    </div>
+  </div>
+  <div class="btn-row"><button class="btn btn-primary" onclick="generateBlank()">📃 Generate karo</button></div>
+  <div class="result-banner" id="blank-result">
+    <div class="res-icon">✅</div><div class="res-text"><h4>Blank PDF Ready!</h4><p id="blank-result-text"></p></div>
+    <button class="btn btn-success" id="blank-download">⬇️ Download</button>
+  </div>
+</div>
+
+<!-- ═══════════ PROTECT ═══════════ -->
+<div class="panel" id="panel-protect">
+  <h2 class="panel-title">🔐 Protect PDF</h2>
+  <p class="panel-desc">PDF mein password add karo — pdf-lib ke saath basic protection lagao.</p>
+  <div class="dropzone">
+    <input type="file" id="protect-input" accept=".pdf" onchange="handleSingleFile(this,'protect')">
+    <div class="dz-icon">📄</div><h3>PDF yahan drop karo</h3>
+  </div>
+  <div id="protect-options" style="display:none;margin-top:1.5rem">
+    <div class="form-group"><label class="form-label">🔑 Password set karo</label><input type="password" id="protect-pass" placeholder="Strong password likhao"></div>
+    <div class="form-group"><label class="form-label">🔑 Password confirm karo</label><input type="password" id="protect-pass2" placeholder="Same password dobara likhao"></div>
+    <p style="color:var(--text2);font-size:0.8rem;margin-bottom:1rem">ℹ️ Note: Browser-based PDF protection is metadata-level. Production-grade encryption ke liye server-side tool (qpdf) use karo.</p>
+    <div class="btn-row"><button class="btn btn-primary" onclick="protectPDF()">🔐 Protect karo</button></div>
+  </div>
+  <div class="result-banner" id="protect-result">
+    <div class="res-icon">✅</div><div class="res-text"><h4>PDF Protected!</h4><p>Password metadata mein set hua.</p></div>
+    <button class="btn btn-success" id="protect-download">⬇️ Download</button>
+  </div>
+</div>
+
+<!-- ═══════════ UNLOCK ═══════════ -->
+<div class="panel" id="panel-unlock">
+  <h2 class="panel-title">🔓 Unlock PDF</h2>
+  <p class="panel-desc">Password-protected PDF ko unlock karo aur unencrypted version download karo.</p>
+  <div class="dropzone">
+    <input type="file" id="unlock-input" accept=".pdf" onchange="handleSingleFile(this,'unlock')">
+    <div class="dz-icon">🔒</div><h3>Protected PDF yahan drop karo</h3>
+  </div>
+  <div id="unlock-options" style="display:none;margin-top:1.5rem">
+    <div class="form-group"><label class="form-label">🔑 Password (agar pata ho)</label><input type="password" id="unlock-pass" placeholder="PDF ka password — blank chhodo agar pata nahi"></div>
+    <div class="btn-row"><button class="btn btn-primary" onclick="unlockPDF()">🔓 Unlock karo</button></div>
+  </div>
+  <div class="result-banner" id="unlock-result">
+    <div class="res-icon">✅</div><div class="res-text"><h4>PDF Unlocked!</h4><p>Password remove ho gaya.</p></div>
+    <button class="btn btn-success" id="unlock-download">⬇️ Download</button>
+  </div>
+</div>
+
+<!-- ═══════════ SIGN ═══════════ -->
+<div class="panel" id="panel-sign">
+  <h2 class="panel-title">✍️ Sign PDF</h2>
+  <p class="panel-desc">PDF par digital signature add karo — draw, type, ya image upload karke.</p>
+  <div class="dropzone">
+    <input type="file" id="sign-input" accept=".pdf" onchange="handleSingleFile(this,'sign')">
+    <div class="dz-icon">📄</div><h3>PDF yahan drop karo</h3>
+  </div>
+  <div id="sign-options" style="display:none;margin-top:1.5rem">
+    <div class="tabs">
+      <button class="tab-btn active" onclick="selectSignType('draw',this)">✏️ Draw</button>
+      <button class="tab-btn" onclick="selectSignType('type',this)">⌨️ Type</button>
+      <button class="tab-btn" onclick="selectSignType('image',this)">🖼️ Upload</button>
+    </div>
+    <div id="sign-draw-area" class="tab-content active">
+      <p style="color:var(--text2);font-size:0.82rem;margin-bottom:0.5rem">Mouse ya touch se sign karo:</p>
+      <canvas id="sign-canvas" width="520" height="150"></canvas>
+      <div class="btn-row"><button class="btn btn-secondary btn-sm" onclick="clearSignature()">🗑️ Clear</button></div>
+    </div>
+    <div id="sign-type-area" class="tab-content">
+      <div class="form-group"><label class="form-label">Apna naam likhao</label><input type="text" id="sign-name" placeholder="Full Name"></div>
+      <div class="form-group"><label class="form-label">Font Style</label>
+        <select id="sign-font"><option value="italic 48px Georgia">Georgia Italic</option><option value="italic 48px 'Times New Roman'">Times New Roman</option><option value="48px cursive">Cursive</option><option value="italic bold 42px Palatino">Palatino Bold</option></select>
+      </div>
+    </div>
+    <div id="sign-img-area" class="tab-content">
+      <div class="form-group"><label class="form-label">Signature Image (PNG transparent recommended)</label>
+        <input type="file" id="sign-img-file" accept="image/*" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:0.5rem;color:var(--text);width:100%">
+      </div>
+    </div>
+    <hr class="divider">
+    <div class="two-col">
+      <div class="form-group"><label class="form-label">Page Number</label><input type="number" id="sign-page" value="1" min="1"></div>
+      <div class="form-group"><label class="form-label">Position</label>
+        <select id="sign-pos">
+          <option value="bottom-right">Bottom Right</option>
+          <option value="bottom-left">Bottom Left</option>
+          <option value="bottom-center">Bottom Center</option>
+          <option value="top-right">Top Right</option>
+        </select>
+      </div>
+      <div class="form-group"><label class="form-label">Size (pt)</label><input type="number" id="sign-size" value="120" min="40" max="300"></div>
+    </div>
+    <div class="btn-row"><button class="btn btn-primary" onclick="signPDF()">✍️ Signature lagao</button></div>
+  </div>
+  <div class="result-banner" id="sign-result">
+    <div class="res-icon">✅</div><div class="res-text"><h4>Signed!</h4><p>PDF signed ho gaya.</p></div>
+    <button class="btn btn-success" id="sign-download">⬇️ Download</button>
+  </div>
+</div>
+
+<!-- ═══════════ ANNOTATE ═══════════ -->
+<div class="panel" id="panel-annotate">
+  <h2 class="panel-title">💬 Annotate PDF</h2>
+  <p class="panel-desc">PDF par text boxes, highlights, arrows aur comments add karo.</p>
+  <div class="dropzone">
+    <input type="file" id="ann-input" accept=".pdf" onchange="handleSingleFile(this,'annotate')">
+    <div class="dz-icon">📄</div><h3>PDF yahan drop karo</h3>
+  </div>
+  <div id="ann-options" style="display:none;margin-top:1.5rem">
+    <div class="form-group"><label class="form-label">Annotation Type</label>
+      <div class="options-grid">
+        <div class="option-card selected" onclick="selectOpt(this,'#ann-options .option-card');state.annType='textbox'"><div class="opt-icon">📝</div><div class="opt-label">Text Box</div></div>
+        <div class="option-card" onclick="selectOpt(this,'#ann-options .option-card');state.annType='highlight'"><div class="opt-icon">🖊️</div><div class="opt-label">Highlight Bar</div></div>
+        <div class="option-card" onclick="selectOpt(this,'#ann-options .option-card');state.annType='comment'"><div class="opt-icon">💬</div><div class="opt-label">Comment Box</div></div>
+        <div class="option-card" onclick="selectOpt(this,'#ann-options .option-card');state.annType='underline'"><div class="opt-icon">__</div><div class="opt-label">Underline</div></div>
+        <div class="option-card" onclick="selectOpt(this,'#ann-options .option-card');state.annType='strike'"><div class="opt-icon">~~</div><div class="opt-label">Strikethrough</div></div>
+      </div>
+    </div>
+    <div class="two-col">
+      <div class="form-group"><label class="form-label">Annotation Text</label><textarea id="ann-text" placeholder="Annotation likhao..." style="min-height:80px"></textarea></div>
+      <div>
+        <div class="form-group"><label class="form-label">Color</label><input type="color" id="ann-color" value="#ffff00"></div>
+        <div class="form-group"><label class="form-label">Page Number</label><input type="number" id="ann-page" value="1" min="1"></div>
+        <div class="form-group"><label class="form-label">Y Position (from top, 0-100%)</label><input type="number" id="ann-y-pos" value="50" min="0" max="100"></div>
+      </div>
+    </div>
+    <div class="btn-row"><button class="btn btn-primary" onclick="annotatePDF()">💬 Add Annotation</button></div>
+  </div>
+  <div class="result-banner" id="annotate-result">
+    <div class="res-icon">✅</div><div class="res-text"><h4>Annotation Added!</h4><p>PDF ready hai.</p></div>
+    <button class="btn btn-success" id="annotate-download">⬇️ Download</button>
+  </div>
+</div>
+
+<!-- ═══════════ REDACT ═══════════ -->
+<div class="panel" id="panel-redact">
+  <h2 class="panel-title">⬛ Redact PDF</h2>
+  <p class="panel-desc">Sensitive content ko black boxes se cover karo. Yeh permanent hai — recover nahi hoga.</p>
+  <div class="dropzone">
+    <input type="file" id="redact-input" accept=".pdf" onchange="handleSingleFile(this,'redact')">
+    <div class="dz-icon">📄</div><h3>PDF yahan drop karo</h3>
+  </div>
+  <div id="redact-options" style="display:none;margin-top:1.5rem">
+    <div class="form-group"><label class="form-label">Redact karne wale text (ek per line)</label>
+      <textarea id="redact-words" placeholder="Sensitive Name&#10;Phone Number&#10;Email@domain.com&#10;Account Number" style="min-height:140px"></textarea>
+    </div>
+    <div class="checkbox-row"><input type="checkbox" id="redact-case"><label for="redact-case">Case-sensitive match karo</label></div>
+    <div class="form-group"><label class="form-label">Redaction Color</label>
+      <div class="color-row">
+        <input type="color" id="redact-color" value="#000000">
+        <div class="color-swatch active" style="background:#000000" onclick="document.getElementById('redact-color').value='#000000'"></div>
+        <div class="color-swatch" style="background:#0000aa" onclick="document.getElementById('redact-color').value='#0000aa'"></div>
+        <div class="color-swatch" style="background:#aa0000" onclick="document.getElementById('redact-color').value='#aa0000'"></div>
+      </div>
+    </div>
+    <p style="color:var(--red);font-size:0.8rem;margin-bottom:0.75rem">⚠️ WARNING: Yeh operation permanent hai. Original text permanently overwrite ho jayega.</p>
+    <div class="btn-row"><button class="btn btn-danger" onclick="redactPDF()">⬛ Redact karo</button></div>
+  </div>
+  <div class="result-banner" id="redact-result">
+    <div class="res-icon">✅</div><div class="res-text"><h4>Redaction Complete!</h4><p id="redact-result-text"></p></div>
+    <button class="btn btn-success" id="redact-download">⬇️ Download</button>
+  </div>
+</div>
+
+<!-- ═══════════ INSPECT ═══════════ -->
+<div class="panel" id="panel-inspect">
+  <h2 class="panel-title">🔍 PDF Inspector</h2>
+  <p class="panel-desc">PDF ka complete analysis — metadata, page sizes, encryption status sab dekho.</p>
+  <div class="dropzone">
+    <input type="file" id="inspect-input" accept=".pdf" onchange="inspectPDF(this)">
+    <div class="dz-icon">🔍</div><h3>PDF yahan drop karo</h3><p>Instant analysis milega</p>
+  </div>
+  <div id="inspect-result" style="display:none;margin-top:1.5rem">
+    <div class="stats-row" id="inspect-stats"></div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.5rem;margin-top:1rem">
+      <table class="info-table" style="width:100%;border-collapse:collapse" id="inspect-details"></table>
+    </div>
+    <div style="margin-top:1rem">
+      <label class="form-label">Page Dimensions</label>
+      <div class="page-grid" id="inspect-pages" style="gap:0.75rem"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ OCR ═══════════ -->
+<div class="panel" id="panel-ocr">
+  <h2 class="panel-title">👁️ OCR — Text Extract</h2>
+  <p class="panel-desc">PDF se text extract karo PDF.js ke saath. Text-based PDFs ke liye best result milta hai.</p>
+  <div class="dropzone">
+    <input type="file" id="ocr-input" accept=".pdf,image/*" onchange="runOCR(this)">
+    <div class="dz-icon">👁️</div><h3>PDF ya Image drop karo</h3><p>PDF.js text extraction use hoti hai</p>
+  </div>
+  <div id="ocr-progress" style="display:none;margin-top:1.5rem">
+    <p style="color:var(--text2);font-size:0.88rem;margin-bottom:0.5rem">Extracting text... <span id="ocr-page-count"></span></p>
+    <div class="progress-bar"><div class="progress-fill" id="ocr-fill" style="width:0%"></div></div>
+  </div>
+  <div id="ocr-output" style="display:none;margin-top:1.5rem">
+    <div class="stats-row" id="ocr-stats"></div>
+    <div class="form-group"><label class="form-label">Extracted Text</label><textarea id="ocr-text" style="min-height:340px" readonly></textarea></div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="navigator.clipboard.writeText(document.getElementById('ocr-text').value).then(()=>toast('Copied!','📋'))">📋 Copy</button>
+      <button class="btn btn-success" onclick="downloadOCR()">⬇️ Download .txt</button>
+      <button class="btn btn-secondary" onclick="searchInText()">🔍 Search</button>
+    </div>
+    <div id="ocr-search" style="display:none;margin-top:0.75rem">
+      <div class="home-search"><span>🔍</span><input type="text" id="ocr-search-input" placeholder="Text mein search karo..." oninput="highlightSearch(this.value)"></div>
+      <p id="ocr-search-result" style="font-size:0.8rem;color:var(--text2)"></p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ PREVIEW ═══════════ -->
+<div class="panel" id="panel-preview">
+  <h2 class="panel-title">👀 PDF Preview</h2>
+  <p class="panel-desc">PDF ko browser mein render karke dekho — zoom aur page navigation ke saath.</p>
+  <div class="dropzone">
+    <input type="file" id="preview-input" accept=".pdf" onchange="previewPDF(this)">
+    <div class="dz-icon">👀</div><h3>PDF yahan drop karo</h3>
+  </div>
+  <div id="preview-controls" style="display:none;margin-top:1rem">
+    <div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;margin-bottom:1rem">
+      <button class="btn btn-secondary btn-sm" onclick="prevPage()">◀ Prev</button>
+      <span style="font-size:0.88rem;color:var(--text2)">Page <span id="preview-cur">1</span> of <span id="preview-total">?</span></span>
+      <button class="btn btn-secondary btn-sm" onclick="nextPage()">Next ▶</button>
+      <input type="range" id="preview-zoom" min="50" max="200" value="100" oninput="renderPreviewPage()" style="width:120px">
+      <span style="font-size:0.82rem;color:var(--text2)" id="zoom-label">100%</span>
+    </div>
+    <div class="pdf-preview-box" id="preview-canvas-wrap" style="max-height:600px;justify-content:center">
+      <canvas id="preview-canvas"></canvas>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ COMPARE ═══════════ -->
+<div class="panel" id="panel-compare">
+  <h2 class="panel-title">⚖️ Compare PDFs</h2>
+  <p class="panel-desc">Do PDFs ki properties aur page count compare karo side by side.</p>
+  <div class="two-col">
+    <div>
+      <p style="color:var(--text2);font-size:0.82rem;margin-bottom:0.5rem">📄 PDF #1</p>
+      <div class="dropzone" style="padding:2rem">
+        <input type="file" id="compare1-input" accept=".pdf" onchange="loadCompare(this,1)">
+        <div class="dz-icon" style="font-size:2rem">📄</div><p style="font-size:0.82rem">First PDF</p>
+      </div>
+      <div id="compare1-info" style="display:none;margin-top:0.75rem"></div>
+    </div>
+    <div>
+      <p style="color:var(--text2);font-size:0.82rem;margin-bottom:0.5rem">📄 PDF #2</p>
+      <div class="dropzone" style="padding:2rem">
+        <input type="file" id="compare2-input" accept=".pdf" onchange="loadCompare(this,2)">
+        <div class="dz-icon" style="font-size:2rem">📄</div><p style="font-size:0.82rem">Second PDF</p>
+      </div>
+      <div id="compare2-info" style="display:none;margin-top:0.75rem"></div>
+    </div>
+  </div>
+  <div id="compare-result" style="display:none;margin-top:1.5rem">
+    <h4 style="font-family:'Syne',sans-serif;margin-bottom:1rem">📊 Comparison Results</h4>
+    <div id="compare-table"></div>
+  </div>
+</div>
+
+<!-- ═══════════ REPAIR ═══════════ -->
+<div class="panel" id="panel-repair">
+  <h2 class="panel-title">🛠️ Repair PDF</h2>
+  <p class="panel-desc">Corrupt ya damaged PDF ko repair karo — pdf-lib re-parse karke clean copy banata hai.</p>
+  <div class="dropzone">
+    <input type="file" id="repair-input" accept=".pdf" onchange="repairPDF(this)">
+    <div class="dz-icon">🛠️</div><h3>Damaged PDF yahan drop karo</h3><p>Auto-repair attempt hoga</p>
+  </div>
+  <div id="repair-progress" style="display:none;margin-top:1.5rem">
+    <p style="color:var(--text2);font-size:0.88rem;margin-bottom:0.5rem">🔄 Repairing...</p>
+    <div class="progress-bar"><div class="progress-fill" id="repair-fill" style="width:0%"></div></div>
+  </div>
+  <div class="result-banner" id="repair-result">
+    <div class="res-icon">✅</div><div class="res-text"><h4>PDF Repaired!</h4><p id="repair-result-text"></p></div>
+    <button class="btn btn-success" id="repair-download">⬇️ Download</button>
+  </div>
+</div>
+
+<!-- ═══════════ ABOUT ═══════════ -->
+<div class="panel" id="panel-about">
+  <h2 class="panel-title">ℹ️ PDFCraft Pro</h2>
+  <p class="panel-desc">100% Free, browser-based PDF editor. Koi file upload nahi, koi server nahi.</p>
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:2rem">
+    <div class="stats-row">
+      <div class="stat-card"><div class="st-val">22+</div><div class="st-label">PDF Tools</div></div>
+      <div class="stat-card"><div class="st-val">100%</div><div class="st-label">Browser-based</div></div>
+      <div class="stat-card"><div class="st-val">₹0</div><div class="st-label">Cost</div></div>
+      <div class="stat-card"><div class="st-val">🔒</div><div class="st-label">Private & Secure</div></div>
+    </div>
+    <hr class="divider">
+    <h3 style="font-family:'Syne',sans-serif;margin-bottom:1rem">🛠️ Technologies</h3>
+    <div class="options-grid">
+      <div class="option-card"><div class="opt-icon">📚</div><div class="opt-label">PDF.js — Rendering</div></div>
+      <div class="option-card"><div class="opt-icon">📝</div><div class="opt-label">pdf-lib — Editing</div></div>
+      <div class="option-card"><div class="opt-icon">📦</div><div class="opt-label">JSZip — ZIP Files</div></div>
+      <div class="option-card"><div class="opt-icon">🌐</div><div class="opt-label">Pure HTML/CSS/JS</div></div>
+    </div>
+    <hr class="divider">
+    <p style="color:var(--text2);font-size:0.85rem;line-height:1.7">
+      🔒 <strong style="color:var(--text)">Privacy Guarantee:</strong> Aapki koi bhi file kisi server par upload nahi hoti. Sari processing aapke browser mein hoti hai — files sirf aapke device par hain.<br><br>
+      💡 <strong style="color:var(--text)">Tip:</strong> Complex tools ke liye (image-based OCR, Word conversion) server-side tools jaise LibreOffice, Tesseract.js, qpdf ki zaroorat hoti hai.
+    </p>
+  </div>
+</div>
+
+</main>
+</div>
+
+<div id="toast-container"></div>
+<script src="./script.js"></script>
+</body>
+</html>
+
+
+
+

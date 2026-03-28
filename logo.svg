@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 80">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#6c63ff"></stop>
+      <stop offset="100%" stop-color="#ff6584"></stop>
+    </linearGradient>
+  </defs>
+
+  <!-- Icon box -->
+  <rect x="0" y="0" width="60" height="60" rx="14" fill="url(#g)"></rect>
+  
+  <!-- PDF text inside icon -->
+  <text x="30" y="38" text-anchor="middle" font-size="20" font-family="Arial" fill="white" font-weight="bold">
+    PDF
+  </text>
+
+  <!-- Brand text -->
+  <text x="75" y="38" font-size="26" font-family="Arial" fill="white" font-weight="bold">
+    Craft Pro
+  </text>
+</svg>
