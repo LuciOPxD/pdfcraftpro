@@ -312,7 +312,60 @@ textarea:focus{border-color:var(--accent);}
   max-height:350px;overflow-y:auto;display:flex;flex-wrap:wrap;gap:0.5rem;
   padding:1rem;align-items:flex-start;
 }
+.pdf-preview-box.preview-extended{
+  display:flex;
+  flex-direction:column;
+  flex-wrap:nowrap;
+  align-items:center;
+  justify-content:flex-start;
+  gap:1rem;
+  max-height:70vh;
+  padding:1rem;
+}
 .pdf-preview-box canvas{border-radius:6px;box-shadow:0 4px 12px rgba(0,0,0,0.4);}
+.pdf-preview-box.preview-extended canvas{
+  width:min(100%,760px);
+  max-width:100%;
+  height:auto;
+}
+.pdf-preview-box img{
+  display:block;
+  max-width:100%;
+  height:auto;
+  border-radius:8px;
+  box-shadow:0 4px 12px rgba(0,0,0,0.35);
+}
+.pdf-preview-box.preview-extended img{
+  width:min(100%,760px);
+  max-width:100%;
+}
+.pdf-preview-box > *{
+  max-width:100%;
+}
+.wm-stage{
+  position:relative;
+  width:fit-content;
+  max-width:100%;
+  cursor:default;
+}
+.wm-stage canvas{
+  display:block;
+  max-width:100%;
+  height:auto;
+}
+.wm-overlay-text{
+  position:absolute;
+  left:50%;
+  top:50%;
+  transform:translate(-50%,-50%) rotate(-45deg);
+  color:rgba(255,0,0,0.3);
+  font-family:'Syne',sans-serif;
+  font-weight:700;
+  pointer-events:none;
+  white-space:nowrap;
+  text-align:center;
+  text-shadow:0 2px 10px rgba(0,0,0,0.15);
+}
 
 /* ── Sign Canvas ──────────────────────────────── */
 #sign-canvas{
@@ -370,6 +423,8 @@ body.light{
   }
   .tool-btn .icon{width:24px;height:24px;}
   .panel{padding:1rem;}
+  .panel-title{font-size:1.35rem;line-height:1.15;}
+  .panel-desc{font-size:0.84rem;line-height:1.55;margin-bottom:1.15rem;}
   .home-hero{flex-direction:column;padding:1.4rem;}
   .home-hero-text h1{
     font-size:clamp(1.5rem,8vw,1.9rem);
@@ -395,6 +450,49 @@ body.light{
   .hero-stat .num{font-size:1.55rem;line-height:1;}
   .hero-stat .lbl{font-size:0.76rem;margin-top:0.25rem;}
   .tools-grid{grid-template-columns:repeat(2,minmax(0,1fr));}
+  .options-grid{grid-template-columns:repeat(2,minmax(0,1fr));}
+  .stats-row{gap:0.75rem;}
+  .stat-card{min-width:calc(50% - 0.4rem);padding:0.9rem 1rem;}
+  .st-val{font-size:1.25rem;}
+  .color-row{gap:0.65rem;}
+  .page-grid{gap:0.45rem;}
+  .page-thumb{
+    width:60px;
+    height:76px;
+    font-size:0.72rem;
+  }
+  .pdf-preview-box{
+    padding:0.75rem;
+    gap:0.45rem;
+    max-height:52vh;
+  }
+  .pdf-preview-box.preview-extended{
+    max-height:58vh;
+    padding:0.75rem;
+    gap:0.75rem;
+  }
+  .pdf-preview-box canvas{
+    max-width:100%;
+    height:auto;
+  }
+  #preview-canvas,
+  #wm-preview-canvas{
+    width:100%;
+    height:auto;
+  }
+  #sign-canvas{
+    width:100%;
+    height:auto;
+    max-width:100%;
+  }
+  textarea{
+    min-height:150px;
+  }
+  #ocr-text,
+  #mathocr-text{
+    min-height:240px !important;
+  }
+  .info-table td:first-child{width:120px;}
   .file-item{align-items:flex-start;flex-wrap:wrap;}
   .file-actions{width:100%;}
   .result-banner{flex-direction:column;align-items:flex-start;}
@@ -421,6 +519,17 @@ body.light{
     font-size:0.68rem;
   }
   .sidebar{top:48px;}
+  .tool-btn{
+    min-width:68px;
+    padding:0.46rem 0.52rem;
+    font-size:0.64rem;
+  }
+  .tool-btn .icon{
+    width:22px;
+    height:22px;
+    font-size:0.82rem;
+  }
+  .panel{padding:0.85rem;}
   .home-hero{
     padding:1.1rem;
     border-radius:16px;
@@ -444,8 +553,32 @@ body.light{
   .hero-stat .num{font-size:1.28rem;}
   .hero-stat .lbl{font-size:0.72rem;}
   .tools-grid{grid-template-columns:1fr;}
+  .options-grid{grid-template-columns:1fr;}
+  .stats-row{flex-direction:column;}
+  .stat-card{min-width:100%;}
   .home-search{padding:0.55rem 0.85rem;}
   .dropzone{padding:2.25rem 1rem;}
+  .dropzone .dz-icon{font-size:2.2rem;}
+  .dropzone h3{font-size:1rem;}
+  .pdf-preview-box{
+    padding:0.6rem;
+    max-height:48vh;
+  }
+  .pdf-preview-box.preview-extended{
+    max-height:54vh;
+    padding:0.65rem;
+    gap:0.65rem;
+  }
+  .page-thumb{
+    width:56px;
+    height:72px;
+  }
+  .info-table td,
+  .info-table td:first-child{
+    display:block;
+    width:100%;
+    padding:0.35rem 0;
+  }
   .btn{width:100%;justify-content:center;}
   .btn-row > .btn-sm{width:auto;}
 }

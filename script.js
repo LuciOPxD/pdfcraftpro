@@ -14,6 +14,8 @@ const state = {
   pdf2imgFile:null, pdf2imgCanvases:[],
   pdf2txtFile:null,
   wmFile:null,
+  wmPreviewDoc:null, wmCustomPos:{x:0.5,y:0.5},
+  wmPreviewPage:null, wmPreviewPageNum:1, wmPreviewTotal:0, wmDragging:false, wmDragFrame:0,
   pnFile:null,
   protectFile:null,
   unlockFile:null,
@@ -117,6 +119,82 @@ function wrapTextLines(text,maxChars){
   return lines;
 }
 
+function escapeRegExp(str=''){
+  return str.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+}
+
+function getPreviewRenderScale(baseScale=1, mode='default'){
+  const dpr=window.devicePixelRatio || 1;
+  const isMobile=window.innerWidth <= 768;
+  const caps={
+    default: isMobile ? 2 : 2.4,
+    text: isMobile ? 2.2 : 3
+  };
+  const boosts={
+    default: 1,
+    text: isMobile ? 1.15 : 1.35
+  };
+  const quality=Math.max(1, Math.min(dpr * (boosts[mode] || boosts.default), caps[mode] || caps.default));
+  return baseScale * quality;
+}
+
+function getPanelIdForTool(tool){
+  const map={
+    delpages:'delete-pages',
+    extract:'extract-pages',
+    pn:'pagenumber'
+  };
+  return map[tool] || tool;
+}
+
+function ensureToolPreviewContainer(tool,label='Preview'){
+  const panelId=getPanelIdForTool(tool);
+  const panel=document.getElementById(`panel-${panelId}`);
+  if(!panel) return {};
+  let wrap=document.getElementById(`${tool}-preview-wrap`);
+  let box=document.getElementById(`${tool}-preview-box`);
+  if(!wrap || !box){
+    const dropzone=panel.querySelector('.dropzone');
+    if(!dropzone) return {};
+    wrap=document.createElement('div');
+    wrap.id=`${tool}-preview-wrap`;
+    wrap.style.display='none';
+    wrap.style.marginTop='1.5rem';
+    wrap.innerHTML=`<label class="form-label">${label}</label><div class="pdf-preview-box preview-extended" id="${tool}-preview-box"></div>`;
+    dropzone.insertAdjacentElement('afterend',wrap);
+    box=document.getElementById(`${tool}-preview-box`);
+  }
+  return {wrap,box};
+}
+
+async function renderPdfPreviewIntoBox(box,file,maxPages=3,scale=0.9,qualityMode='text'){
+  if(!box) return;
+  box.innerHTML='';
+  const ab=await readAB(file);
+  const pdf=await pdfjsLib.getDocument({data:ab}).promise;
+  const pages=Math.min(pdf.numPages,maxPages);
+  for(let i=1;i<=pages;i++){
+    const page=await pdf.getPage(i);
+    const renderScale=getPreviewRenderScale(scale,qualityMode);
+    const viewport=page.getViewport({scale:renderScale});
+    const canvas=document.createElement('canvas');
+    canvas.width=viewport.width;
+    canvas.height=viewport.height;
+    canvas.style.width='min(100%, 760px)';
+    canvas.style.maxWidth='100%';
+    canvas.style.height='auto';
+    await page.render({canvasContext:canvas.getContext('2d'),viewport}).promise;
+    box.appendChild(canvas);
+  }
+}
+
+async function renderToolPdfPreview(tool,file,maxPages=3){
+  const {wrap,box}=ensureToolPreviewContainer(tool);
+  if(!wrap || !box) return;
+  wrap.style.display='block';
+  await renderPdfPreviewIntoBox(box,file,Math.min(maxPages,3),0.9,'text');
+}
+
 // ══════════════════════════════════════════════════════
 // DRAG & DROP INIT
 // ══════════════════════════════════════════════════════
@@ -149,6 +227,9 @@ async function handleSingleFile(input, tool) {
   state[tool+'File']=file;
   const opts=document.getElementById(TOOL_CONFIG[tool]?.optionsId || tool+'-options');
   if(opts) opts.style.display='block';
+  if(tool!=='watermark'){
+    await renderToolPdfPreview(tool,file,3);
+  }
   // show result banners hide
   const results=document.querySelectorAll('#panel-'+tool+' .result-banner');
   results.forEach(r=>r.classList.remove('show'));
@@ -164,6 +245,9 @@ async function handleSingleFile(input, tool) {
       if(tool==='delpages'){state.delSelected=[];renderPageGrid('delpages-page-grid',count,toggleDelPage);}
       if(tool==='extract'){state.extractSelected=[];renderPageGrid('extract-page-grid',count,toggleExtractPage);}
       if(tool==='pdf2img')state.pdf2imgTotal=count;
+      if(tool==='watermark'){
+        await initWatermarkPreview(file);
+      }
       if(tool==='annotate'||tool==='sign'){
         const pageField=document.getElementById(tool==='annotate'?'ann-page':'sign-page');
         if(pageField){
@@ -214,6 +298,7 @@ function toggleExtractPage(n,el){
 function handleMergeFiles(files){
   for(const f of files)if(f.type==='application/pdf'||f.name.endsWith('.pdf'))state.mergeFiles.push(f);
   renderMergeList();
+  if(state.mergeFiles[0]) renderToolPdfPreview('merge',state.mergeFiles[0],3);
 }
 function renderMergeList(){
   const list=document.getElementById('merge-list'); list.innerHTML='';
@@ -453,6 +538,127 @@ async function rotatePDF(){
 // ══════════════════════════════════════════════════════
 // WATERMARK
 // ══════════════════════════════════════════════════════
+async function initWatermarkPreview(file){
+  try{
+    const ab=await readAB(file);
+    state.wmPreviewDoc=await pdfjsLib.getDocument({data:ab}).promise;
+    state.wmPreviewTotal=state.wmPreviewDoc.numPages;
+    state.wmPreviewPageNum=1;
+    state.wmPreviewPage=await state.wmPreviewDoc.getPage(1);
+    document.getElementById('wm-preview-total').textContent=state.wmPreviewTotal;
+    document.getElementById('wm-preview-cur').textContent=state.wmPreviewPageNum;
+    document.getElementById('wm-preview-wrap').style.display='block';
+    bindWatermarkPreviewControls();
+    await renderWatermarkPreviewBase();
+    renderWatermarkOverlay();
+  }catch(e){
+    toast('Preview load error: '+e.message,'âŒ');
+  }
+}
+
+let wmPreviewBound=false;
+function bindWatermarkPreviewControls(){
+  if(wmPreviewBound) return;
+  wmPreviewBound=true;
+  ['wm-text','wm-size','wm-opacity','wm-rot','wm-color','wm-position'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(!el) return;
+    el.addEventListener('input',()=>renderWatermarkOverlay());
+    el.addEventListener('change',()=>renderWatermarkOverlay());
+  });
+  const stage=document.getElementById('wm-stage');
+  const updatePos=e=>{
+    const canvas=document.getElementById('wm-preview-canvas');
+    if(!canvas.width || !canvas.height) return;
+    const rect=canvas.getBoundingClientRect();
+    const x=(e.clientX-rect.left)/rect.width;
+    const y=(e.clientY-rect.top)/rect.height;
+    state.wmCustomPos={x:clamp(x,0,1),y:clamp(y,0,1)};
+    const posField=document.getElementById('wm-position');
+    if(posField) posField.value='custom';
+    if(state.wmDragFrame) cancelAnimationFrame(state.wmDragFrame);
+    state.wmDragFrame=requestAnimationFrame(()=>{
+      renderWatermarkOverlay();
+      state.wmDragFrame=0;
+    });
+  };
+  stage.addEventListener('mousedown',e=>{
+    state.wmDragging=true;
+    updatePos(e);
+  });
+  window.addEventListener('mousemove',e=>{
+    if(!state.wmDragging) return;
+    updatePos(e);
+  });
+  window.addEventListener('mouseup',()=>{
+    state.wmDragging=false;
+  });
+  stage.addEventListener('click',updatePos);
+}
+
+function getWatermarkPreviewPlacement(position, width, height, textWidth){
+  if(position==='top') return {x:width/2,y:70};
+  if(position==='bottom') return {x:width/2,y:height-55};
+  if(position==='topleft') return {x:Math.max(40,textWidth/2+20),y:60};
+  if(position==='topright') return {x:width-Math.max(40,textWidth/2+20),y:60};
+  if(position==='custom') return {x:width*state.wmCustomPos.x,y:height*state.wmCustomPos.y};
+  return {x:width/2,y:height/2};
+}
+
+async function setWatermarkPreviewPage(pageNum){
+  if(!state.wmPreviewDoc) return;
+  state.wmPreviewPageNum=clamp(pageNum,1,state.wmPreviewTotal);
+  state.wmPreviewPage=await state.wmPreviewDoc.getPage(state.wmPreviewPageNum);
+  document.getElementById('wm-preview-cur').textContent=state.wmPreviewPageNum;
+  await renderWatermarkPreviewBase();
+  renderWatermarkOverlay();
+}
+
+function prevWatermarkPreviewPage(){
+  if(state.wmPreviewPageNum>1) setWatermarkPreviewPage(state.wmPreviewPageNum-1);
+}
+
+function nextWatermarkPreviewPage(){
+  if(state.wmPreviewPageNum<state.wmPreviewTotal) setWatermarkPreviewPage(state.wmPreviewPageNum+1);
+}
+
+async function renderWatermarkPreviewBase(){
+  if(!state.wmPreviewPage) return;
+  const viewport=state.wmPreviewPage.getViewport({scale:getPreviewRenderScale(1.15,'text')});
+  const canvas=document.getElementById('wm-preview-canvas');
+  canvas.width=viewport.width;
+  canvas.height=viewport.height;
+  await state.wmPreviewPage.render({canvasContext:canvas.getContext('2d'),viewport}).promise;
+}
+
+function renderWatermarkOverlay(){
+  const canvas=document.getElementById('wm-preview-canvas');
+  const overlay=document.getElementById('wm-overlay-text');
+  if(!canvas.width || !canvas.height) return;
+  const text=document.getElementById('wm-text').value||'WATERMARK';
+  const size=parseInt(document.getElementById('wm-size').value)||60;
+  const opacity=(parseInt(document.getElementById('wm-opacity').value)||30)/100;
+  const rot=parseInt(document.getElementById('wm-rot').value)||45;
+  const color=document.getElementById('wm-color').value;
+  const position=document.getElementById('wm-position').value;
+  const previewSize=Math.max(18,size*0.42);
+  overlay.textContent=text;
+  overlay.style.fontSize=`${previewSize}px`;
+  overlay.style.color=color;
+  overlay.style.opacity=String(opacity);
+  const estimatedWidth=Math.max(text.length*previewSize*0.58,60);
+  const point=getWatermarkPreviewPlacement(position, canvas.width, canvas.height, estimatedWidth);
+  overlay.style.left=`${point.x}px`;
+  overlay.style.top=`${point.y}px`;
+  overlay.style.transform=`translate(-50%,-50%) rotate(${rot}deg)`;
+  const note=document.getElementById('wm-preview-note');
+  if(note){
+    note.textContent=position==='custom'
+      ? `Custom placement set: ${Math.round(state.wmCustomPos.x*100)}% x, ${Math.round(state.wmCustomPos.y*100)}% y`
+      : 'Preview first page dikhata hai. Click location se watermark ka placement set hoga.';
+  }
+}
+
 async function watermarkPDF(){
   if(!state.watermarkFile){toast('Pehle PDF upload karo!','⚠️');return;}
   try{
@@ -482,6 +688,7 @@ async function watermarkPDF(){
       else if(position==='bottom'){x=width/2-tw/2;y=60;}
       else if(position==='topleft'){x=30;y=height-60;}
       else if(position==='topright'){x=width-tw-30;y=height-60;}
+      else if(position==='custom'){x=width*state.wmCustomPos.x-tw/2;y=height*(1-state.wmCustomPos.y);}
       pg.drawText(wmText,{x,y,size,font,color:PDFLib.rgb(r,g,b),opacity,rotate:PDFLib.degrees(rotDeg)});
     }
     const bytes=await pdf.save();
@@ -669,6 +876,7 @@ async function extractText(input, targetTool){
   const file=input.files[0]; if(!file) return;
   if(targetTool==='redact'){state.redactFile=file; document.getElementById('redact-options').style.display='block'; return;}
   try{
+    await renderToolPdfPreview('pdf2txt',file,4);
     const ab=await readAB(file);
     const pdf=await pdfjsLib.getDocument({data:ab}).promise;
     let text=''; const total=pdf.numPages;
@@ -703,15 +911,18 @@ async function runOCR(inputOrFile){
   if(!file) return;
   const progress=document.getElementById('ocr-progress');
   const output=document.getElementById('ocr-output');
+  const previewWrap=document.getElementById('ocr-preview-wrap');
   const fill=document.getElementById('ocr-fill');
   const pageCount=document.getElementById('ocr-page-count');
   progress.style.display='block';
   output.style.display='none';
+  if(previewWrap) previewWrap.style.display='none';
   fill.style.width='0%';
   if(pageCount) pageCount.textContent='';
   try{
     let text='', total=0;
     const isPdf=file.type==='application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+    await renderOCRPreview(file, isPdf);
     if(isPdf){
       const ab=await readAB(file);
       const pdf=await pdfjsLib.getDocument({data:ab}).promise;
@@ -751,6 +962,42 @@ async function runOCR(inputOrFile){
   }
 }
 
+async function renderOCRPreview(file, isPdf){
+  const wrap=document.getElementById('ocr-preview-wrap');
+  const box=document.getElementById('ocr-preview-box');
+  if(!wrap || !box) return;
+  box.innerHTML='';
+  wrap.style.display='block';
+  if(isPdf){
+    await renderPdfPreviewIntoBox(box,file,4,0.85,'text');
+  } else {
+    const src=await readURL(file);
+    const img=document.createElement('img');
+    img.src=src;
+    img.alt='OCR preview';
+    img.style.maxWidth='420px';
+    box.appendChild(img);
+  }
+}
+
+async function renderMathOCRPreview(file, isPdf){
+  const wrap=document.getElementById('mathocr-preview-wrap');
+  const box=document.getElementById('mathocr-preview-box');
+  if(!wrap || !box) return;
+  box.innerHTML='';
+  wrap.style.display='block';
+  if(isPdf){
+    await renderPdfPreviewIntoBox(box,file,4,0.85,'text');
+  } else {
+    const src=await readURL(file);
+    const img=document.createElement('img');
+    img.src=src;
+    img.alt='Advanced OCR preview';
+    img.style.maxWidth='420px';
+    box.appendChild(img);
+  }
+}
+
 async function runAdvancedOCR(inputOrFile){
   const file=inputOrFile?.files ? inputOrFile.files[0] : (inputOrFile || state.mathOCRFile);
   if(!file){toast('Pehle PDF ya image upload karo!','⚠️');return;}
@@ -770,6 +1017,7 @@ async function runAdvancedOCR(inputOrFile){
   const joinPages=document.getElementById('mathocr-join-pages').checked;
   try{
     const isPdf=file.type==='application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+    await renderMathOCRPreview(file, isPdf);
     let pagesText=[];
     let total=1;
     if(isPdf){
@@ -1161,6 +1409,7 @@ async function convertPDFToExcel(input){
   const file=input.files?.[0];
   if(!file) return;
   try{
+    await renderToolPdfPreview('pdf2excel',file,4);
     const ab=await readAB(file);
     const pdf=await pdfjsLib.getDocument({data:ab}).promise;
     const rows=[];
@@ -1509,6 +1758,7 @@ async function redactPDF(){
 async function inspectPDF(input){
   const file=input.files[0]; if(!file) return;
   try{
+    await renderToolPdfPreview('inspect',file,4);
     const ab=await readAB(file);
     const pdf=await PDFLib.PDFDocument.load(ab,{ignoreEncryption:true});
     const pageCount=pdf.getPageCount();
@@ -1545,6 +1795,7 @@ async function inspectPDF(input){
 async function previewPDF(input){
   const file=input.files[0]; if(!file) return;
   try{
+    await renderToolPdfPreview('preview',file,4);
     const ab=await readAB(file);
     state.previewDoc=await pdfjsLib.getDocument({data:ab}).promise;
     state.previewTotal=state.previewDoc.numPages;
@@ -1557,11 +1808,9 @@ async function previewPDF(input){
 }
 async function renderPreviewPage(){
   if(!state.previewDoc) return;
-  const zoom=parseInt(document.getElementById('preview-zoom').value)/100;
-  document.getElementById('zoom-label').textContent=Math.round(zoom*100)+'%';
   document.getElementById('preview-cur').textContent=state.previewPage;
   const page=await state.previewDoc.getPage(state.previewPage);
-  const vp=page.getViewport({scale:zoom*1.5});
+  const vp=page.getViewport({scale:getPreviewRenderScale(1.5,'text')});
   const canvas=document.getElementById('preview-canvas');
   canvas.width=vp.width;canvas.height=vp.height;
   canvas.style.maxWidth='100%';
@@ -1622,6 +1871,7 @@ async function repairPDF(input){
   const prog=document.getElementById('repair-progress'); prog.style.display='block';
   const fill=document.getElementById('repair-fill');
   try{
+    await renderToolPdfPreview('repair',file,4);
     fill.style.width='30%';
     const ab=await readAB(file);
     fill.style.width='60%';
@@ -1643,3 +1893,5 @@ async function repairPDF(input){
 window.addEventListener('resize',()=>{
   document.documentElement.style.setProperty('--vh', `${window.innerHeight * 0.01}px`);
 });
+
+

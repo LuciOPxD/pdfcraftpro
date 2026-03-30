@@ -384,6 +384,21 @@
     <div class="dz-icon">📄</div><h3>PDF yahan drop karo</h3>
   </div>
   <div id="wm-options" style="display:none;margin-top:1.5rem">
+    <div id="wm-preview-wrap" style="display:none;margin-bottom:1.4rem">
+      <label class="form-label">PDF Preview - click karke watermark place karo</label>
+      <div style="display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap;margin-bottom:0.85rem">
+        <button class="btn btn-secondary btn-sm" onclick="prevWatermarkPreviewPage()">◀ Prev</button>
+        <span style="font-size:0.82rem;color:var(--text2)">Page <span id="wm-preview-cur">1</span> of <span id="wm-preview-total">1</span></span>
+        <button class="btn btn-secondary btn-sm" onclick="nextWatermarkPreviewPage()">Next ▶</button>
+      </div>
+      <div class="pdf-preview-box preview-extended" id="wm-preview-box" style="max-height:620px;justify-content:center">
+        <div class="wm-stage" id="wm-stage">
+          <canvas id="wm-preview-canvas"></canvas>
+          <div class="wm-overlay-text" id="wm-overlay-text"></div>
+        </div>
+      </div>
+      <p id="wm-preview-note" style="color:var(--text2);font-size:0.78rem;margin-top:0.55rem">Preview first page dikhata hai. Click location se watermark ka placement set hoga.</p>
+    </div>
     <div class="two-col">
       <div>
         <div class="form-group"><label class="form-label">Watermark Text</label><input type="text" id="wm-text" value="CONFIDENTIAL" placeholder="Watermark text likhao"></div>
@@ -408,6 +423,7 @@
             <option value="bottom">Bottom</option>
             <option value="topleft">Top Left</option>
             <option value="topright">Top Right</option>
+            <option value="custom">Custom (preview click)</option>
           </select>
         </div>
         <div class="form-group"><label class="form-label">Apply To</label>
@@ -665,7 +681,7 @@
   </div>
   <div id="pdf2img-preview" style="display:none;margin-top:1.5rem">
     <label class="form-label">Preview</label>
-    <div class="pdf-preview-box" id="pdf2img-canvas-area"></div>
+    <div class="pdf-preview-box preview-extended" id="pdf2img-canvas-area"></div>
     <div class="btn-row" style="margin-top:1rem">
       <button class="btn btn-success" onclick="downloadAllImages()">⬇️ Download All (ZIP)</button>
     </div>
@@ -927,6 +943,10 @@
     <p style="color:var(--text2);font-size:0.88rem;margin-bottom:0.5rem">Extracting text... <span id="ocr-page-count"></span></p>
     <div class="progress-bar"><div class="progress-fill" id="ocr-fill" style="width:0%"></div></div>
   </div>
+  <div id="ocr-preview-wrap" style="display:none;margin-top:1.5rem">
+    <label class="form-label">Preview</label>
+    <div class="pdf-preview-box preview-extended" id="ocr-preview-box"></div>
+  </div>
   <div id="ocr-output" style="display:none;margin-top:1.5rem">
     <div class="stats-row" id="ocr-stats"></div>
     <div class="form-group"><label class="form-label">Extracted Text</label><textarea id="ocr-text" style="min-height:340px" readonly></textarea></div>
@@ -981,6 +1001,10 @@
     <p style="color:var(--text2);font-size:0.88rem;margin-bottom:0.5rem">Advanced OCR chal raha hai... <span id="mathocr-page-count"></span></p>
     <div class="progress-bar"><div class="progress-fill" id="mathocr-fill" style="width:0%"></div></div>
   </div>
+  <div id="mathocr-preview-wrap" style="display:none;margin-top:1.5rem">
+    <label class="form-label">Preview</label>
+    <div class="pdf-preview-box preview-extended" id="mathocr-preview-box"></div>
+  </div>
   <div id="mathocr-output" style="display:none;margin-top:1.5rem">
     <div class="stats-row" id="mathocr-stats"></div>
     <div class="form-group"><label class="form-label">Extracted Formula / Text</label><textarea id="mathocr-text" style="min-height:340px"></textarea></div>
@@ -1005,10 +1029,8 @@
       <button class="btn btn-secondary btn-sm" onclick="prevPage()">◀ Prev</button>
       <span style="font-size:0.88rem;color:var(--text2)">Page <span id="preview-cur">1</span> of <span id="preview-total">?</span></span>
       <button class="btn btn-secondary btn-sm" onclick="nextPage()">Next ▶</button>
-      <input type="range" id="preview-zoom" min="50" max="200" value="100" oninput="renderPreviewPage()" style="width:120px">
-      <span style="font-size:0.82rem;color:var(--text2)" id="zoom-label">100%</span>
     </div>
-    <div class="pdf-preview-box" id="preview-canvas-wrap" style="max-height:600px;justify-content:center">
+    <div class="pdf-preview-box preview-extended" id="preview-canvas-wrap" style="max-height:600px;justify-content:center">
       <canvas id="preview-canvas"></canvas>
     </div>
   </div>
