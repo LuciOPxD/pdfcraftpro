@@ -49,6 +49,11 @@
   <div class="sidebar-section">
     <div class="sidebar-heading">Convert</div>
     <button class="tool-btn" id="btn-img2pdf" onclick="showPanel('img2pdf')"><span class="icon">🖼️</span> Image → PDF</button>
+    <button class="tool-btn" id="btn-imgresize" onclick="showPanel('imgresize')"><span class="icon">🪄</span> Image Resizer</button>
+    <button class="tool-btn" id="btn-word2pdf" onclick="showPanel('word2pdf')"><span class="icon">📝</span> Word → PDF</button>
+    <button class="tool-btn" id="btn-ppt2pdf" onclick="showPanel('ppt2pdf')"><span class="icon">📽️</span> PowerPoint → PDF</button>
+    <button class="tool-btn" id="btn-excel2pdf" onclick="showPanel('excel2pdf')"><span class="icon">📗</span> Excel → PDF</button>
+    <button class="tool-btn" id="btn-pdf2excel" onclick="showPanel('pdf2excel')"><span class="icon">📊</span> PDF → Excel</button>
     <button class="tool-btn" id="btn-pdf2img" onclick="showPanel('pdf2img')"><span class="icon">📸</span> PDF → Image</button>
     <button class="tool-btn" id="btn-pdf2txt" onclick="showPanel('pdf2txt')"><span class="icon">📄</span> PDF → Text</button>
     <button class="tool-btn" id="btn-html2pdf" onclick="showPanel('html2pdf')"><span class="icon">🌐</span> HTML → PDF</button>
@@ -63,6 +68,7 @@
     <button class="tool-btn" id="btn-watermark" onclick="showPanel('watermark')"><span class="icon">💧</span> Watermark</button>
     <button class="tool-btn" id="btn-pagenumber" onclick="showPanel('pagenumber')"><span class="icon">🔢</span> Page Numbers</button>
     <button class="tool-btn" id="btn-crop" onclick="showPanel('crop')"><span class="icon">✂️</span> Crop Pages</button>
+    <button class="tool-btn" id="btn-editpdf" onclick="showPanel('editpdf')"><span class="icon">🧰</span> Edit PDF</button>
     <button class="tool-btn" id="btn-annotate" onclick="showPanel('annotate')"><span class="icon">💬</span> Annotate</button>
     <button class="tool-btn" id="btn-redact" onclick="showPanel('redact')"><span class="icon">⬛</span> Redact</button>
   </div>
@@ -80,6 +86,7 @@
     <div class="sidebar-heading">Analyze</div>
     <button class="tool-btn" id="btn-inspect" onclick="showPanel('inspect')"><span class="icon">🔍</span> PDF Inspector</button>
     <button class="tool-btn" id="btn-ocr" onclick="showPanel('ocr')"><span class="icon">👁️</span> OCR / Text Extract</button>
+    <button class="tool-btn" id="btn-mathocr" onclick="showPanel('mathocr')"><span class="icon">∑</span> Formula OCR</button>
     <button class="tool-btn" id="btn-preview" onclick="showPanel('preview')"><span class="icon">👀</span> PDF Preview</button>
     <button class="tool-btn" id="btn-compare" onclick="showPanel('compare')"><span class="icon">⚖️</span> Compare PDFs</button>
   </div>
@@ -127,6 +134,11 @@
   <div class="tool-section-title">🔄 Convert</div>
   <div class="tools-grid">
     <div class="tool-card" onclick="showPanel('img2pdf')"><div class="tc-icon">🖼️</div><div class="tc-name">Image → PDF</div><div class="tc-desc">JPG/PNG to PDF</div></div>
+    <div class="tool-card" onclick="showPanel('imgresize')"><div class="tc-icon">🪄</div><div class="tc-name">Image Resizer</div><div class="tc-desc">Target KB mein compress karo</div></div>
+    <div class="tool-card" onclick="showPanel('word2pdf')"><div class="tc-icon">📝</div><div class="tc-name">Word → PDF</div><div class="tc-desc">DOCX text ko PDF banao</div></div>
+    <div class="tool-card" onclick="showPanel('ppt2pdf')"><div class="tc-icon">📽️</div><div class="tc-name">PowerPoint → PDF</div><div class="tc-desc">PPTX slides convert karo</div></div>
+    <div class="tool-card" onclick="showPanel('excel2pdf')"><div class="tc-icon">📗</div><div class="tc-name">Excel → PDF</div><div class="tc-desc">XLSX/CSV ko PDF mein</div></div>
+    <div class="tool-card" onclick="showPanel('pdf2excel')"><div class="tc-icon">📊</div><div class="tc-name">PDF → Excel</div><div class="tc-desc">Text rows ko Excel sheet banao</div></div>
     <div class="tool-card" onclick="showPanel('pdf2img')"><div class="tc-icon">📸</div><div class="tc-name">PDF → Image</div><div class="tc-desc">Pages export karo</div></div>
     <div class="tool-card" onclick="showPanel('pdf2txt')"><div class="tc-icon">📄</div><div class="tc-name">PDF → Text</div><div class="tc-desc">Text extract karo</div></div>
     <div class="tool-card" onclick="showPanel('html2pdf')"><div class="tc-icon">🌐</div><div class="tc-name">HTML → PDF</div><div class="tc-desc">HTML se PDF banao</div></div>
@@ -140,6 +152,7 @@
     <div class="tool-card" onclick="showPanel('watermark')"><div class="tc-icon">💧</div><div class="tc-name">Watermark</div><div class="tc-desc">Text watermark lagao</div></div>
     <div class="tool-card" onclick="showPanel('pagenumber')"><div class="tc-icon">🔢</div><div class="tc-name">Page Numbers</div><div class="tc-desc">Numbering add karo</div></div>
     <div class="tool-card" onclick="showPanel('crop')"><div class="tc-icon">✂️</div><div class="tc-name">Crop Pages</div><div class="tc-desc">Page margins trim karo</div></div>
+    <div class="tool-card" onclick="showPanel('editpdf')"><div class="tc-icon">🧰</div><div class="tc-name">Edit PDF</div><div class="tc-desc">Text, markup aur edits shortcuts</div></div>
     <div class="tool-card" onclick="showPanel('annotate')"><div class="tc-icon">💬</div><div class="tc-name">Annotate</div><div class="tc-desc">Notes & markup</div></div>
     <div class="tool-card" onclick="showPanel('redact')"><div class="tc-icon">⬛</div><div class="tc-name">Redact</div><div class="tc-desc">Content black out karo</div></div>
   </div>
@@ -155,6 +168,7 @@
   <div class="tools-grid">
     <div class="tool-card" onclick="showPanel('inspect')"><div class="tc-icon">🔍</div><div class="tc-name">Inspector</div><div class="tc-desc">PDF analyze karo</div></div>
     <div class="tool-card" onclick="showPanel('ocr')"><div class="tc-icon">👁️</div><div class="tc-name">OCR</div><div class="tc-desc">Scanned text extract</div></div>
+    <div class="tool-card" onclick="showPanel('mathocr')"><div class="tc-icon">∑</div><div class="tc-name">Formula OCR</div><div class="tc-desc">Math + heavy text extract</div></div>
     <div class="tool-card" onclick="showPanel('preview')"><div class="tc-icon">👀</div><div class="tc-name">Preview</div><div class="tc-desc">PDF dekho browser mein</div></div>
     <div class="tool-card" onclick="showPanel('compare')"><div class="tc-icon">⚖️</div><div class="tc-name">Compare</div><div class="tc-desc">Do PDFs compare karo</div></div>
     <div class="tool-card" onclick="showPanel('repair')"><div class="tc-icon">🛠️</div><div class="tc-name">Repair PDF</div><div class="tc-desc">Corrupt PDF fix karo</div></div>
@@ -477,6 +491,23 @@
   </div>
 </div>
 
+<div class="panel" id="panel-editpdf">
+  <h2 class="panel-title">🧰 Edit PDF</h2>
+  <p class="panel-desc">Quick editing workspace. Neeche se direct annotate, watermark, page numbers, sign, rotate ya redact par jump karo.</p>
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1.5rem">
+    <div class="options-grid">
+      <div class="option-card" onclick="showPanel('annotate')"><div class="opt-icon">💬</div><div class="opt-label">Add Text / Comment</div></div>
+      <div class="option-card" onclick="showPanel('watermark')"><div class="opt-icon">💧</div><div class="opt-label">Watermark</div></div>
+      <div class="option-card" onclick="showPanel('pagenumber')"><div class="opt-icon">🔢</div><div class="opt-label">Page Numbers</div></div>
+      <div class="option-card" onclick="showPanel('sign')"><div class="opt-icon">✍️</div><div class="opt-label">Sign PDF</div></div>
+      <div class="option-card" onclick="showPanel('rotate')"><div class="opt-icon">🔄</div><div class="opt-label">Rotate Pages</div></div>
+      <div class="option-card" onclick="showPanel('redact')"><div class="opt-icon">⬛</div><div class="opt-label">Redact Content</div></div>
+    </div>
+    <hr class="divider">
+    <p style="color:var(--text2);font-size:0.85rem;line-height:1.7">Ye panel ek shortcut hub hai. Actual editing tools neeche already available hain aur wahi file processing use karte hain, isliye feature duplicate nahi hoga aur workflow clean rahega.</p>
+  </div>
+</div>
+
 <!-- ═══════════ IMAGE TO PDF ═══════════ -->
 <div class="panel" id="panel-img2pdf">
   <h2 class="panel-title">🖼️ Image to PDF</h2>
@@ -504,6 +535,100 @@
   <div class="result-banner" id="img2pdf-result">
     <div class="res-icon">✅</div><div class="res-text"><h4>PDF Ready!</h4><p id="img2pdf-result-text"></p></div>
     <button class="btn btn-success" id="img2pdf-download">⬇️ Download PDF</button>
+  </div>
+</div>
+
+<!-- IMAGE RESIZER -->
+<div class="panel" id="panel-imgresize">
+  <h2 class="panel-title">🪄 Image Resizer</h2>
+  <p class="panel-desc">Image ko target KB ke aas-paas compress karo. Width limit, format aur quality browser mein hi control hogi.</p>
+  <div class="dropzone">
+    <input type="file" id="imgresize-input" accept="image/*" onchange="handleImageResizeFile(this.files)">
+    <div class="dz-icon">🖼️</div><h3>Image yahan drop karo</h3><p>JPG, PNG, WebP supported</p>
+  </div>
+  <div class="file-list" id="imgresize-list"></div>
+  <div id="imgresize-options" style="display:none;margin-top:1.5rem">
+    <div class="two-col">
+      <div>
+        <div class="form-group"><label class="form-label">Target Size (KB)</label><input type="number" id="imgresize-target" value="200" min="10" max="10000"></div>
+        <div class="form-group"><label class="form-label">Max Width (px)</label><input type="number" id="imgresize-maxw" value="1920" min="100" max="8000"></div>
+        <div class="form-group"><label class="form-label">Format</label>
+          <select id="imgresize-format">
+            <option value="image/jpeg">JPEG (recommended)</option>
+            <option value="image/webp">WebP</option>
+            <option value="image/png">PNG</option>
+          </select>
+        </div>
+      </div>
+      <div>
+        <div class="form-group"><label class="form-label">Quality Bias</label>
+          <select id="imgresize-bias">
+            <option value="balanced">Balanced</option>
+            <option value="quality">Better quality</option>
+            <option value="small">Smaller file</option>
+          </select>
+        </div>
+        <div class="checkbox-row"><input type="checkbox" id="imgresize-keep" checked><label for="imgresize-keep">Aspect ratio preserve karo</label></div>
+        <p style="color:var(--text2);font-size:0.8rem;margin-top:0.75rem">PNG exact KB target ke liye limited hota hai, isliye tight target par JPEG/WebP zyada reliable rahega.</p>
+      </div>
+    </div>
+    <div class="btn-row"><button class="btn btn-primary" onclick="resizeImageToTarget()">🪄 Resize karo</button></div>
+  </div>
+  <div class="result-banner" id="imgresize-result">
+    <div class="res-icon">✅</div><div class="res-text"><h4>Resized Image Ready!</h4><p id="imgresize-result-text"></p></div>
+    <button class="btn btn-success" id="imgresize-download">⬇️ Download Image</button>
+  </div>
+</div>
+
+<div class="panel" id="panel-word2pdf">
+  <h2 class="panel-title">📝 Word to PDF</h2>
+  <p class="panel-desc">DOCX file ka text nikaal ke structured PDF banao. Best support modern `.docx` ke liye hai.</p>
+  <div class="dropzone">
+    <input type="file" id="word2pdf-input" accept=".docx" onchange="convertWordToPDF(this)">
+    <div class="dz-icon">📝</div><h3>DOCX yahan drop karo</h3><p>Word document ko PDF mein convert karo</p>
+  </div>
+  <div class="result-banner" id="word2pdf-result">
+    <div class="res-icon">✅</div><div class="res-text"><h4>PDF Ready!</h4><p id="word2pdf-result-text"></p></div>
+    <button class="btn btn-success" id="word2pdf-download">⬇️ Download PDF</button>
+  </div>
+</div>
+
+<div class="panel" id="panel-ppt2pdf">
+  <h2 class="panel-title">📽️ PowerPoint to PDF</h2>
+  <p class="panel-desc">PPTX slides se text extract karke slide-wise PDF generate karo. Har slide ek page banegi.</p>
+  <div class="dropzone">
+    <input type="file" id="ppt2pdf-input" accept=".pptx" onchange="convertPowerPointToPDF(this)">
+    <div class="dz-icon">📽️</div><h3>PPTX yahan drop karo</h3><p>PowerPoint deck ko readable PDF mein badlo</p>
+  </div>
+  <div class="result-banner" id="ppt2pdf-result">
+    <div class="res-icon">✅</div><div class="res-text"><h4>PDF Ready!</h4><p id="ppt2pdf-result-text"></p></div>
+    <button class="btn btn-success" id="ppt2pdf-download">⬇️ Download PDF</button>
+  </div>
+</div>
+
+<div class="panel" id="panel-excel2pdf">
+  <h2 class="panel-title">📗 Excel to PDF</h2>
+  <p class="panel-desc">XLSX ya CSV sheet ko table-style PDF mein convert karo. Spreadsheet ko pages mein split karke render kiya jayega.</p>
+  <div class="dropzone">
+    <input type="file" id="excel2pdf-input" accept=".xlsx,.csv" onchange="convertExcelToPDF(this)">
+    <div class="dz-icon">📗</div><h3>XLSX / CSV yahan drop karo</h3><p>Sheets ko browser mein parse karke PDF banao</p>
+  </div>
+  <div class="result-banner" id="excel2pdf-result">
+    <div class="res-icon">✅</div><div class="res-text"><h4>PDF Ready!</h4><p id="excel2pdf-result-text"></p></div>
+    <button class="btn btn-success" id="excel2pdf-download">⬇️ Download PDF</button>
+  </div>
+</div>
+
+<div class="panel" id="panel-pdf2excel">
+  <h2 class="panel-title">📊 PDF to Excel</h2>
+  <p class="panel-desc">PDF text ko row-based Excel-compatible `.xls` sheet mein export karo. Har line ek row banegi.</p>
+  <div class="dropzone">
+    <input type="file" id="pdf2excel-input" accept=".pdf" onchange="convertPDFToExcel(this)">
+    <div class="dz-icon">📊</div><h3>PDF yahan drop karo</h3><p>Text rows ko spreadsheet format mein nikalo</p>
+  </div>
+  <div class="result-banner" id="pdf2excel-result">
+    <div class="res-icon">✅</div><div class="res-text"><h4>Excel File Ready!</h4><p id="pdf2excel-result-text"></p></div>
+    <button class="btn btn-success" id="pdf2excel-download">⬇️ Download XLS</button>
   </div>
 </div>
 
@@ -813,6 +938,56 @@
     <div id="ocr-search" style="display:none;margin-top:0.75rem">
       <div class="home-search"><span>🔍</span><input type="text" id="ocr-search-input" placeholder="Text mein search karo..." oninput="highlightSearch(this.value)"></div>
       <p id="ocr-search-result" style="font-size:0.8rem;color:var(--text2)"></p>
+    </div>
+  </div>
+</div>
+
+<div class="panel" id="panel-mathocr">
+  <h2 class="panel-title">∑ Advanced Formula OCR</h2>
+  <p class="panel-desc">Math formulas, dense notes, equations aur heavy scanned text ke liye stronger OCR pass. Output best-effort hota hai, exact LaTeX conversion nahi.</p>
+  <div class="dropzone">
+    <input type="file" id="mathocr-input" accept=".pdf,image/*" onchange="runAdvancedOCR(this)">
+    <div class="dz-icon">∑</div><h3>PDF ya image yahan drop karo</h3><p>Formula sheets, dense notes aur scanned pages supported</p>
+  </div>
+  <div id="mathocr-options" style="display:none;margin-top:1.5rem">
+    <div class="two-col">
+      <div>
+        <div class="form-group"><label class="form-label">Preprocess Mode</label>
+          <select id="mathocr-mode">
+            <option value="auto" selected>Auto (recommended)</option>
+            <option value="enhance">Enhance contrast</option>
+            <option value="threshold">Black & white</option>
+            <option value="invert">Invert light text</option>
+            <option value="gray">Grayscale</option>
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">Scale</label>
+          <select id="mathocr-scale">
+            <option value="1.5">1.5x</option>
+            <option value="2" selected>2x</option>
+            <option value="3">3x</option>
+          </select>
+        </div>
+      </div>
+      <div>
+        <div class="checkbox-row"><input type="checkbox" id="mathocr-keep-lines" checked><label for="mathocr-keep-lines">Line breaks preserve karo</label></div>
+        <div class="checkbox-row"><input type="checkbox" id="mathocr-join-pages"><label for="mathocr-join-pages">Pages ko continuous text banao</label></div>
+        <p style="color:var(--text2);font-size:0.8rem;margin-top:0.75rem">Tip: Printed equations ke liye `Threshold` ya `Enhance`; dark background scans ke liye `Invert` try karo.</p>
+      </div>
+    </div>
+    <div class="btn-row"><button class="btn btn-primary" onclick="runAdvancedOCR()">∑ Extract karo</button></div>
+  </div>
+  <div id="mathocr-progress" style="display:none;margin-top:1.5rem">
+    <p style="color:var(--text2);font-size:0.88rem;margin-bottom:0.5rem">Advanced OCR chal raha hai... <span id="mathocr-page-count"></span></p>
+    <div class="progress-bar"><div class="progress-fill" id="mathocr-fill" style="width:0%"></div></div>
+  </div>
+  <div id="mathocr-output" style="display:none;margin-top:1.5rem">
+    <div class="stats-row" id="mathocr-stats"></div>
+    <div class="form-group"><label class="form-label">Extracted Formula / Text</label><textarea id="mathocr-text" style="min-height:340px"></textarea></div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="navigator.clipboard.writeText(document.getElementById('mathocr-text').value).then(()=>toast('Copied!','📋'))">📋 Copy</button>
+      <button class="btn btn-success" onclick="downloadAdvancedOCR()">⬇️ Download .txt</button>
+      <button class="btn btn-secondary" onclick="cleanAdvancedOCR()">🧹 Clean Spacing</button>
     </div>
   </div>
 </div>

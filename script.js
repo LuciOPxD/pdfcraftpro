@@ -9,6 +9,8 @@ const state = {
   compressFile:null, compressLevel:'medium',
   rotateFile:null, rotateAngle:90,
   img2pdfFiles:[],
+  imgResizeFile:null, imgResizeBlob:null, imgResizeMeta:null,
+  mathOCRFile:null,
   pdf2imgFile:null, pdf2imgCanvases:[],
   pdf2txtFile:null,
   wmFile:null,
@@ -29,6 +31,11 @@ const state = {
   compareData:[null,null],
   htmlContent:'',
   resultBlobs:{}
+};
+
+const TOOL_CONFIG = {
+  watermark: { optionsId: 'wm-options' },
+  annotate: { optionsId: 'ann-options' }
 };
 
 // ══════════════════════════════════════════════════════
@@ -95,6 +102,20 @@ function parseRangeToIndices(str,total){
 }
 
 function hexToRgb(hex){const r=parseInt(hex.slice(1,3),16)/255,g=parseInt(hex.slice(3,5),16)/255,b=parseInt(hex.slice(5,7),16)/255;return{r,g,b};}
+function clamp(val,min,max){return Math.min(Math.max(val,min),max);}
+function blobToDataURL(blob){return new Promise((res,rej)=>{const r=new FileReader();r.onload=e=>res(e.target.result);r.onerror=rej;r.readAsDataURL(blob);});}
+function wrapTextLines(text,maxChars){
+  const words=text.replace(/\r/g,'').split(/\s+/).filter(Boolean);
+  if(words.length===0) return [''];
+  const lines=[]; let cur='';
+  for(const word of words){
+    const next=cur?`${cur} ${word}`:word;
+    if(next.length<=maxChars||!cur) cur=next;
+    else{lines.push(cur);cur=word;}
+  }
+  if(cur) lines.push(cur);
+  return lines;
+}
 
 // ══════════════════════════════════════════════════════
 // DRAG & DROP INIT
@@ -126,7 +147,7 @@ document.addEventListener('DOMContentLoaded',()=>{
 async function handleSingleFile(input, tool) {
   const file=input.files[0]; if(!file) return;
   state[tool+'File']=file;
-  const opts=document.getElementById(tool+'-options');
+  const opts=document.getElementById(TOOL_CONFIG[tool]?.optionsId || tool+'-options');
   if(opts) opts.style.display='block';
   // show result banners hide
   const results=document.querySelectorAll('#panel-'+tool+' .result-banner');
@@ -143,6 +164,13 @@ async function handleSingleFile(input, tool) {
       if(tool==='delpages'){state.delSelected=[];renderPageGrid('delpages-page-grid',count,toggleDelPage);}
       if(tool==='extract'){state.extractSelected=[];renderPageGrid('extract-page-grid',count,toggleExtractPage);}
       if(tool==='pdf2img')state.pdf2imgTotal=count;
+      if(tool==='annotate'||tool==='sign'){
+        const pageField=document.getElementById(tool==='annotate'?'ann-page':'sign-page');
+        if(pageField){
+          pageField.max=count;
+          pageField.value=Math.min(parseInt(pageField.value)||1,count);
+        }
+      }
       toast(`Loaded: ${count} pages`,`📄`);
     }catch(e){toast('PDF load error: '+e.message,'❌');}
   }
@@ -722,6 +750,446 @@ async function runOCR(inputOrFile){
     toast('Error: '+e.message,'❌');
   }
 }
+
+async function runAdvancedOCR(inputOrFile){
+  const file=inputOrFile?.files ? inputOrFile.files[0] : (inputOrFile || state.mathOCRFile);
+  if(!file){toast('Pehle PDF ya image upload karo!','⚠️');return;}
+  state.mathOCRFile=file;
+  document.getElementById('mathocr-options').style.display='block';
+  const progress=document.getElementById('mathocr-progress');
+  const output=document.getElementById('mathocr-output');
+  const fill=document.getElementById('mathocr-fill');
+  const pageCount=document.getElementById('mathocr-page-count');
+  progress.style.display='block';
+  output.style.display='none';
+  fill.style.width='0%';
+  if(pageCount) pageCount.textContent='';
+  const mode=document.getElementById('mathocr-mode').value;
+  const scale=document.getElementById('mathocr-scale').value;
+  const keepLines=document.getElementById('mathocr-keep-lines').checked;
+  const joinPages=document.getElementById('mathocr-join-pages').checked;
+  try{
+    const isPdf=file.type==='application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+    let pagesText=[];
+    let total=1;
+    if(isPdf){
+      const ab=await readAB(file);
+      const pdf=await pdfjsLib.getDocument({data:ab}).promise;
+      total=pdf.numPages;
+      for(let i=1;i<=total;i++){
+        if(pageCount) pageCount.textContent=`(${i}/${total})`;
+        const page=await pdf.getPage(i);
+        const content=await page.getTextContent();
+        const directText=content.items.map(item=>item.str).join(' ').replace(/\s+/g,' ').trim();
+        if(directText.length>24){
+          fill.style.width=`${Math.max(5,Math.round((i/total)*100))}%`;
+          let text=keepLines?directText.replace(/(.{120,}?)\s+/g,'$1\n'):directText;
+          pagesText.push(text.trim());
+          continue;
+        }
+        const vp=page.getViewport({scale:parseFloat(scale)||2});
+        const canvas=document.createElement('canvas');
+        canvas.width=vp.width;
+        canvas.height=vp.height;
+        await page.render({canvasContext:canvas.getContext('2d'),viewport:vp}).promise;
+        const processed=await preprocessImageForOCR(canvas,{mode,scale:1});
+        const result=await recognizeCanvasText(processed,fill,((i-1)/total)*100,100/total);
+        let text=result?.data?.text || '';
+        if(!keepLines) text=text.replace(/\s*\n\s*/g,' ');
+        pagesText.push(text.trim());
+      }
+    } else {
+      if(pageCount) pageCount.textContent='(image)';
+      const processed=await preprocessImageForOCR(file,{mode,scale});
+      const result=await recognizeCanvasText(processed,fill,0,100);
+      let text=result?.data?.text || '';
+      if(!keepLines) text=text.replace(/\s*\n\s*/g,' ');
+      pagesText=[text.trim()];
+      total=1;
+      fill.style.width='100%';
+    }
+    const finalText=joinPages ? pagesText.join('\n') : pagesText.map((txt,idx)=>`===== Page ${idx+1} =====\n${txt}`).join('\n\n');
+    const formulaish=(finalText.match(/[=+\-/*^(){}\[\]∑√π∞≤≥≈]/g)||[]).length;
+    const chars=finalText.replace(/\s/g,'').length;
+    document.getElementById('mathocr-stats').innerHTML=`
+      <div class="stat-card"><div class="st-val">${total}</div><div class="st-label">${isPdf?'Pages':'Image'}</div></div>
+      <div class="stat-card"><div class="st-val">${chars.toLocaleString()}</div><div class="st-label">Chars</div></div>
+      <div class="stat-card"><div class="st-val">${formulaish}</div><div class="st-label">Formula Symbols</div></div>`;
+    document.getElementById('mathocr-text').value=finalText.trim();
+    output.style.display='block';
+    progress.style.display='none';
+    toast('Advanced OCR complete!','✅');
+  }catch(e){
+    progress.style.display='none';
+    toast('Error: '+e.message,'❌');
+  }
+}
+
+async function loadImageFromFile(file){
+  const dataURL=await readURL(file);
+  return new Promise((res,rej)=>{
+    const img=new Image();
+    img.onload=()=>res(img);
+    img.onerror=()=>rej(new Error('Image load nahi ho payi'));
+    img.src=dataURL;
+  });
+}
+
+async function preprocessImageForOCR(source, options={}){
+  let mode=options.mode || 'enhance';
+  const scale=parseFloat(options.scale)||2;
+  const img=(source instanceof HTMLImageElement || source instanceof HTMLCanvasElement) ? source : await loadImageFromFile(source);
+  const canvas=document.createElement('canvas');
+  canvas.width=Math.max(1,Math.round(img.width*scale));
+  canvas.height=Math.max(1,Math.round(img.height*scale));
+  const ctx=canvas.getContext('2d');
+  ctx.drawImage(img,0,0,canvas.width,canvas.height);
+  const imageData=ctx.getImageData(0,0,canvas.width,canvas.height);
+  const data=imageData.data;
+  if(mode==='auto'){
+    let totalLuma=0;
+    for(let i=0;i<data.length;i+=16){
+      totalLuma += data[i]*0.299 + data[i+1]*0.587 + data[i+2]*0.114;
+    }
+    const avgLuma=totalLuma/(data.length/16);
+    mode = avgLuma < 110 ? 'invert' : avgLuma > 210 ? 'threshold' : 'enhance';
+  }
+  for(let i=0;i<data.length;i+=4){
+    const gray=Math.round(data[i]*0.299 + data[i+1]*0.587 + data[i+2]*0.114);
+    let val=gray;
+    if(mode==='enhance') val=clamp((gray-128)*1.45+128,0,255);
+    else if(mode==='threshold') val=gray>170?255:0;
+    else if(mode==='invert') val=255-gray;
+    data[i]=data[i+1]=data[i+2]=val;
+  }
+  ctx.putImageData(imageData,0,0);
+  return canvas;
+}
+
+async function recognizeCanvasText(canvas, fillEl, progressBase=0, progressSpan=100){
+  return Tesseract.recognize(canvas,'eng',{
+    tessedit_pageseg_mode: '6',
+    preserve_interword_spaces: '1',
+    logger: info=>{
+      if(info?.status === 'recognizing text' && typeof info.progress === 'number' && fillEl){
+        const pct=progressBase + info.progress*progressSpan;
+        fillEl.style.width=`${Math.max(3,Math.round(pct))}%`;
+      }
+    }
+  });
+}
+
+function handleImageResizeFile(files){
+  const file=files?.[0];
+  if(!file) return;
+  if(!file.type.startsWith('image/')){toast('Image file choose karo!','⚠️');return;}
+  state.imgResizeFile=file;
+  state.imgResizeBlob=null;
+  state.imgResizeMeta=null;
+  document.getElementById('imgresize-options').style.display='block';
+  document.getElementById('imgresize-result').classList.remove('show');
+  document.getElementById('imgresize-list').innerHTML=`<div class="file-item"><div class="file-icon">🖼️</div><div class="file-info"><div class="file-name">${file.name}</div><div class="file-size">${fmtSize(file.size)}</div></div></div>`;
+}
+
+async function canvasToBlob(canvas,type,quality){
+  return new Promise((res,rej)=>{
+    canvas.toBlob(blob=>blob?res(blob):rej(new Error('Image export fail ho gaya')),type,quality);
+  });
+}
+
+async function renderResizedBlob(img,width,height,type,bias,targetBytes=0){
+  const canvas=document.createElement('canvas');
+  canvas.width=Math.max(1,Math.round(width));
+  canvas.height=Math.max(1,Math.round(height));
+  const ctx=canvas.getContext('2d');
+  ctx.imageSmoothingEnabled=true;
+  ctx.imageSmoothingQuality='high';
+  ctx.drawImage(img,0,0,canvas.width,canvas.height);
+  if(type==='image/png') return canvasToBlob(canvas,type);
+  const presets={quality:[0.95,0.78,0.55],balanced:[0.9,0.68,0.42],small:[0.82,0.52,0.3]};
+  let [highDefault,midDefault,lowDefault]=presets[bias] || presets.balanced;
+  let low=clamp(lowDefault,0.1,0.98), high=clamp(highDefault,0.1,0.99);
+  let best=await canvasToBlob(canvas,type,clamp(midDefault,low,high));
+  let bestDiff=targetBytes?Math.abs(best.size-targetBytes):Number.MAX_SAFE_INTEGER;
+  for(let i=0;i<8;i++){
+    const q=(low+high)/2;
+    const blob=await canvasToBlob(canvas,type,q);
+    const diff=targetBytes?Math.abs(blob.size-targetBytes):Math.abs(blob.size-best.size);
+    if(diff<bestDiff || (targetBytes && blob.size<=targetBytes && best.size>targetBytes)){
+      best=blob;
+      bestDiff=diff;
+    }
+    if(!targetBytes){
+      best=blob;
+      continue;
+    }
+    if(blob.size>targetBytes) high=q;
+    else low=q;
+  }
+  return best;
+}
+
+function mimeToExt(type){
+  if(type==='image/png') return 'png';
+  if(type==='image/webp') return 'webp';
+  return 'jpg';
+}
+
+function decodeXmlEntities(str=''){
+  return str
+    .replace(/&amp;/g,'&')
+    .replace(/&lt;/g,'<')
+    .replace(/&gt;/g,'>')
+    .replace(/&quot;/g,'"')
+    .replace(/&apos;/g,"'");
+}
+
+function stripXmlTags(xml=''){
+  return decodeXmlEntities(xml.replace(/<[^>]+>/g,' ')).replace(/\s+/g,' ').trim();
+}
+
+async function readZipEntries(file){
+  const ab=await readAB(file);
+  return JSZip.loadAsync(ab);
+}
+
+function escapeHtml(str=''){
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+async function buildPdfFromSections(title, sections, filenameBase, resultId){
+  const sizes={A4:[595,842],Letter:[612,792]};
+  const [pw,ph]=sizes.A4;
+  const margin=42;
+  const bodySize=11;
+  const headingSize=16;
+  const lineHeight=16;
+  const pdf=await PDFLib.PDFDocument.create();
+  const font=await pdf.embedFont(PDFLib.StandardFonts.Helvetica);
+  const bold=await pdf.embedFont(PDFLib.StandardFonts.HelveticaBold);
+  pdf.setTitle(title);
+  let page=pdf.addPage([pw,ph]);
+  let y=ph-margin;
+  const usableW=pw-margin*2;
+  const pushLine=(text,size=bodySize,useBold=false)=>{
+    const activeFont=useBold?bold:font;
+    const words=(text || '').split(/\s+/).filter(Boolean);
+    if(words.length===0){
+      y-=lineHeight;
+      return;
+    }
+    let cur='';
+    for(const word of words){
+      const test=cur?`${cur} ${word}`:word;
+      if(activeFont.widthOfTextAtSize(test,size)>usableW && cur){
+        if(y<margin+size+10){page=pdf.addPage([pw,ph]);y=ph-margin;}
+        page.drawText(cur,{x:margin,y,size,font:activeFont,color:PDFLib.rgb(0.1,0.1,0.12)});
+        y-=lineHeight;
+        cur=word;
+      } else cur=test;
+    }
+    if(cur){
+      if(y<margin+size+10){page=pdf.addPage([pw,ph]);y=ph-margin;}
+      page.drawText(cur,{x:margin,y,size,font:activeFont,color:PDFLib.rgb(0.1,0.1,0.12)});
+      y-=lineHeight;
+    }
+  };
+  pushLine(title,18,true);
+  y-=4;
+  sections.forEach(section=>{
+    if(y<margin+40){page=pdf.addPage([pw,ph]);y=ph-margin;}
+    pushLine(section.title || 'Section', headingSize, true);
+    (section.lines?.length ? section.lines : ['(No readable text found)']).forEach(line=>pushLine(line,bodySize,false));
+    y-=8;
+  });
+  const bytes=await pdf.save();
+  const blob=new Blob([bytes],{type:'application/pdf'});
+  document.getElementById(`${resultId}-download`).onclick=()=>dlBlob(blob,`${filenameBase}.pdf`);
+  showResult(resultId,`${sections.length} section(s) • ${pdf.getPageCount()} page(s) • ${fmtSize(blob.size)}`);
+  return blob;
+}
+
+async function extractDocxText(file){
+  const zip=await readZipEntries(file);
+  const docXml=await zip.file('word/document.xml')?.async('string');
+  if(!docXml) throw new Error('DOCX document.xml nahi mila');
+  return docXml
+    .split(/<\/w:p>/)
+    .map(p=>stripXmlTags(p.replace(/<w:tab\/>/g,'    ').replace(/<w:br\/>/g,'\n')))
+    .filter(Boolean);
+}
+
+async function extractPptxSlides(file){
+  const zip=await readZipEntries(file);
+  const slideFiles=Object.keys(zip.files).filter(name=>/^ppt\/slides\/slide\d+\.xml$/.test(name)).sort((a,b)=>a.localeCompare(b,undefined,{numeric:true}));
+  if(!slideFiles.length) throw new Error('PPTX slides nahi mile');
+  const slides=[];
+  for(let i=0;i<slideFiles.length;i++){
+    const xml=await zip.file(slideFiles[i]).async('string');
+    const lines=xml.split(/<\/a:p>/).map(part=>stripXmlTags(part)).filter(Boolean);
+    slides.push({title:`Slide ${i+1}`,lines});
+  }
+  return slides;
+}
+
+async function extractXlsxSheets(file){
+  if(file.name.toLowerCase().endsWith('.csv')){
+    const text=await file.text();
+    const rows=text.split(/\r?\n/).filter(Boolean).map(line=>line.split(',').map(cell=>cell.trim()));
+    return [{name:'Sheet1',rows}];
+  }
+  const zip=await readZipEntries(file);
+  const sharedXml=await zip.file('xl/sharedStrings.xml')?.async('string');
+  const sharedStrings=sharedXml ? [...sharedXml.matchAll(/<t[^>]*>([\s\S]*?)<\/t>/g)].map(m=>decodeXmlEntities(m[1])) : [];
+  const workbookXml=await zip.file('xl/workbook.xml')?.async('string');
+  const relsXml=await zip.file('xl/_rels/workbook.xml.rels')?.async('string');
+  if(!workbookXml || !relsXml) throw new Error('XLSX workbook data nahi mila');
+  const relMap={};
+  [...relsXml.matchAll(/<Relationship[^>]+Id="([^"]+)"[^>]+Target="([^"]+)"/g)].forEach(m=>{relMap[m[1]]=m[2];});
+  const sheets=[...workbookXml.matchAll(/<sheet[^>]+name="([^"]+)"[^>]+r:id="([^"]+)"/g)].map(m=>({name:m[1],target:relMap[m[2]]}));
+  const out=[];
+  for(const sheet of sheets){
+    const path=`xl/${sheet.target.replace(/^\.\//,'')}`;
+    const xml=await zip.file(path)?.async('string');
+    if(!xml) continue;
+    const rows=[];
+    const rowMatches=[...xml.matchAll(/<row[^>]*>([\s\S]*?)<\/row>/g)];
+    rowMatches.forEach(rowMatch=>{
+      const rowCells=[];
+      [...rowMatch[1].matchAll(/<c[^>]*?(?:t="([^"]+)")?[^>]*>([\s\S]*?)<\/c>/g)].forEach(cellMatch=>{
+        const type=cellMatch[1] || '';
+        const cellXml=cellMatch[2];
+        let value='';
+        if(type==='s'){
+          const idx=parseInt((cellXml.match(/<v>(.*?)<\/v>/)?.[1] || '0'),10);
+          value=sharedStrings[idx] || '';
+        } else if(type==='inlineStr'){
+          value=decodeXmlEntities((cellXml.match(/<t[^>]*>([\s\S]*?)<\/t>/)?.[1] || ''));
+        } else {
+          value=decodeXmlEntities((cellXml.match(/<v>([\s\S]*?)<\/v>/)?.[1] || ''));
+        }
+        rowCells.push(value);
+      });
+      if(rowCells.length) rows.push(rowCells);
+    });
+    out.push({name:sheet.name,rows});
+  }
+  if(!out.length) throw new Error('Readable sheets nahi mili');
+  return out;
+}
+
+function buildExcelHtmlWorkbook(sheets){
+  const tabs=sheets.map(sheet=>{
+    const rows=sheet.rows.map(row=>`<tr>${row.map(cell=>`<td>${escapeHtml(cell ?? '')}</td>`).join('')}</tr>`).join('');
+    return `<table><thead><tr><th colspan="${Math.max(sheet.rows[0]?.length || 1,1)}">${escapeHtml(sheet.name)}</th></tr></thead><tbody>${rows}</tbody></table><br/>`;
+  }).join('');
+  return `<!doctype html><html><head><meta charset="utf-8"><style>table{border-collapse:collapse;margin-bottom:18px;font-family:Arial,sans-serif}td,th{border:1px solid #999;padding:6px 8px;font-size:12px;text-align:left}th{background:#efefef}</style></head><body>${tabs}</body></html>`;
+}
+
+async function resizeImageToTarget(){
+  if(!state.imgResizeFile){toast('Pehle image upload karo!','⚠️');return;}
+  const targetKB=Math.max(parseInt(document.getElementById('imgresize-target').value)||200,10);
+  const maxWidth=Math.max(parseInt(document.getElementById('imgresize-maxw').value)||1920,100);
+  const type=document.getElementById('imgresize-format').value;
+  const bias=document.getElementById('imgresize-bias').value;
+  const keepAspect=document.getElementById('imgresize-keep').checked;
+  try{
+    const img=await loadImageFromFile(state.imgResizeFile);
+    const targetBytes=targetKB*1024;
+    let width=Math.min(img.width,maxWidth);
+    let height=keepAspect?Math.round(img.height*(width/img.width)):img.height;
+    if(!keepAspect && img.width>maxWidth) width=maxWidth;
+    let bestBlob=null;
+    let bestWidth=width;
+    let bestHeight=height;
+    for(let step=0;step<7;step++){
+      const blob=await renderResizedBlob(img,width,height,type,bias,targetBytes);
+      if(!bestBlob || Math.abs(blob.size-targetBytes)<Math.abs(bestBlob.size-targetBytes) || (blob.size<=targetBytes && bestBlob.size>targetBytes)){
+        bestBlob=blob;
+        bestWidth=width;
+        bestHeight=height;
+      }
+      if(blob.size<=targetBytes*1.05) break;
+      width=Math.max(80,Math.round(width*0.88));
+      height=Math.max(80,keepAspect?Math.round(img.height*(width/img.width)):Math.round(height*0.88));
+    }
+    state.imgResizeBlob=bestBlob;
+    state.imgResizeMeta={width:bestWidth,height:bestHeight,type};
+    const ext=mimeToExt(type);
+    const baseName=state.imgResizeFile.name.replace(/\.[^.]+$/,'');
+    document.getElementById('imgresize-download').onclick=()=>dlBlob(bestBlob,`${baseName}_resized.${ext}`);
+    showResult('imgresize',`${fmtSize(state.imgResizeFile.size)} → ${fmtSize(bestBlob.size)} • ${bestWidth}×${bestHeight}px`);
+    toast(`Image ready (${fmtSize(bestBlob.size)})`,'✅');
+  }catch(e){toast('Error: '+e.message,'❌');}
+}
+
+async function convertWordToPDF(input){
+  const file=input.files?.[0];
+  if(!file) return;
+  try{
+    const lines=await extractDocxText(file);
+    await buildPdfFromSections(file.name,[{title:'Document Content',lines}],file.name.replace(/\.[^.]+$/,''),'word2pdf');
+    toast('Word document converted!','✅');
+  }catch(e){toast('Error: '+e.message,'❌');}
+}
+
+async function convertPowerPointToPDF(input){
+  const file=input.files?.[0];
+  if(!file) return;
+  try{
+    const slides=await extractPptxSlides(file);
+    await buildPdfFromSections(file.name,slides,file.name.replace(/\.[^.]+$/,''),'ppt2pdf');
+    toast('PowerPoint converted!','✅');
+  }catch(e){toast('Error: '+e.message,'❌');}
+}
+
+async function convertExcelToPDF(input){
+  const file=input.files?.[0];
+  if(!file) return;
+  try{
+    const sheets=await extractXlsxSheets(file);
+    const sections=sheets.map(sheet=>({
+      title:sheet.name,
+      lines:(sheet.rows.length?sheet.rows:[['(No rows found)']]).map((row,idx)=>`${idx+1}. ${row.join(' | ')}`)
+    }));
+    await buildPdfFromSections(file.name,sections,file.name.replace(/\.[^.]+$/,''),'excel2pdf');
+    toast('Excel file converted!','✅');
+  }catch(e){toast('Error: '+e.message,'❌');}
+}
+
+async function convertPDFToExcel(input){
+  const file=input.files?.[0];
+  if(!file) return;
+  try{
+    const ab=await readAB(file);
+    const pdf=await pdfjsLib.getDocument({data:ab}).promise;
+    const rows=[];
+    for(let i=1;i<=pdf.numPages;i++){
+      const page=await pdf.getPage(i);
+      const content=await page.getTextContent();
+      const pageText=content.items.map(item=>item.str).join(' ');
+      pageText.split(/(?<=[.!?])\s+|\n+/).map(line=>line.trim()).filter(Boolean).forEach((line,idx)=>rows.push([String(i),String(idx+1),line]));
+    }
+    if(!rows.length) rows.push(['1','1','No readable text found']);
+    const html=buildExcelHtmlWorkbook([{name:'PDF Extract',rows:[['Page','Line','Content'],...rows]}]);
+    const blob=new Blob([html],{type:'application/vnd.ms-excel'});
+    document.getElementById('pdf2excel-download').onclick=()=>dlBlob(blob,`${file.name.replace(/\.[^.]+$/,'')}.xls`);
+    showResult('pdf2excel',`${rows.length} row(s) exported from ${pdf.numPages} page(s)`);
+    toast('Excel sheet ready!','✅');
+  }catch(e){toast('Error: '+e.message,'❌');}
+}
+function downloadAdvancedOCR(){dlBlob(new Blob([document.getElementById('mathocr-text').value],{type:'text/plain'}),'advanced_formula_ocr.txt');}
+function cleanAdvancedOCR(){
+  const area=document.getElementById('mathocr-text');
+  area.value=area.value
+    .replace(/[ \t]+\n/g,'\n')
+    .replace(/\n{3,}/g,'\n\n')
+    .replace(/[ ]{2,}/g,' ')
+    .replace(/([=+\-/*^(){}\[\]])\s+/g,'$1')
+    .replace(/\s+([=+\-/*^(){}\[\]])/g,'$1')
+    .trim();
+  toast('Spacing cleaned!','✅');
+}
 function downloadOCR(){dlBlob(new Blob([document.getElementById('ocr-text').value],{type:'text/plain'}),'ocr_text.txt');}
 function searchInText(){const s=document.getElementById('ocr-search');s.style.display=s.style.display==='none'?'block':'none';}
 function highlightSearch(q){
@@ -940,34 +1408,52 @@ async function annotatePDF(){
     const pdf=await PDFLib.PDFDocument.load(ab,{ignoreEncryption:true});
     const font=await pdf.embedFont(PDFLib.StandardFonts.Helvetica);
     const pages=pdf.getPages();
-    const pageNum=Math.min(Math.max(parseInt(document.getElementById('ann-page').value)||1,1),pages.length);
+    const pageNum=clamp(parseInt(document.getElementById('ann-page').value)||1,1,pages.length);
     const page=pages[pageNum-1];
     const {width,height}=page.getSize();
-    const text=document.getElementById('ann-text').value||'Annotation';
+    const text=(document.getElementById('ann-text').value||'Annotation').trim() || 'Annotation';
     const colorHex=document.getElementById('ann-color').value;
     const {r,g,b}=hexToRgb(colorHex);
-    const yPercent=parseFloat(document.getElementById('ann-y-pos').value)/100;
+    const yPercent=clamp(parseFloat(document.getElementById('ann-y-pos').value)||50,0,100)/100;
     const yPos=height*(1-yPercent);
     const type=state.annType;
+    const lines=wrapTextLines(text,44);
     if(type==='textbox'||type==='comment'){
-      const bw=Math.min(font.widthOfTextAtSize(text,11)+20,width-60);
-      page.drawRectangle({x:30,y:yPos-15,width:bw,height:30,color:PDFLib.rgb(r,g,b),opacity:0.25,borderColor:PDFLib.rgb(r,g,b),borderWidth:1});
-      page.drawText(text,{x:38,y:yPos-2,size:11,font,color:PDFLib.rgb(0.1,0.1,0.1)});
+      const fontSize=11;
+      const padding=8;
+      const lineHeight=fontSize+3;
+      const boxWidth=Math.min(Math.max(...lines.map(line=>font.widthOfTextAtSize(line,fontSize)),80)+padding*2,width-60);
+      const boxHeight=Math.max(32,lines.length*lineHeight+padding*2-3);
+      const boxY=clamp(yPos-boxHeight/2,12,height-boxHeight-12);
+      page.drawRectangle({x:30,y:boxY,width:boxWidth,height:boxHeight,color:PDFLib.rgb(r,g,b),opacity:type==='comment'?0.2:0.25,borderColor:PDFLib.rgb(r,g,b),borderWidth:1});
+      lines.forEach((line,idx)=>{
+        const textY=boxY+boxHeight-padding-fontSize-(idx*lineHeight)+fontSize;
+        page.drawText(line,{x:38,y:clamp(textY,18,height-18),size:fontSize,font,color:PDFLib.rgb(0.1,0.1,0.1)});
+      });
     } else if(type==='highlight'){
-      page.drawRectangle({x:30,y:yPos-5,width:width-60,height:20,color:PDFLib.rgb(r,g,b),opacity:0.45});
+      const bandHeight=Math.max(20,lines.length*14);
+      const bandY=clamp(yPos-bandHeight/2,12,height-bandHeight-12);
+      page.drawRectangle({x:30,y:bandY,width:width-60,height:bandHeight,color:PDFLib.rgb(r,g,b),opacity:0.45});
+      lines.slice(0,3).forEach((line,idx)=>{
+        page.drawText(line,{x:38,y:clamp(bandY+bandHeight-14-(idx*14),18,height-18),size:11,font,color:PDFLib.rgb(0.1,0.1,0.1)});
+      });
     } else if(type==='underline'){
-      const tw=font.widthOfTextAtSize(text,12);
-      page.drawText(text,{x:30,y:yPos,size:12,font,color:PDFLib.rgb(0.1,0.1,0.1)});
-      page.drawLine({start:{x:30,y:yPos-2},end:{x:30+tw,y:yPos-2},thickness:1.5,color:PDFLib.rgb(r,g,b)});
+      const line=lines[0];
+      const tw=font.widthOfTextAtSize(line,12);
+      const textY=clamp(yPos,18,height-18);
+      page.drawText(line,{x:30,y:textY,size:12,font,color:PDFLib.rgb(0.1,0.1,0.1)});
+      page.drawLine({start:{x:30,y:textY-2},end:{x:30+tw,y:textY-2},thickness:1.5,color:PDFLib.rgb(r,g,b)});
     } else if(type==='strike'){
-      const tw=font.widthOfTextAtSize(text,12);
-      page.drawText(text,{x:30,y:yPos,size:12,font,color:PDFLib.rgb(0.1,0.1,0.1)});
-      page.drawLine({start:{x:30,y:yPos+6},end:{x:30+tw,y:yPos+6},thickness:1.5,color:PDFLib.rgb(r,g,b)});
+      const line=lines[0];
+      const tw=font.widthOfTextAtSize(line,12);
+      const textY=clamp(yPos,18,height-18);
+      page.drawText(line,{x:30,y:textY,size:12,font,color:PDFLib.rgb(0.1,0.1,0.1)});
+      page.drawLine({start:{x:30,y:textY+6},end:{x:30+tw,y:textY+6},thickness:1.5,color:PDFLib.rgb(r,g,b)});
     }
     const bytes=await pdf.save();
     const blob=new Blob([bytes],{type:'application/pdf'});
     document.getElementById('annotate-download').onclick=()=>dlBlob(blob,'annotated.pdf');
-    showResult('annotate');
+    showResult('annotate',`${type} annotation added on page ${pageNum}`);
     toast('Annotation added!','✅');
   }catch(e){toast('Error: '+e.message,'❌');}
 }
