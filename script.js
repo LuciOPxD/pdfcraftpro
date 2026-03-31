@@ -17,6 +17,10 @@ const state = {
   wmPreviewDoc:null, wmCustomPos:{x:0.5,y:0.5},
   wmPreviewPage:null, wmPreviewPageNum:1, wmPreviewTotal:0, wmDragging:false, wmDragFrame:0,
   pnFile:null,
+  stampFile:null,
+  hfFile:null,
+  duplicateFile:null,
+  metaeditFile:null,
   protectFile:null,
   unlockFile:null,
   signFile:null, signType:'draw', signDrawing:false, signLastX:0, signLastY:0,
@@ -106,6 +110,7 @@ function parseRangeToIndices(str,total){
 function hexToRgb(hex){const r=parseInt(hex.slice(1,3),16)/255,g=parseInt(hex.slice(3,5),16)/255,b=parseInt(hex.slice(5,7),16)/255;return{r,g,b};}
 function clamp(val,min,max){return Math.min(Math.max(val,min),max);}
 function blobToDataURL(blob){return new Promise((res,rej)=>{const r=new FileReader();r.onload=e=>res(e.target.result);r.onerror=rej;r.readAsDataURL(blob);});}
+function escapeHtml(str=''){return String(str).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));}
 function wrapTextLines(text,maxChars){
   const words=text.replace(/\r/g,'').split(/\s+/).filter(Boolean);
   if(words.length===0) return [''];
@@ -121,6 +126,23 @@ function wrapTextLines(text,maxChars){
 
 function escapeRegExp(str=''){
   return str.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+}
+function getPageAnchor(width,height,pos,textWidth,fontSize=12,margin=20){
+  let x=width/2-textWidth/2;
+  let y=margin;
+  if(pos.includes('top')) y=height-fontSize-margin;
+  if(pos.includes('right')) x=width-textWidth-margin;
+  else if(pos.includes('left')) x=margin;
+  return {x,y};
+}
+function getStandardFontKey(name='Helvetica'){
+  const map={
+    Helvetica: PDFLib.StandardFonts.Helvetica,
+    'Helvetica-Bold': PDFLib.StandardFonts.HelveticaBold,
+    TimesRoman: PDFLib.StandardFonts.TimesRoman,
+    CourierBold: PDFLib.StandardFonts.CourierBold
+  };
+  return map[name] || PDFLib.StandardFonts.Helvetica;
 }
 
 function getPreviewRenderScale(baseScale=1, mode='default'){
@@ -234,7 +256,7 @@ async function handleSingleFile(input, tool) {
   const results=document.querySelectorAll('#panel-'+tool+' .result-banner');
   results.forEach(r=>r.classList.remove('show'));
 
-  const needsCount=['split','rotate','watermark','pn','protect','unlock','sign','redact','annotate','reorder','pdf2img','delpages','extract','crop'];
+  const needsCount=['split','rotate','watermark','pn','stamp','hf','duplicate','protect','unlock','sign','redact','annotate','reorder','pdf2img','delpages','extract','crop'];
   if(needsCount.includes(tool)){
     try{
       const ab=await readAB(file);
@@ -247,6 +269,25 @@ async function handleSingleFile(input, tool) {
       if(tool==='pdf2img')state.pdf2imgTotal=count;
       if(tool==='watermark'){
         await initWatermarkPreview(file);
+      }
+      if(tool==='duplicate'){
+        const pageField=document.getElementById('duplicate-page');
+        if(pageField){
+          pageField.max=count;
+          pageField.value=Math.min(parseInt(pageField.value)||1,count);
+        }
+        const insertField=document.getElementById('duplicate-after');
+        if(insertField){
+          insertField.max=count;
+          insertField.value=Math.min(parseInt(insertField.value)||count,count);
+        }
+      }
+      if(tool==='stamp'||tool==='hf'){
+        const pageField=document.getElementById(tool==='stamp'?'stamp-page':'hf-start-page');
+        if(pageField){
+          pageField.max=count;
+          pageField.value=Math.min(parseInt(pageField.value)||1,count);
+        }
       }
       if(tool==='annotate'||tool==='sign'){
         const pageField=document.getElementById(tool==='annotate'?'ann-page':'sign-page');
@@ -263,6 +304,9 @@ async function handleSingleFile(input, tool) {
       <div class="stat-card"><div class="st-val">${fmtSize(file.size)}</div><div class="st-label">Original Size</div></div>
       <div class="stat-card"><div class="st-val">—</div><div class="st-label">After Compression</div></div>
       <div class="stat-card"><div class="st-val">—</div><div class="st-label">Space Saved</div></div>`;
+  }
+  if(tool==='metaedit'){
+    await loadMetadataEditor(file);
   }
 }
 
@@ -738,6 +782,142 @@ async function addPageNumbers(){
   }catch(e){toast('Error: '+e.message,'❌');}
 }
 
+function syncStampPreset(){
+  const preset=document.getElementById('stamp-preset')?.value;
+  const text=document.getElementById('stamp-text');
+  if(!text || !preset || preset==='custom') return;
+  text.value=preset;
+}
+
+async function stampPDF(){
+  if(!state.stampFile){toast('Pehle PDF upload karo!','??');return;}
+  try{
+    const ab=await readAB(state.stampFile);
+    const pdf=await PDFLib.PDFDocument.load(ab,{ignoreEncryption:true});
+    const pages=pdf.getPages();
+    const font=await pdf.embedFont(PDFLib.StandardFonts.HelveticaBold);
+    const stampText=(document.getElementById('stamp-text').value||'APPROVED').trim();
+    const pos=document.getElementById('stamp-pos').value;
+    const apply=document.getElementById('stamp-apply').value;
+    const pageNo=Math.max(1,parseInt(document.getElementById('stamp-page').value)||1);
+    const color=document.getElementById('stamp-color').value;
+    const {r,g,b}=hexToRgb(color);
+    let indices=pages.map((_,i)=>i);
+    if(apply==='first') indices=[0];
+    else if(apply==='page') indices=[clamp(pageNo-1,0,pages.length-1)];
+    indices.forEach(idx=>{
+      const page=pages[idx];
+      const {width,height}=page.getSize();
+      const size=Math.max(28,Math.min(width,height)*0.085);
+      const textWidth=font.widthOfTextAtSize(stampText,size);
+      let x=width/2-textWidth/2, y=height/2;
+      if(pos!=='center') ({x,y}=getPageAnchor(width,height,pos,textWidth,size,28));
+      page.drawText(stampText,{x,y,size,font,color:PDFLib.rgb(r,g,b),opacity:0.78,rotate:PDFLib.degrees(pos==='center'?-22:-12)});
+      page.drawRectangle({x:Math.max(12,x-14),y:Math.max(12,y-10),width:Math.min(width-24,textWidth+28),height:size+18,borderColor:PDFLib.rgb(r,g,b),borderWidth:2.4,opacity:0.7,rotate:PDFLib.degrees(pos==='center'?-22:-12)});
+    });
+    const blob=new Blob([await pdf.save()],{type:'application/pdf'});
+    document.getElementById('stamp-download').onclick=()=>dlBlob(blob,'stamped.pdf');
+    showResult('stamp',`${indices.length} page(s) stamped`);
+    toast('Stamp added!','✅');
+  }catch(e){toast('Error: '+e.message,'❌');}
+}
+
+async function addHeaderFooter(){
+  if(!state.hfFile){toast('Pehle PDF upload karo!','??');return;}
+  try{
+    const ab=await readAB(state.hfFile);
+    const pdf=await PDFLib.PDFDocument.load(ab,{ignoreEncryption:true});
+    const pages=pdf.getPages();
+    const font=await pdf.embedFont(PDFLib.StandardFonts.Helvetica);
+    const header=(document.getElementById('hf-header').value||'').trim();
+    const footer=(document.getElementById('hf-footer').value||'').trim();
+    const fontSize=Math.max(8,parseInt(document.getElementById('hf-size').value)||11);
+    const align=document.getElementById('hf-align').value;
+    const startPage=Math.max(1,parseInt(document.getElementById('hf-start-page').value)||1);
+    const {r,g,b}=hexToRgb(document.getElementById('hf-color').value);
+    pages.forEach((page,idx)=>{
+      if(idx+1<startPage) return;
+      const {width,height}=page.getSize();
+      if(header){
+        const textWidth=font.widthOfTextAtSize(header,fontSize);
+        const point=getPageAnchor(width,height,`top-${align}`,textWidth,fontSize,22);
+        page.drawText(header,{x:point.x,y:point.y,size:fontSize,font,color:PDFLib.rgb(r,g,b)});
+      }
+      if(footer){
+        const textWidth=font.widthOfTextAtSize(footer,fontSize);
+        const point=getPageAnchor(width,height,`bottom-${align}`,textWidth,fontSize,18);
+        page.drawText(footer,{x:point.x,y:point.y,size:fontSize,font,color:PDFLib.rgb(r,g,b)});
+      }
+    });
+    const blob=new Blob([await pdf.save()],{type:'application/pdf'});
+    document.getElementById('hf-download').onclick=()=>dlBlob(blob,'header-footer.pdf');
+    showResult('hf','Header / footer add ho gaya');
+    toast('Header / footer added!','✅');
+  }catch(e){toast('Error: '+e.message,'❌');}
+}
+
+async function duplicatePagesPDF(){
+  if(!state.duplicateFile){toast('Pehle PDF upload karo!','??');return;}
+  try{
+    const ab=await readAB(state.duplicateFile);
+    const pdf=await PDFLib.PDFDocument.load(ab,{ignoreEncryption:true});
+    const sourcePage=Math.max(1,parseInt(document.getElementById('duplicate-page').value)||1)-1;
+    const copies=Math.max(1,parseInt(document.getElementById('duplicate-count').value)||1);
+    const insertAfter=Math.max(1,parseInt(document.getElementById('duplicate-after').value)||1)-1;
+    const immediate=document.getElementById('duplicate-all-after').checked;
+    const order=Array.from({length:pdf.getPageCount()},(_,i)=>i);
+    const duplicateIndexes=Array(copies).fill(sourcePage);
+    const insertAt=immediate ? sourcePage+1 : clamp(insertAfter+1,0,order.length);
+    order.splice(insertAt,0,...duplicateIndexes);
+    const out=await PDFLib.PDFDocument.create();
+    const copied=await out.copyPages(pdf,order);
+    copied.forEach(p=>out.addPage(p));
+    const blob=new Blob([await out.save()],{type:'application/pdf'});
+    document.getElementById('duplicate-download').onclick=()=>dlBlob(blob,'duplicated-pages.pdf');
+    showResult('duplicate',`${copies} extra copies insert ho gayi`);
+    toast('Pages duplicated!','✅');
+  }catch(e){toast('Error: '+e.message,'❌');}
+}
+
+async function loadMetadataEditor(file){
+  if(!file) return;
+  try{
+    const ab=await readAB(file);
+    const pdf=await PDFLib.PDFDocument.load(ab,{ignoreEncryption:true});
+    document.getElementById('metaedit-options').style.display='block';
+    document.getElementById('meta-title').value=pdf.getTitle()||'';
+    document.getElementById('meta-author').value=pdf.getAuthor()||'';
+    document.getElementById('meta-subject').value=pdf.getSubject()||'';
+    document.getElementById('meta-keywords').value=(pdf.getKeywords()||[]).join(', ');
+    document.getElementById('meta-producer').value=pdf.getProducer()||'PDFCraft Pro';
+    document.getElementById('meta-creator').value=pdf.getCreator()||'PDFCraft Pro';
+  }catch(e){toast('Metadata read error: '+e.message,'❌');}
+}
+
+function clearMetadataFields(){
+  ['meta-title','meta-author','meta-subject','meta-keywords','meta-producer','meta-creator'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.value='';
+  });
+}
+
+async function saveMetadataEditor(){
+  if(!state.metaeditFile){toast('Pehle PDF upload karo!','??');return;}
+  try{
+    const ab=await readAB(state.metaeditFile);
+    const pdf=await PDFLib.PDFDocument.load(ab,{ignoreEncryption:true});
+    pdf.setTitle(document.getElementById('meta-title').value||'');
+    pdf.setAuthor(document.getElementById('meta-author').value||'');
+    pdf.setSubject(document.getElementById('meta-subject').value||'');
+    pdf.setKeywords((document.getElementById('meta-keywords').value||'').split(',').map(s=>s.trim()).filter(Boolean));
+    pdf.setProducer(document.getElementById('meta-producer').value||'PDFCraft Pro');
+    pdf.setCreator(document.getElementById('meta-creator').value||'PDFCraft Pro');
+    const blob=new Blob([await pdf.save()],{type:'application/pdf'});
+    document.getElementById('metaedit-download').onclick=()=>dlBlob(blob,'metadata-updated.pdf');
+    showResult('metaedit','Metadata updated successfully');
+    toast('Metadata saved!','✅');
+  }catch(e){toast('Error: '+e.message,'❌');}
+}
 // ══════════════════════════════════════════════════════
 // CROP
 // ══════════════════════════════════════════════════════
@@ -1893,5 +2073,6 @@ async function repairPDF(input){
 window.addEventListener('resize',()=>{
   document.documentElement.style.setProperty('--vh', `${window.innerHeight * 0.01}px`);
 });
+
 
 
