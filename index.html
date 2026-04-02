@@ -37,32 +37,21 @@
   </div>
 
   <div class="sidebar-section">
-    <div class="sidebar-heading">Convert</div>
+    <div class="sidebar-heading">Featured Tools</div>
+    <button class="tool-btn" id="btn-cgpa" onclick="showPanel('cgpa')"><span class="icon">&#127891;</span> CGPA Calculator</button>
+    <button class="tool-btn" id="btn-percentage" onclick="showPanel('percentage')"><span class="icon">%</span> Percentage Calculator</button>
+    <button class="tool-btn" id="btn-word2pdf" onclick="showPanel('word2pdf')"><span class="icon">&#128221;</span> Word &rarr; PDF</button>
+    <button class="tool-btn" id="btn-pdf2txt" onclick="showPanel('pdf2txt')"><span class="icon">&#128196;</span> PDF &rarr; Text</button>
+    <button class="tool-btn" id="btn-ocr" onclick="showPanel('ocr')"><span class="icon">&#128065;&#65039;</span> OCR / Text Extract</button>
     <button class="tool-btn" id="btn-img2pdf" onclick="showPanel('img2pdf')"><span class="icon">&#128444;&#65039;</span> Image &rarr; PDF</button>
     <button class="tool-btn" id="btn-imgresize" onclick="showPanel('imgresize')"><span class="icon">&#129668;</span> Image Resizer</button>
-    <button class="tool-btn" id="btn-word2pdf" onclick="showPanel('word2pdf')"><span class="icon">&#128221;</span> Word &rarr; PDF</button>
-    <button class="tool-btn" id="btn-ppt2pdf" onclick="showPanel('ppt2pdf')"><span class="icon">&#128253;&#65039;</span> PowerPoint &rarr; PDF</button>
-    <button class="tool-btn" id="btn-excel2pdf" onclick="showPanel('excel2pdf')"><span class="icon">&#128215;</span> Excel &rarr; PDF</button>
-    <button class="tool-btn" id="btn-pdf2excel" onclick="showPanel('pdf2excel')"><span class="icon">&#128202;</span> PDF &rarr; Excel</button>
-    <button class="tool-btn" id="btn-pdf2img" onclick="showPanel('pdf2img')"><span class="icon">&#128248;</span> PDF &rarr; Image</button>
-    <button class="tool-btn" id="btn-pdf2txt" onclick="showPanel('pdf2txt')"><span class="icon">&#128196;</span> PDF &rarr; Text</button>
-    <button class="tool-btn" id="btn-html2pdf" onclick="showPanel('html2pdf')"><span class="icon">&#127760;</span> HTML &rarr; PDF</button>
-    <button class="tool-btn" id="btn-blank" onclick="showPanel('blank')"><span class="icon">&#128195;</span> Blank PDF</button>
+    <button class="tool-btn" id="btn-resume" onclick="showPanel('resume')"><span class="icon">&#128196;</span> Resume Builder</button>
+    <button class="tool-btn" id="btn-attendance" onclick="showPanel('attendance')"><span class="icon">&#128202;</span> Attendance Calculator</button>
   </div>
 
   <div class="sidebar-divider"></div>
   <div class="sidebar-section">
-    <div class="sidebar-heading">Analyze</div>
-    <button class="tool-btn" id="btn-inspect" onclick="showPanel('inspect')"><span class="icon">&#128269;</span> PDF Inspector</button>
-    <button class="tool-btn" id="btn-ocr" onclick="showPanel('ocr')"><span class="icon">&#128065;&#65039;</span> OCR / Text Extract</button>
-    <button class="tool-btn" id="btn-mathocr" onclick="showPanel('mathocr')"><span class="icon">&sum;</span> Formula OCR</button>
-    <button class="tool-btn" id="btn-preview" onclick="showPanel('preview')"><span class="icon">&#128064;</span> PDF Preview</button>
-    <button class="tool-btn" id="btn-compare" onclick="showPanel('compare')"><span class="icon">&#9878;&#65039;</span> Compare PDFs</button>
-  </div>
-
-  <div class="sidebar-divider"></div>
-  <div class="sidebar-section">
-    <div class="sidebar-heading">Edit</div>
+    <div class="sidebar-heading">More Tools</div>
     <button class="tool-btn" id="btn-compress" onclick="showPanel('compress')"><span class="icon">&#128476;&#65039;</span> Compress</button>
     <button class="tool-btn" id="btn-watermark" onclick="showPanel('watermark')"><span class="icon">&#128167;</span> Watermark</button>
     <button class="tool-btn" id="btn-stamp" onclick="showPanel('stamp')"><span class="icon">&#128204;</span> Stamp PDF</button>
@@ -71,32 +60,22 @@
     <button class="tool-btn" id="btn-duplicate" onclick="showPanel('duplicate')"><span class="icon">DP</span> Duplicate Pages</button>
     <button class="tool-btn" id="btn-rotate" onclick="showPanel('rotate')"><span class="icon">&#128260;</span> Rotate</button>
     <button class="tool-btn" id="btn-crop" onclick="showPanel('crop')"><span class="icon">&#9986;&#65039;</span> Crop Pages</button>
-    <button class="tool-btn" id="btn-editpdf" onclick="showPanel('editpdf')"><span class="icon">ED</span> Edit PDF</button>
     <button class="tool-btn" id="btn-annotate" onclick="showPanel('annotate')"><span class="icon">&#128172;</span> Annotate</button>
     <button class="tool-btn" id="btn-redact" onclick="showPanel('redact')"><span class="icon">&#11035;</span> Redact</button>
-  </div>
-
-  <div class="sidebar-divider"></div>
-  <div class="sidebar-section">
-    <div class="sidebar-heading">Organize</div>
     <button class="tool-btn" id="btn-merge" onclick="showPanel('merge')"><span class="icon">&#128279;</span> Merge PDF</button>
     <button class="tool-btn" id="btn-split" onclick="showPanel('split')"><span class="icon">&#9986;&#65039;</span> Split PDF</button>
     <button class="tool-btn" id="btn-reorder" onclick="showPanel('reorder')"><span class="icon">&#128209;</span> Reorder Pages</button>
     <button class="tool-btn" id="btn-delete-pages" onclick="showPanel('delete-pages')"><span class="icon">&#128465;&#65039;</span> Delete Pages</button>
     <button class="tool-btn" id="btn-extract-pages" onclick="showPanel('extract-pages')"><span class="icon">&#128228;</span> Extract Pages</button>
-  </div>
-
-  <div class="sidebar-divider"></div>
-  <div class="sidebar-section">
-    <div class="sidebar-heading">Security</div>
     <button class="tool-btn" id="btn-protect" onclick="showPanel('protect')"><span class="icon">&#128274;</span> Protect PDF</button>
     <button class="tool-btn" id="btn-unlock" onclick="showPanel('unlock')"><span class="icon">&#128275;</span> Unlock PDF</button>
     <button class="tool-btn" id="btn-sign" onclick="showPanel('sign')"><span class="icon">&#9997;&#65039;</span> Sign PDF</button>
-  </div>
-
-  <div class="sidebar-divider"></div>
-  <div class="sidebar-section">
-    <div class="sidebar-heading">More</div>
+    <button class="tool-btn" id="btn-gpa-converter" onclick="showPanel('gpa-converter')"><span class="icon">&#8646;</span> GPA Converter</button>
+    <button class="tool-btn" id="btn-marks" onclick="showPanel('marks')"><span class="icon">&#128202;</span> Marks Calculator</button>
+    <button class="tool-btn" id="btn-cover-letter" onclick="showPanel('cover-letter')"><span class="icon">&#128221;</span> Cover Letter Generator</button>
+    <button class="tool-btn" id="btn-study-planner" onclick="showPanel('study-planner')"><span class="icon">&#128218;</span> Study Planner</button>
+    <button class="tool-btn" id="btn-timetable" onclick="showPanel('timetable')"><span class="icon">&#9201;</span> Time Table Generator</button>
+    <button class="tool-btn" id="btn-unit-converter" onclick="showPanel('unit-converter')"><span class="icon">&#128290;</span> Unit Converter</button>
     <button class="tool-btn" id="btn-metaedit" onclick="showPanel('metaedit')"><span class="icon">ME</span> Metadata Editor</button>
     <button class="tool-btn" id="btn-repair" onclick="showPanel('repair')"><span class="icon">&#128736;&#65039;</span> Repair PDF</button>
     <button class="tool-btn" id="btn-about" onclick="showPanel('about')"><span class="icon">&#8505;&#65039;</span> About</button>
@@ -126,32 +105,34 @@
     <input type="text" placeholder="Tool search karo..." id="tool-search" oninput="filterTools(this.value)">
   </div>
 
-<div class="tool-section-title">Convert</div>
+<div class="tool-section-title">Featured Tools</div>
 <div class="tools-grid">
+  <div class="tool-card" onclick="showPanel('cgpa')"><div class="tc-icon">&#127891;</div><div class="tc-name">CGPA Calculator</div><div class="tc-desc">Credits aur SGPA se CGPA nikalo</div></div>
+  <div class="tool-card" onclick="showPanel('percentage')"><div class="tc-icon">%</div><div class="tc-name">Percentage Calculator</div><div class="tc-desc">Obtained aur total marks se percentage nikalo</div></div>
+  <div class="tool-card" onclick="showPanel('word2pdf')"><div class="tc-icon">&#128221;</div><div class="tc-name">Word &rarr; PDF</div><div class="tc-desc">DOCX text ko PDF banao</div></div>
+  <div class="tool-card" onclick="showPanel('pdf2txt')"><div class="tc-icon">&#128196;</div><div class="tc-name">PDF &rarr; Text</div><div class="tc-desc">Text extract karo</div></div>
+  <div class="tool-card" onclick="showPanel('ocr')"><div class="tc-icon">&#128065;&#65039;</div><div class="tc-name">OCR</div><div class="tc-desc">Scanned text extract karo</div></div>
   <div class="tool-card" onclick="showPanel('img2pdf')"><div class="tc-icon">&#128444;&#65039;</div><div class="tc-name">Image &rarr; PDF</div><div class="tc-desc">JPG/PNG to PDF</div></div>
   <div class="tool-card" onclick="showPanel('imgresize')"><div class="tc-icon">&#129668;</div><div class="tc-name">Image Resizer</div><div class="tc-desc">Target KB mein compress karo</div></div>
-  <div class="tool-card" onclick="showPanel('word2pdf')"><div class="tc-icon">&#128221;</div><div class="tc-name">Word &rarr; PDF</div><div class="tc-desc">DOCX text ko PDF banao</div></div>
+  <div class="tool-card" onclick="showPanel('resume')"><div class="tc-icon">&#128196;</div><div class="tc-name">Resume Builder</div><div class="tc-desc">Quick resume template banao</div></div>
+  <div class="tool-card" onclick="showPanel('attendance')"><div class="tc-icon">&#128202;</div><div class="tc-name">Attendance Calculator</div><div class="tc-desc">Required attendance track karo</div></div>
+</div>
+
+<div class="tool-section-title">More Tools</div>
+<div class="tools-grid">
+  <div class="tool-card" onclick="showPanel('imgresize')"><div class="tc-icon">&#129668;</div><div class="tc-name">Image Resizer</div><div class="tc-desc">Target KB mein compress karo</div></div>
   <div class="tool-card" onclick="showPanel('ppt2pdf')"><div class="tc-icon">&#128253;&#65039;</div><div class="tc-name">PowerPoint &rarr; PDF</div><div class="tc-desc">PPTX slides convert karo</div></div>
   <div class="tool-card" onclick="showPanel('excel2pdf')"><div class="tc-icon">&#128215;</div><div class="tc-name">Excel &rarr; PDF</div><div class="tc-desc">XLSX/CSV ko PDF mein</div></div>
   <div class="tool-card" onclick="showPanel('pdf2excel')"><div class="tc-icon">&#128202;</div><div class="tc-name">PDF &rarr; Excel</div><div class="tc-desc">Text rows ko Excel sheet banao</div></div>
   <div class="tool-card" onclick="showPanel('pdf2img')"><div class="tc-icon">&#128248;</div><div class="tc-name">PDF &rarr; Image</div><div class="tc-desc">Pages export karo</div></div>
-  <div class="tool-card" onclick="showPanel('pdf2txt')"><div class="tc-icon">&#128196;</div><div class="tc-name">PDF &rarr; Text</div><div class="tc-desc">Text extract karo</div></div>
   <div class="tool-card" onclick="showPanel('html2pdf')"><div class="tc-icon">&#127760;</div><div class="tc-name">HTML &rarr; PDF</div><div class="tc-desc">HTML se PDF banao</div></div>
   <div class="tool-card" onclick="showPanel('blank')"><div class="tc-icon">&#128195;</div><div class="tc-name">Blank PDF</div><div class="tc-desc">Empty PDF generate karo</div></div>
-</div>
-
-<div class="tool-section-title">Analyze</div>
-<div class="tools-grid">
   <div class="tool-card" onclick="showPanel('inspect')"><div class="tc-icon">&#128269;</div><div class="tc-name">Inspector</div><div class="tc-desc">PDF analyze karo</div></div>
   <div class="tool-card" onclick="showPanel('ocr')"><div class="tc-icon">&#128065;&#65039;</div><div class="tc-name">OCR</div><div class="tc-desc">Scanned text extract</div></div>
   <div class="tool-card" onclick="showPanel('mathocr')"><div class="tc-icon">&sum;</div><div class="tc-name">Formula OCR</div><div class="tc-desc">Math + heavy text extract</div></div>
   <div class="tool-card" onclick="showPanel('preview')"><div class="tc-icon">&#128064;</div><div class="tc-name">Preview</div><div class="tc-desc">PDF dekho browser mein</div></div>
   <div class="tool-card" onclick="showPanel('compare')"><div class="tc-icon">&#9878;&#65039;</div><div class="tc-name">Compare</div><div class="tc-desc">Do PDFs compare karo</div></div>
   <div class="tool-card" onclick="showPanel('repair')"><div class="tc-icon">&#128736;&#65039;</div><div class="tc-name">Repair PDF</div><div class="tc-desc">Corrupt PDF fix karo</div></div>
-</div>
-
-<div class="tool-section-title">Edit</div>
-<div class="tools-grid">
   <div class="tool-card" onclick="showPanel('compress')"><div class="tc-icon">&#128476;&#65039;</div><div class="tc-name">Compress</div><div class="tc-desc">Size kam karo</div></div>
   <div class="tool-card" onclick="showPanel('watermark')"><div class="tc-icon">&#128167;</div><div class="tc-name">Watermark</div><div class="tc-desc">Text watermark lagao</div></div>
   <div class="tool-card" onclick="showPanel('stamp')"><div class="tc-icon">&#128204;</div><div class="tc-name">Stamp PDF</div><div class="tc-desc">Approved / Paid style stamps</div></div>
@@ -160,7 +141,6 @@
   <div class="tool-card" onclick="showPanel('duplicate')"><div class="tc-icon">DP</div><div class="tc-name">Duplicate Pages</div><div class="tc-desc">Same page copies insert karo</div></div>
   <div class="tool-card" onclick="showPanel('rotate')"><div class="tc-icon">&#128260;</div><div class="tc-name">Rotate</div><div class="tc-desc">Pages ghuma do</div></div>
   <div class="tool-card" onclick="showPanel('crop')"><div class="tc-icon">&#9986;&#65039;</div><div class="tc-name">Crop Pages</div><div class="tc-desc">Page margins trim karo</div></div>
-  <div class="tool-card" onclick="showPanel('editpdf')"><div class="tc-icon">ED</div><div class="tc-name">Edit PDF</div><div class="tc-desc">Text, markup aur edits shortcuts</div></div>
   <div class="tool-card" onclick="showPanel('annotate')"><div class="tc-icon">&#128172;</div><div class="tc-name">Annotate</div><div class="tc-desc">Notes & markup</div></div>
   <div class="tool-card" onclick="showPanel('redact')"><div class="tc-icon">&#11035;</div><div class="tc-name">Redact</div><div class="tc-desc">Content black out karo</div></div>
 </div>
@@ -172,13 +152,17 @@
   <div class="tool-card" onclick="showPanel('reorder')" style="--tc:rgba(255,159,67,0.12)"><div class="tc-icon">&#128209;</div><div class="tc-name">Reorder Pages</div><div class="tc-desc">Pages ki order badlo</div></div>
   <div class="tool-card" onclick="showPanel('delete-pages')" style="--tc:rgba(255,77,109,0.1)"><div class="tc-icon">&#128465;&#65039;</div><div class="tc-name">Delete Pages</div><div class="tc-desc">Specific pages hatao</div></div>
   <div class="tool-card" onclick="showPanel('extract-pages')" style="--tc:rgba(84,160,255,0.12)"><div class="tc-icon">&#128228;</div><div class="tc-name">Extract Pages</div><div class="tc-desc">Pages alag PDF mein</div></div>
-</div>
-
-<div class="tool-section-title">Security</div>
-<div class="tools-grid">
   <div class="tool-card" onclick="showPanel('protect')"><div class="tc-icon">&#128274;</div><div class="tc-name">Protect</div><div class="tc-desc">Password lagao</div></div>
   <div class="tool-card" onclick="showPanel('unlock')"><div class="tc-icon">&#128275;</div><div class="tc-name">Unlock</div><div class="tc-desc">Password hatao</div></div>
   <div class="tool-card" onclick="showPanel('sign')"><div class="tc-icon">&#9997;&#65039;</div><div class="tc-name">Sign PDF</div><div class="tc-desc">Signature lagao</div></div>
+  <div class="tool-card" onclick="showPanel('gpa-converter')"><div class="tc-icon">&#8646;</div><div class="tc-name">GPA Converter</div><div class="tc-desc">GPA se percentage aur reverse</div></div>
+  <div class="tool-card" onclick="showPanel('marks')"><div class="tc-icon">&#128202;</div><div class="tc-name">Marks Calculator</div><div class="tc-desc">Total, average aur percentage nikalo</div></div>
+  <div class="tool-card" onclick="showPanel('cover-letter')"><div class="tc-icon">&#128221;</div><div class="tc-name">Cover Letter Generator</div><div class="tc-desc">Job-specific cover letter generate karo</div></div>
+  <div class="tool-card" onclick="showPanel('study-planner')"><div class="tc-icon">&#128218;</div><div class="tc-name">Study Planner</div><div class="tc-desc">Weekly study plan auto banao</div></div>
+  <div class="tool-card" onclick="showPanel('timetable')"><div class="tc-icon">&#9201;</div><div class="tc-name">Time Table Generator</div><div class="tc-desc">Class schedule neatly arrange karo</div></div>
+  <div class="tool-card" onclick="showPanel('unit-converter')"><div class="tc-icon">&#128290;</div><div class="tc-name">Unit Converter</div><div class="tc-desc">Length, weight, temp convert karo</div></div>
+  <div class="tool-card" onclick="showPanel('metaedit')"><div class="tc-icon">ME</div><div class="tc-name">Metadata Editor</div><div class="tc-desc">Title, author aur keywords edit karo</div></div>
+  <div class="tool-card" onclick="showPanel('about')"><div class="tc-icon">&#8505;&#65039;</div><div class="tc-name">About</div><div class="tc-desc">Project details dekho</div></div>
 </div>
 </div>
 
@@ -649,23 +633,6 @@
   </div>
 </div>
 
-<div class="panel" id="panel-editpdf">
-  <h2 class="panel-title">🧰 Edit PDF</h2>
-  <p class="panel-desc">Quick editing workspace. Neeche se direct annotate, watermark, page numbers, sign, rotate ya redact par jump karo.</p>
-  <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1.5rem">
-    <div class="options-grid">
-      <div class="option-card" onclick="showPanel('annotate')"><div class="opt-icon">💬</div><div class="opt-label">Add Text / Comment</div></div>
-      <div class="option-card" onclick="showPanel('watermark')"><div class="opt-icon">💧</div><div class="opt-label">Watermark</div></div>
-      <div class="option-card" onclick="showPanel('pagenumber')"><div class="opt-icon">🔢</div><div class="opt-label">Page Numbers</div></div>
-      <div class="option-card" onclick="showPanel('sign')"><div class="opt-icon">✍️</div><div class="opt-label">Sign PDF</div></div>
-      <div class="option-card" onclick="showPanel('rotate')"><div class="opt-icon">🔄</div><div class="opt-label">Rotate Pages</div></div>
-      <div class="option-card" onclick="showPanel('redact')"><div class="opt-icon">⬛</div><div class="opt-label">Redact Content</div></div>
-    </div>
-    <hr class="divider">
-    <p style="color:var(--text2);font-size:0.85rem;line-height:1.7">Ye panel ek shortcut hub hai. Actual editing tools neeche already available hain aur wahi file processing use karte hain, isliye feature duplicate nahi hoga aur workflow clean rahega.</p>
-  </div>
-</div>
-
 <!-- ═══════════ IMAGE TO PDF ═══════════ -->
 <div class="panel" id="panel-img2pdf">
   <h2 class="panel-title">🖼️ Image to PDF</h2>
@@ -969,10 +936,24 @@
       </div>
     </div>
     <hr class="divider">
+    <div id="sign-preview-wrap" style="display:none;margin-bottom:1rem">
+      <label class="form-label">PDF Preview - underline drag karke sign placement set karo</label>
+      <div class="preview-toolbar" style="display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap;margin-bottom:0.75rem">
+        <button class="btn btn-secondary btn-sm" type="button" onclick="prevSignPreviewPage()">◀ Prev</button>
+        <span style="color:var(--text2);font-size:0.84rem">Page <span id="sign-preview-cur">1</span> of <span id="sign-preview-total">1</span></span>
+        <button class="btn btn-secondary btn-sm" type="button" onclick="nextSignPreviewPage()">Next ▶</button>
+      </div>
+      <div class="sign-stage" id="sign-stage">
+        <canvas id="sign-preview-canvas"></canvas>
+        <div class="sign-underline" id="sign-underline"></div>
+      </div>
+      <p id="sign-preview-note" style="color:var(--text2);font-size:0.8rem;margin-top:0.6rem">Preview par underline drag karo, sign ussi jagah lagega.</p>
+    </div>
     <div class="two-col">
       <div class="form-group"><label class="form-label">Page Number</label><input type="number" id="sign-page" value="1" min="1"></div>
       <div class="form-group"><label class="form-label">Position</label>
         <select id="sign-pos">
+          <option value="custom-underline">Underline Placement</option>
           <option value="bottom-right">Bottom Right</option>
           <option value="bottom-left">Bottom Left</option>
           <option value="bottom-center">Bottom Center</option>
@@ -1007,12 +988,24 @@
         <div class="option-card" onclick="selectOpt(this,'#ann-options .option-card');state.annType='strike'"><div class="opt-icon">~~</div><div class="opt-label">Strikethrough</div></div>
       </div>
     </div>
+    <div id="ann-preview-wrap" style="display:none;margin-bottom:1rem">
+      <label class="form-label">PDF Preview - jahan drag/select karoge wahi annotation lagega</label>
+      <div class="preview-toolbar" style="display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap;margin-bottom:0.75rem">
+        <button class="btn btn-secondary btn-sm" type="button" onclick="prevAnnotatePreviewPage()">◀ Prev</button>
+        <span style="color:var(--text2);font-size:0.84rem">Page <span id="ann-preview-cur">1</span> of <span id="ann-preview-total">1</span></span>
+        <button class="btn btn-secondary btn-sm" type="button" onclick="nextAnnotatePreviewPage()">Next ▶</button>
+      </div>
+      <div class="ann-stage" id="ann-stage">
+        <canvas id="ann-preview-canvas"></canvas>
+        <div class="ann-selection" id="ann-selection"></div>
+      </div>
+      <p id="ann-preview-note" style="color:var(--text2);font-size:0.8rem;margin-top:0.6rem">PDF par drag ya click karo, annotation ussi location par lagega.</p>
+    </div>
     <div class="two-col">
       <div class="form-group"><label class="form-label">Annotation Text</label><textarea id="ann-text" placeholder="Annotation likhao..." style="min-height:80px"></textarea></div>
       <div>
         <div class="form-group"><label class="form-label">Color</label><input type="color" id="ann-color" value="#ffff00"></div>
         <div class="form-group"><label class="form-label">Page Number</label><input type="number" id="ann-page" value="1" min="1"></div>
-        <div class="form-group"><label class="form-label">Y Position (from top, 0-100%)</label><input type="number" id="ann-y-pos" value="50" min="0" max="100"></div>
       </div>
     </div>
     <div class="btn-row"><button class="btn btn-primary" onclick="annotatePDF()">💬 Add Annotation</button></div>
@@ -1225,6 +1218,289 @@
 </div>
 
 <!-- ═══════════ ABOUT ═══════════ -->
+<div class="panel" id="panel-cgpa">
+  <h2 class="panel-title">&#127891; CGPA Calculator</h2>
+  <p class="panel-desc">Semester-wise SGPA aur credits daalo, total CGPA instantly calculate ho jayega.</p>
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1.25rem">
+    <div class="btn-row" style="justify-content:space-between;align-items:center">
+      <h3 style="font-family:'Syne',sans-serif;font-size:1rem">Semester Entries</h3>
+      <button class="btn btn-secondary" onclick="addCGPARow()">+ Add Semester</button>
+    </div>
+    <div id="cgpa-rows" style="display:grid;gap:0.9rem;margin-top:1rem"></div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="calculateCGPA()">Calculate CGPA</button>
+      <button class="btn btn-secondary" onclick="resetCGPA()">Reset</button>
+    </div>
+  </div>
+  <div class="stats-row" style="margin-top:1.25rem">
+    <div class="stat-card"><div class="st-val" id="cgpa-semesters">0</div><div class="st-label">Semesters</div></div>
+    <div class="stat-card"><div class="st-val" id="cgpa-credits">0</div><div class="st-label">Total Credits</div></div>
+    <div class="stat-card"><div class="st-val" id="cgpa-weighted">0.00</div><div class="st-label">Weighted Points</div></div>
+    <div class="stat-card"><div class="st-val" id="cgpa-final">0.00</div><div class="st-label">CGPA</div></div>
+  </div>
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1.1rem;margin-top:1rem">
+    <h3 style="font-family:'Syne',sans-serif;font-size:1rem;margin-bottom:0.5rem">Quick Formula</h3>
+    <p style="color:var(--text2);font-size:0.88rem;line-height:1.7">CGPA = sum of (semester SGPA x semester credits) / total credits</p>
+    <p style="color:var(--text2);font-size:0.82rem;margin-top:0.45rem">Tip: Agar har semester ke credits same hain, bas credits me same value daal do.</p>
+  </div>
+</div>
+
+<div class="panel" id="panel-percentage">
+  <h2 class="panel-title">Percentage Calculator</h2>
+  <p class="panel-desc">Obtained marks aur total marks daalo, percentage turant mil jayega.</p>
+  <div class="two-col">
+    <div class="form-group">
+      <label class="form-label">Obtained Marks</label>
+      <input type="number" id="percentage-obtained" min="0" step="0.01" placeholder="450">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Total Marks</label>
+      <input type="number" id="percentage-total" min="0" step="0.01" placeholder="500">
+    </div>
+  </div>
+  <div class="btn-row">
+    <button class="btn btn-primary" onclick="calculatePercentage()">Calculate Percentage</button>
+    <button class="btn btn-secondary" onclick="resetPercentageCalculator()">Reset</button>
+  </div>
+  <div class="stats-row" style="margin-top:1rem">
+    <div class="stat-card"><div class="st-val" id="percentage-result">0.00%</div><div class="st-label">Percentage</div></div>
+    <div class="stat-card"><div class="st-val" id="percentage-remaining">0</div><div class="st-label">Remaining Marks</div></div>
+  </div>
+</div>
+
+<div class="panel" id="panel-gpa-converter">
+  <h2 class="panel-title">GPA ↔ Percentage Converter</h2>
+  <p class="panel-desc">GPA ko percentage me ya percentage ko GPA me convert karo.</p>
+  <div class="two-col">
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1.1rem">
+      <h3 style="font-family:'Syne',sans-serif;font-size:1rem;margin-bottom:0.8rem">GPA to Percentage</h3>
+      <div class="form-group">
+        <label class="form-label">GPA / CGPA</label>
+        <input type="number" id="gpa-input" min="0" max="10" step="0.01" placeholder="8.4">
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="convertGpaToPercentage()">Convert</button>
+      </div>
+      <div class="stat-card"><div class="st-val" id="gpa-to-percentage-result">0.00%</div><div class="st-label">Percentage</div></div>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1.1rem">
+      <h3 style="font-family:'Syne',sans-serif;font-size:1rem;margin-bottom:0.8rem">Percentage to GPA</h3>
+      <div class="form-group">
+        <label class="form-label">Percentage</label>
+        <input type="number" id="percentage-input" min="0" max="100" step="0.01" placeholder="79.8">
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="convertPercentageToGpa()">Convert</button>
+        <button class="btn btn-secondary" onclick="resetGpaConverter()">Reset</button>
+      </div>
+      <div class="stat-card"><div class="st-val" id="percentage-to-gpa-result">0.00</div><div class="st-label">Estimated GPA</div></div>
+    </div>
+  </div>
+  <p style="color:var(--text2);font-size:0.82rem;margin-top:0.75rem">Default formula used: Percentage = GPA × 9.5, and GPA = Percentage / 9.5</p>
+</div>
+
+<div class="panel" id="panel-marks">
+  <h2 class="panel-title">Marks Calculator</h2>
+  <p class="panel-desc">Subject-wise marks enter karo aur total, average, highest, lowest aur percentage nikaalo.</p>
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1.25rem">
+    <div class="btn-row" style="justify-content:space-between;align-items:center">
+      <h3 style="font-family:'Syne',sans-serif;font-size:1rem">Marks Entries</h3>
+      <button class="btn btn-secondary" onclick="addMarksRow()">+ Add Subject</button>
+    </div>
+    <div id="marks-rows" style="display:grid;gap:0.9rem;margin-top:1rem"></div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="calculateMarks()">Calculate</button>
+      <button class="btn btn-secondary" onclick="resetMarksCalculator()">Reset</button>
+    </div>
+  </div>
+  <div class="stats-row" style="margin-top:1rem">
+    <div class="stat-card"><div class="st-val" id="marks-total-result">0</div><div class="st-label">Total</div></div>
+    <div class="stat-card"><div class="st-val" id="marks-average-result">0.00</div><div class="st-label">Average</div></div>
+    <div class="stat-card"><div class="st-val" id="marks-highest-result">0</div><div class="st-label">Highest</div></div>
+    <div class="stat-card"><div class="st-val" id="marks-lowest-result">0</div><div class="st-label">Lowest</div></div>
+    <div class="stat-card"><div class="st-val" id="marks-percentage-result">0.00%</div><div class="st-label">Percentage</div></div>
+  </div>
+</div>
+
+<div class="panel" id="panel-resume">
+  <h2 class="panel-title">Resume Builder</h2>
+  <p class="panel-desc">Professional ATS, simple, modern, creative aur executive style templates ke saath strong resume draft banao.</p>
+  <div class="two-col">
+    <div>
+      <div class="two-col">
+        <div class="form-group">
+          <label class="form-label">Template</label>
+          <select id="resume-template" onchange="syncResumeTemplatePreview(this.value)">
+            <option value="ats">ATS</option>
+            <option value="professional">Professional</option>
+            <option value="simple">Simple</option>
+            <option value="modern">Modern</option>
+            <option value="creative">Creative</option>
+            <option value="executive">Executive</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Profile Type</label>
+          <select id="resume-level">
+            <option value="student">Student / Fresher</option>
+            <option value="intern">Internship Applicant</option>
+            <option value="experienced">Experienced</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group"><label class="form-label">Full Name</label><input type="text" id="resume-name" placeholder="Aman Sharma"></div>
+      <div class="two-col">
+        <div class="form-group"><label class="form-label">Email</label><input type="text" id="resume-email" placeholder="aman@email.com"></div>
+        <div class="form-group"><label class="form-label">Phone</label><input type="text" id="resume-phone" placeholder="+91 98xxxxxx"></div>
+      </div>
+      <div class="two-col">
+        <div class="form-group"><label class="form-label">City / Location</label><input type="text" id="resume-location" placeholder="Delhi, India"></div>
+        <div class="form-group"><label class="form-label">Target Role</label><input type="text" id="resume-role" placeholder="Frontend Developer"></div>
+      </div>
+      <div class="form-group"><label class="form-label">Professional Summary</label><textarea id="resume-summary" rows="4" placeholder="2-3 lines about your profile, strengths and goals"></textarea></div>
+      <div class="form-group"><label class="form-label">Education</label><textarea id="resume-education" rows="4" placeholder="BCA - XYZ College - 2023-2026"></textarea></div>
+      <div class="form-group"><label class="form-label">Skills</label><textarea id="resume-skills" rows="4" placeholder="HTML, CSS, JavaScript, Excel"></textarea></div>
+      <div class="form-group"><label class="form-label">Projects / Experience</label><textarea id="resume-projects" rows="5" placeholder="Project name, internship, achievements"></textarea></div>
+      <div class="form-group"><label class="form-label">Achievements / Certifications</label><textarea id="resume-achievements" rows="4" placeholder="Certifications, awards, positions of responsibility"></textarea></div>
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="generateResume()">Build Resume</button>
+        <button class="btn btn-secondary" onclick="copyOutput('resume-output')">Copy</button>
+        <button class="btn btn-secondary" onclick="downloadResumeText()">Download TXT</button>
+      </div>
+    </div>
+    <div>
+      <label class="form-label">Live Template Preview</label>
+      <div class="resume-live-preview" id="resume-live-preview">
+        <div class="resume-paper ats" id="resume-paper">
+          <div class="resume-paper-header">
+            <div>
+              <h3 id="resume-paper-name">Your Name</h3>
+              <p id="resume-paper-role">Target Role</p>
+            </div>
+            <div class="resume-paper-contact" id="resume-paper-contact">your@email.com | +91 XXXXX XXXXX | Your City</div>
+          </div>
+          <div class="resume-paper-section">
+            <div class="resume-paper-title" id="resume-summary-title">Professional Summary</div>
+            <p id="resume-paper-summary">Template select karte hi yahan live preview dikhega.</p>
+          </div>
+          <div class="resume-paper-grid">
+            <div class="resume-paper-section">
+              <div class="resume-paper-title" id="resume-skills-title">Skills</div>
+              <p id="resume-paper-skills">HTML, CSS, JavaScript</p>
+            </div>
+            <div class="resume-paper-section">
+              <div class="resume-paper-title" id="resume-education-title">Education</div>
+              <p id="resume-paper-education">BCA - XYZ College</p>
+            </div>
+          </div>
+          <div class="resume-paper-section">
+            <div class="resume-paper-title" id="resume-projects-title">Projects / Experience</div>
+            <p id="resume-paper-projects">Project details preview yahan aayega.</p>
+          </div>
+          <div class="resume-paper-section">
+            <div class="resume-paper-title" id="resume-achievements-title">Achievements / Certifications</div>
+            <p id="resume-paper-achievements">Achievements preview yahan aayega.</p>
+          </div>
+        </div>
+      </div>
+      <div class="form-group" style="margin-top:0.9rem">
+        <label class="form-label">Resume Output</label>
+        <textarea id="resume-output" rows="10" placeholder="Generated resume yahan aayega"></textarea>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="panel" id="panel-cover-letter">
+  <h2 class="panel-title">Cover Letter Generator</h2>
+  <p class="panel-desc">Role aur company ke hisaab se quick cover letter generate karo.</p>
+  <div class="two-col">
+    <div>
+      <div class="form-group"><label class="form-label">Your Name</label><input type="text" id="cl-name" placeholder="Aman Sharma"></div>
+      <div class="form-group"><label class="form-label">Job Role</label><input type="text" id="cl-role" placeholder="Frontend Intern"></div>
+      <div class="form-group"><label class="form-label">Company</label><input type="text" id="cl-company" placeholder="ABC Tech"></div>
+      <div class="form-group"><label class="form-label">Key Skills</label><textarea id="cl-skills" rows="4" placeholder="React, communication, problem solving"></textarea></div>
+      <div class="form-group"><label class="form-label">Why this role?</label><textarea id="cl-reason" rows="4" placeholder="Why you fit this opportunity"></textarea></div>
+      <div class="btn-row"><button class="btn btn-primary" onclick="generateCoverLetter()">Generate</button><button class="btn btn-secondary" onclick="copyOutput('cl-output')">Copy</button></div>
+    </div>
+    <div class="form-group"><label class="form-label">Cover Letter Output</label><textarea id="cl-output" rows="22" placeholder="Generated cover letter yahan aayega"></textarea></div>
+  </div>
+</div>
+
+<div class="panel" id="panel-study-planner">
+  <h2 class="panel-title">Study Planner</h2>
+  <p class="panel-desc">Subjects, daily hours aur exam days dekar study plan auto generate karo.</p>
+  <div class="two-col">
+    <div>
+      <div class="form-group"><label class="form-label">Subjects</label><textarea id="planner-subjects" rows="5" placeholder="Math&#10;English&#10;Computer Science"></textarea></div>
+      <div class="form-group"><label class="form-label">Study Hours Per Day</label><input type="number" id="planner-hours" min="1" step="0.5" placeholder="4"></div>
+      <div class="form-group"><label class="form-label">Days Left</label><input type="number" id="planner-days" min="1" step="1" placeholder="14"></div>
+      <div class="btn-row"><button class="btn btn-primary" onclick="generateStudyPlanner()">Generate Plan</button><button class="btn btn-secondary" onclick="copyOutput('planner-output')">Copy</button></div>
+    </div>
+    <div class="form-group"><label class="form-label">Study Plan</label><textarea id="planner-output" rows="20" placeholder="Study plan yahan aayega"></textarea></div>
+  </div>
+</div>
+
+<div class="panel" id="panel-attendance">
+  <h2 class="panel-title">Attendance Calculator</h2>
+  <p class="panel-desc">Current classes aur target attendance se pata karo kitni classes aur chahiye.</p>
+  <div class="two-col">
+    <div class="form-group"><label class="form-label">Classes Attended</label><input type="number" id="att-attended" min="0" step="1" placeholder="42"></div>
+    <div class="form-group"><label class="form-label">Total Classes</label><input type="number" id="att-total" min="0" step="1" placeholder="56"></div>
+    <div class="form-group"><label class="form-label">Target Percentage</label><input type="number" id="att-target" min="0" max="100" step="0.01" placeholder="75"></div>
+  </div>
+  <div class="btn-row"><button class="btn btn-primary" onclick="calculateAttendance()">Calculate</button><button class="btn btn-secondary" onclick="resetAttendanceCalculator()">Reset</button></div>
+  <div class="stats-row" style="margin-top:1rem">
+    <div class="stat-card"><div class="st-val" id="att-current-result">0.00%</div><div class="st-label">Current</div></div>
+    <div class="stat-card"><div class="st-val" id="att-need-result">0</div><div class="st-label">Classes Needed</div></div>
+    <div class="stat-card"><div class="st-val" id="att-can-miss-result">0</div><div class="st-label">Can Miss</div></div>
+  </div>
+</div>
+
+<div class="panel" id="panel-timetable">
+  <h2 class="panel-title">Time Table Generator</h2>
+  <p class="panel-desc">Days aur subjects ke saath ek neat timetable generate karo.</p>
+  <div class="two-col">
+    <div>
+      <div class="form-group"><label class="form-label">Days</label><textarea id="tt-days" rows="4" placeholder="Monday&#10;Tuesday&#10;Wednesday&#10;Thursday&#10;Friday"></textarea></div>
+      <div class="form-group"><label class="form-label">Subjects / Slots</label><textarea id="tt-subjects" rows="6" placeholder="Math - 9:00 AM&#10;English - 10:00 AM&#10;Physics Lab - 1:00 PM"></textarea></div>
+      <div class="btn-row"><button class="btn btn-primary" onclick="generateTimeTable()">Generate Time Table</button><button class="btn btn-secondary" onclick="copyOutput('tt-output')">Copy</button></div>
+    </div>
+    <div class="form-group"><label class="form-label">Time Table Output</label><textarea id="tt-output" rows="20" placeholder="Generated timetable yahan aayega"></textarea></div>
+  </div>
+</div>
+
+<div class="panel" id="panel-unit-converter">
+  <h2 class="panel-title">Unit Converter</h2>
+  <p class="panel-desc">Length, weight aur temperature quickly convert karo.</p>
+  <div class="two-col">
+    <div class="form-group">
+      <label class="form-label">Category</label>
+      <select id="uc-category" onchange="updateUnitOptions()">
+        <option value="length">Length</option>
+        <option value="weight">Weight</option>
+        <option value="temperature">Temperature</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Value</label>
+      <input type="number" id="uc-value" step="0.01" placeholder="10">
+    </div>
+    <div class="form-group">
+      <label class="form-label">From</label>
+      <select id="uc-from"></select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">To</label>
+      <select id="uc-to"></select>
+    </div>
+  </div>
+  <div class="btn-row"><button class="btn btn-primary" onclick="convertUnits()">Convert</button><button class="btn btn-secondary" onclick="resetUnitConverter()">Reset</button></div>
+  <div class="stats-row" style="margin-top:1rem">
+    <div class="stat-card"><div class="st-val" id="uc-result">0</div><div class="st-label">Converted Value</div></div>
+  </div>
+</div>
+
 <div class="panel" id="panel-about">
   <h2 class="panel-title">ℹ️ PDFCraft Pro</h2>
   <p class="panel-desc">100% Free, browser-based PDF editor. Koi file upload nahi, koi server nahi.</p>
@@ -1261,7 +1537,6 @@
   <a href="contact.html">Contact</a> |
   <a href="privacy.html">Privacy Policy</a>
 </footer>
-</body>
 </body>
 </html>
 

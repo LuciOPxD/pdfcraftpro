@@ -193,6 +193,121 @@ textarea:focus{border-color:var(--accent);}
 .opt-icon{font-size:1.8rem;margin-bottom:0.4rem;}
 .opt-label{font-size:0.8rem;font-weight:500;}
 
+.resume-live-preview{
+  background:linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.02));
+  border:1px solid var(--border);
+  border-radius:18px;
+  padding:1rem;
+  min-height:640px;
+}
+.resume-paper{
+  background:#f7f8fc;
+  color:#1a1c2b;
+  border-radius:16px;
+  min-height:600px;
+  padding:1.5rem;
+  box-shadow:0 20px 50px rgba(0,0,0,0.25);
+  border:1px solid rgba(255,255,255,0.65);
+}
+.resume-paper.modern{
+  border-top:8px solid #6c63ff;
+}
+.resume-paper.professional{
+  border-top:8px solid #334155;
+  background:linear-gradient(180deg,#fafbff,#f2f4f9);
+}
+.resume-paper.simple{
+  border-top:8px solid #a1a1aa;
+  background:#fcfcfd;
+}
+.resume-paper.fresher{
+  border-top:8px solid #43e97b;
+  background:linear-gradient(180deg,#f9fffc,#f3f7ff);
+}
+.resume-paper.compact{
+  border-top:8px solid #1e1e30;
+  padding:1.2rem;
+}
+.resume-paper.executive{
+  border-top:8px solid #f7971e;
+  background:linear-gradient(180deg,#fffaf2,#f8f3eb);
+}
+.resume-paper.creative{
+  border-top:8px solid #ff6584;
+  background:linear-gradient(135deg,#fff7fb,#f7f4ff);
+}
+.resume-paper.ats{
+  border-top:8px solid #54a0ff;
+  background:#ffffff;
+}
+.resume-paper-header{
+  display:flex;
+  justify-content:space-between;
+  gap:1rem;
+  align-items:flex-start;
+  padding-bottom:1rem;
+  margin-bottom:1rem;
+  border-bottom:1px solid rgba(26,28,43,0.12);
+}
+.resume-paper-header h3{
+  font-family:'Syne',sans-serif;
+  font-size:1.5rem;
+  line-height:1.1;
+  margin-bottom:0.3rem;
+}
+.resume-paper-header p{
+  color:#53556a;
+  font-size:0.95rem;
+}
+.resume-paper-contact{
+  max-width:240px;
+  text-align:right;
+  color:#5d6174;
+  font-size:0.82rem;
+  line-height:1.6;
+  white-space:pre-line;
+}
+.resume-paper-section{
+  margin-bottom:1rem;
+}
+.resume-paper-title{
+  font-family:'Syne',sans-serif;
+  font-size:0.9rem;
+  letter-spacing:0.05em;
+  text-transform:uppercase;
+  margin-bottom:0.5rem;
+  color:#262942;
+}
+.resume-paper-section p{
+  font-size:0.9rem;
+  line-height:1.7;
+  color:#35384e;
+  white-space:pre-line;
+}
+.resume-paper-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:1rem;
+}
+.resume-paper.creative .resume-paper-title{
+  color:#b33e73;
+}
+.resume-paper.executive .resume-paper-title{
+  color:#8a5a16;
+}
+.resume-paper.ats .resume-paper-title{
+  color:#1f4f8f;
+}
+.resume-paper.professional .resume-paper-title{
+  color:#334155;
+}
+.resume-paper.simple .resume-paper-title{
+  color:#52525b;
+}
+.resume-paper.compact .resume-paper-grid{
+  gap:0.75rem;
+}
+
 /* ── Progress Bar ─────────────────────────────── */
 .progress-wrap{margin:0.75rem 0;display:none;}
 .progress-wrap.show{display:block;}
@@ -373,6 +488,62 @@ textarea:focus{border-color:var(--accent);}
   background:#fff;cursor:crosshair;display:block;
   max-width:100%;touch-action:none;
 }
+.sign-stage{
+  position:relative;
+  width:fit-content;
+  max-width:100%;
+  border:1px solid var(--border);
+  border-radius:14px;
+  overflow:hidden;
+  background:var(--surface);
+  cursor:crosshair;
+}
+.sign-stage canvas{
+  display:block;
+  max-width:100%;
+  height:auto;
+}
+.sign-underline{
+  position:absolute;
+  left:0;
+  top:0;
+  width:0;
+  height:0;
+  border:2px dashed rgba(255,77,109,0.95);
+  background:rgba(255,77,109,0.14);
+  border-radius:6px;
+  box-shadow:0 0 0 1px rgba(255,255,255,0.08) inset;
+  pointer-events:none;
+  display:none;
+}
+.ann-stage{
+  position:relative;
+  width:fit-content;
+  max-width:100%;
+  border:1px solid var(--border);
+  border-radius:14px;
+  overflow:hidden;
+  background:var(--surface);
+  cursor:crosshair;
+}
+.ann-stage canvas{
+  display:block;
+  max-width:100%;
+  height:auto;
+}
+.ann-selection{
+  position:absolute;
+  left:0;
+  top:0;
+  width:0;
+  height:0;
+  border:2px dashed rgba(255,77,109,0.95);
+  background:rgba(255,77,109,0.14);
+  border-radius:6px;
+  box-shadow:0 0 0 1px rgba(255,255,255,0.08) inset;
+  pointer-events:none;
+  display:none;
+}
 
 /* ── Info table ───────────────────────────────── */
 .info-table td{padding:0.65rem 0;border-bottom:1px solid var(--border);font-size:0.85rem;}
@@ -418,13 +589,38 @@ body.light{
   .sidebar-heading{display:none;}
   .sidebar-divider{display:none;}
   .tool-btn{
-    padding:0.5rem 0.75rem;flex-direction:column;gap:0.2rem;font-size:0.7rem;min-width:74px;
+    padding:0.65rem 0.8rem;flex-direction:column;gap:0.28rem;font-size:0.72rem;min-width:82px;
     scroll-snap-align:start;
+    border-radius:14px;
   }
   .tool-btn .icon{width:24px;height:24px;}
-  .panel{padding:1rem;}
+  .panel{padding:1rem 1rem 1.25rem;}
   .panel-title{font-size:1.35rem;line-height:1.15;}
   .panel-desc{font-size:0.84rem;line-height:1.55;margin-bottom:1.15rem;}
+  .dropzone{
+    padding:2.2rem 1rem;
+    border-radius:18px;
+  }
+  .dropzone h3{font-size:1rem;line-height:1.3;}
+  .dropzone p{font-size:0.8rem;line-height:1.5;}
+  .form-group{margin-bottom:0.95rem;}
+  .form-label{font-size:0.8rem;margin-bottom:0.4rem;}
+  select,input[type=text],input[type=number],input[type=password],input[type=email],textarea{
+    min-height:48px;
+    font-size:16px;
+    border-radius:12px;
+  }
+  textarea{
+    min-height:140px;
+    padding-top:0.85rem;
+  }
+  .btn{
+    min-height:48px;
+    border-radius:12px;
+  }
+  .btn-row{
+    gap:0.65rem;
+  }
   .home-hero{flex-direction:column;padding:1.4rem;}
   .home-hero-text h1{
     font-size:clamp(1.5rem,8vw,1.9rem);
@@ -451,6 +647,13 @@ body.light{
   .hero-stat .lbl{font-size:0.76rem;margin-top:0.25rem;}
   .tools-grid{grid-template-columns:repeat(2,minmax(0,1fr));}
   .options-grid{grid-template-columns:repeat(2,minmax(0,1fr));}
+  .option-card{
+    padding:0.9rem 0.8rem;
+    min-height:110px;
+    border-radius:14px;
+  }
+  .opt-icon{font-size:1.45rem;}
+  .opt-label{font-size:0.82rem;line-height:1.35;}
   .stats-row{gap:0.75rem;}
   .stat-card{min-width:calc(50% - 0.4rem);padding:0.9rem 1rem;}
   .st-val{font-size:1.25rem;}
@@ -471,9 +674,40 @@ body.light{
     padding:0.75rem;
     gap:0.75rem;
   }
+  .preview-toolbar{
+    gap:0.55rem !important;
+  }
+  .preview-toolbar .btn{
+    width:auto;
+    min-height:40px;
+    padding:0.55rem 0.9rem;
+  }
   .pdf-preview-box canvas{
     max-width:100%;
     height:auto;
+  }
+  .resume-live-preview{
+    min-height:auto;
+    padding:0.75rem;
+  }
+  .resume-paper{
+    min-height:auto;
+    padding:1rem;
+  }
+  .resume-paper-header{
+    flex-direction:column;
+    align-items:flex-start;
+  }
+  .resume-paper-contact{
+    max-width:none;
+    text-align:left;
+  }
+  .resume-paper-grid{
+    grid-template-columns:1fr;
+  }
+  .sign-stage,
+  .ann-stage{
+    width:100%;
   }
   #preview-canvas,
   #wm-preview-canvas{
@@ -497,6 +731,19 @@ body.light{
   .file-actions{width:100%;}
   .result-banner{flex-direction:column;align-items:flex-start;}
   .result-banner .btn-success{margin-left:0;}
+  .tabs{
+    overflow-x:auto;
+    overflow-y:hidden;
+    -webkit-overflow-scrolling:touch;
+    gap:0.25rem;
+    padding-bottom:0.15rem;
+  }
+  .tab-btn{
+    white-space:nowrap;
+    flex:0 0 auto;
+    padding:0.72rem 0.95rem;
+    font-size:0.84rem;
+  }
   #toast-container{
     left:1rem;right:1rem;bottom:max(1rem,env(safe-area-inset-bottom));
   }
@@ -520,9 +767,9 @@ body.light{
   }
   .sidebar{top:48px;}
   .tool-btn{
-    min-width:68px;
-    padding:0.46rem 0.52rem;
-    font-size:0.64rem;
+    min-width:76px;
+    padding:0.52rem 0.58rem;
+    font-size:0.66rem;
   }
   .tool-btn .icon{
     width:22px;
@@ -533,6 +780,16 @@ body.light{
   .home-hero{
     padding:1.1rem;
     border-radius:16px;
+  }
+  .resume-paper{
+    padding:0.9rem;
+    border-radius:14px;
+  }
+  .resume-paper-header h3{
+    font-size:1.28rem;
+  }
+  .resume-paper-section p{
+    font-size:0.84rem;
   }
   .home-hero-text h1{
     font-size:1.32rem;
@@ -560,6 +817,9 @@ body.light{
   .dropzone{padding:2.25rem 1rem;}
   .dropzone .dz-icon{font-size:2.2rem;}
   .dropzone h3{font-size:1rem;}
+  select,input[type=text],input[type=number],input[type=password],input[type=email],textarea{
+    font-size:16px;
+  }
   .pdf-preview-box{
     padding:0.6rem;
     max-height:48vh;
@@ -581,6 +841,9 @@ body.light{
   }
   .btn{width:100%;justify-content:center;}
   .btn-row > .btn-sm{width:auto;}
+  .preview-toolbar{
+    justify-content:flex-start;
+  }
 }
 
 /* ── Divider ──────────────────────────────────── */

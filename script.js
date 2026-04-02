@@ -21,6 +21,9 @@ const state = {
   hfFile:null,
   duplicateFile:null,
   metaeditFile:null,
+  cgpaRows:0,
+  marksRows:0,
+  timetableRows:0,
   protectFile:null,
   unlockFile:null,
   signFile:null, signType:'draw', signDrawing:false, signLastX:0, signLastY:0,
@@ -72,6 +75,594 @@ function filterTools(q) {
 
 function toggleTheme() {
   document.body.classList.toggle('light');
+}
+
+function addCGPARow(semester='', sgpa='', credits='') {
+  const wrap=document.getElementById('cgpa-rows');
+  if(!wrap) return;
+  state.cgpaRows=(state.cgpaRows||0)+1;
+  const row=document.createElement('div');
+  row.className='two-col cgpa-row';
+  row.dataset.rowId=String(state.cgpaRows);
+  row.style.alignItems='end';
+  row.innerHTML=`
+    <div class="form-group">
+      <label class="form-label">Semester Name</label>
+      <input type="text" class="cgpa-sem" placeholder="Semester ${state.cgpaRows}" value="${escapeHtml(semester)}">
+    </div>
+    <div class="form-group">
+      <label class="form-label">SGPA</label>
+      <input type="number" class="cgpa-sgpa" min="0" max="10" step="0.01" placeholder="8.25" value="${sgpa}">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Credits</label>
+      <input type="number" class="cgpa-credits" min="0" step="0.5" placeholder="22" value="${credits}">
+    </div>
+    <div class="form-group">
+      <button class="btn btn-secondary" type="button" onclick="removeCGPARow(this)">Remove</button>
+    </div>`;
+  wrap.appendChild(row);
+}
+
+function removeCGPARow(btn){
+  const wrap=document.getElementById('cgpa-rows');
+  const rows=wrap?.querySelectorAll('.cgpa-row') || [];
+  if(rows.length<=1){
+    toast('At least one semester row rehni chahiye','â„¹ï¸');
+    return;
+  }
+  btn.closest('.cgpa-row')?.remove();
+  calculateCGPA(false);
+}
+
+function calculateCGPA(showToast=true){
+  const rows=[...document.querySelectorAll('#cgpa-rows .cgpa-row')];
+  let totalCredits=0;
+  let weightedPoints=0;
+  let validCount=0;
+  for(const row of rows){
+    const sgpa=parseFloat(row.querySelector('.cgpa-sgpa')?.value || '');
+    const credits=parseFloat(row.querySelector('.cgpa-credits')?.value || '');
+    if(Number.isFinite(sgpa) && Number.isFinite(credits) && credits>0){
+      weightedPoints += sgpa * credits;
+      totalCredits += credits;
+      validCount++;
+    }
+  }
+  const finalCgpa=totalCredits>0 ? (weightedPoints/totalCredits) : 0;
+  const semEl=document.getElementById('cgpa-semesters');
+  const creditsEl=document.getElementById('cgpa-credits');
+  const weightedEl=document.getElementById('cgpa-weighted');
+  const finalEl=document.getElementById('cgpa-final');
+  if(semEl) semEl.textContent=String(validCount);
+  if(creditsEl) creditsEl.textContent=totalCredits ? totalCredits.toFixed(totalCredits % 1 ? 1 : 0) : '0';
+  if(weightedEl) weightedEl.textContent=weightedPoints.toFixed(2);
+  if(finalEl) finalEl.textContent=finalCgpa.toFixed(2);
+  if(showToast){
+    toast(totalCredits>0 ? `CGPA ${finalCgpa.toFixed(2)} calculate ho gaya` : 'SGPA aur credits enter karo','ðŸ“‹');
+  }
+}
+
+function resetCGPA(){
+  const wrap=document.getElementById('cgpa-rows');
+  if(!wrap) return;
+  wrap.innerHTML='';
+  state.cgpaRows=0;
+  addCGPARow('Semester 1','','');
+  addCGPARow('Semester 2','','');
+  calculateCGPA(false);
+}
+
+function calculatePercentage(showToast=true){
+  const obtained=parseFloat(document.getElementById('percentage-obtained')?.value || '');
+  const total=parseFloat(document.getElementById('percentage-total')?.value || '');
+  const resultEl=document.getElementById('percentage-result');
+  const remainingEl=document.getElementById('percentage-remaining');
+  if(!Number.isFinite(obtained) || !Number.isFinite(total) || total<=0){
+    if(showToast) toast('Valid obtained aur total marks enter karo','â„¹ï¸');
+    if(resultEl) resultEl.textContent='0.00%';
+    if(remainingEl) remainingEl.textContent='0';
+    return;
+  }
+  const percentage=(obtained/total)*100;
+  const remaining=Math.max(0,total-obtained);
+  if(resultEl) resultEl.textContent=`${percentage.toFixed(2)}%`;
+  if(remainingEl) remainingEl.textContent=remaining.toFixed(remaining % 1 ? 2 : 0);
+  if(showToast) toast(`Percentage ${percentage.toFixed(2)}%`,'ðŸ“‹');
+}
+
+function resetPercentageCalculator(){
+  const obtained=document.getElementById('percentage-obtained');
+  const total=document.getElementById('percentage-total');
+  if(obtained) obtained.value='';
+  if(total) total.value='';
+  const resultEl=document.getElementById('percentage-result');
+  const remainingEl=document.getElementById('percentage-remaining');
+  if(resultEl) resultEl.textContent='0.00%';
+  if(remainingEl) remainingEl.textContent='0';
+}
+
+function convertGpaToPercentage(showToast=true){
+  const gpa=parseFloat(document.getElementById('gpa-input')?.value || '');
+  const resultEl=document.getElementById('gpa-to-percentage-result');
+  if(!Number.isFinite(gpa) || gpa<0){
+    if(showToast) toast('Valid GPA enter karo','â„¹ï¸');
+    if(resultEl) resultEl.textContent='0.00%';
+    return;
+  }
+  const percentage=gpa*9.5;
+  if(resultEl) resultEl.textContent=`${percentage.toFixed(2)}%`;
+  if(showToast) toast(`Percentage ${percentage.toFixed(2)}%`,'ðŸ“‹');
+}
+
+function convertPercentageToGpa(showToast=true){
+  const percentage=parseFloat(document.getElementById('percentage-input')?.value || '');
+  const resultEl=document.getElementById('percentage-to-gpa-result');
+  if(!Number.isFinite(percentage) || percentage<0){
+    if(showToast) toast('Valid percentage enter karo','â„¹ï¸');
+    if(resultEl) resultEl.textContent='0.00';
+    return;
+  }
+  const gpa=percentage/9.5;
+  if(resultEl) resultEl.textContent=gpa.toFixed(2);
+  if(showToast) toast(`Estimated GPA ${gpa.toFixed(2)}`,'ðŸ“‹');
+}
+
+function resetGpaConverter(){
+  const gpa=document.getElementById('gpa-input');
+  const percentage=document.getElementById('percentage-input');
+  if(gpa) gpa.value='';
+  if(percentage) percentage.value='';
+  const g2p=document.getElementById('gpa-to-percentage-result');
+  const p2g=document.getElementById('percentage-to-gpa-result');
+  if(g2p) g2p.textContent='0.00%';
+  if(p2g) p2g.textContent='0.00';
+}
+
+function addMarksRow(subject='', obtained='', total=''){
+  const wrap=document.getElementById('marks-rows');
+  if(!wrap) return;
+  state.marksRows=(state.marksRows||0)+1;
+  const row=document.createElement('div');
+  row.className='two-col marks-row';
+  row.style.alignItems='end';
+  row.innerHTML=`
+    <div class="form-group">
+      <label class="form-label">Subject</label>
+      <input type="text" class="marks-subject" placeholder="Subject ${state.marksRows}" value="${escapeHtml(subject)}">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Obtained Marks</label>
+      <input type="number" class="marks-obtained" min="0" step="0.01" placeholder="78" value="${obtained}">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Total Marks</label>
+      <input type="number" class="marks-total" min="0" step="0.01" placeholder="100" value="${total}">
+    </div>
+    <div class="form-group">
+      <button class="btn btn-secondary" type="button" onclick="removeMarksRow(this)">Remove</button>
+    </div>`;
+  wrap.appendChild(row);
+}
+
+function removeMarksRow(btn){
+  const rows=document.querySelectorAll('#marks-rows .marks-row');
+  if(rows.length<=1){
+    toast('At least one subject row rehni chahiye','â„¹ï¸');
+    return;
+  }
+  btn.closest('.marks-row')?.remove();
+  calculateMarks(false);
+}
+
+function calculateMarks(showToast=true){
+  const rows=[...document.querySelectorAll('#marks-rows .marks-row')];
+  const values=[];
+  let totalObtained=0;
+  let totalMax=0;
+  for(const row of rows){
+    const obtained=parseFloat(row.querySelector('.marks-obtained')?.value || '');
+    const total=parseFloat(row.querySelector('.marks-total')?.value || '');
+    if(Number.isFinite(obtained) && Number.isFinite(total) && total>0){
+      values.push(obtained);
+      totalObtained += obtained;
+      totalMax += total;
+    }
+  }
+  const average=values.length ? totalObtained/values.length : 0;
+  const highest=values.length ? Math.max(...values) : 0;
+  const lowest=values.length ? Math.min(...values) : 0;
+  const percentage=totalMax>0 ? (totalObtained/totalMax)*100 : 0;
+  const set=(id,val)=>{ const el=document.getElementById(id); if(el) el.textContent=val; };
+  set('marks-total-result', totalObtained.toFixed(totalObtained % 1 ? 2 : 0));
+  set('marks-average-result', average.toFixed(2));
+  set('marks-highest-result', highest.toFixed(highest % 1 ? 2 : 0));
+  set('marks-lowest-result', lowest.toFixed(lowest % 1 ? 2 : 0));
+  set('marks-percentage-result', `${percentage.toFixed(2)}%`);
+  if(showToast) toast(values.length ? `Marks percentage ${percentage.toFixed(2)}%` : 'Marks enter karo','ðŸ“‹');
+}
+
+function resetMarksCalculator(){
+  const wrap=document.getElementById('marks-rows');
+  if(!wrap) return;
+  wrap.innerHTML='';
+  state.marksRows=0;
+  addMarksRow('Subject 1','','');
+  addMarksRow('Subject 2','','');
+  addMarksRow('Subject 3','','');
+  calculateMarks(false);
+}
+
+function copyOutput(id){
+  const el=document.getElementById(id);
+  if(!el || !el.value) return toast('Pehle content generate karo','â„¹ï¸');
+  navigator.clipboard.writeText(el.value).then(()=>toast('Copied to clipboard','ðŸ“‹')).catch(()=>toast('Copy nahi ho paya','âŒ'));
+}
+
+const RESUME_TEMPLATE_META = {
+  ats: {
+    title: 'ATS',
+    tag: 'Keyword-safe recruiter friendly layout',
+    badge: 'Featured',
+    layout: 'Summary + Skills + Experience + Education',
+    note: 'Best for online applications, recruiter screening and hiring-safe formatting.'
+  },
+  professional: {
+    title: 'Professional',
+    tag: 'Classic hiring-safe structure',
+    badge: 'Featured',
+    layout: 'Header + Summary + Skills + Experience + Education',
+    note: 'Best for business, office, campus and general job applications.'
+  },
+  simple: {
+    title: 'Simple',
+    tag: 'Minimal clean one-page look',
+    badge: 'Featured',
+    layout: 'Compact profile + skills + experience + education',
+    note: 'Best when you want a clean resume without extra visual noise.'
+  },
+  modern: {
+    title: 'Modern',
+    tag: 'Sharp headings with modern spacing',
+    badge: 'Featured',
+    layout: 'Header + Summary + Skills + Experience + Education',
+    note: 'Best for polished modern resumes that still feel safe and readable.'
+  },
+  executive: {
+    title: 'Executive',
+    tag: 'Leadership-first premium layout',
+    badge: 'Premium',
+    layout: 'Headline + Impact Summary + Core Skills + Experience Highlights',
+    note: 'Best for senior profiles, leadership roles and polished client-facing resumes.'
+  },
+  creative: {
+    title: 'Creative',
+    tag: 'Portfolio-style standout presentation',
+    badge: 'Premium',
+    layout: 'Brand-style intro + Skills + Projects + Achievements',
+    note: 'Best for designers, creators, marketing roles and visually expressive profiles.'
+  }
+};
+
+function syncResumeTemplatePreview(value){
+  renderResumeTemplatePreview();
+}
+
+function setResumeTemplate(value, card){
+  const select=document.getElementById('resume-template');
+  if(select) select.value=value;
+  syncResumeTemplatePreview(value);
+}
+
+function renderResumeTemplatePreview(){
+  const get=(id,fallback='')=>document.getElementById(id)?.value?.trim() || fallback;
+  const template=get('resume-template','modern');
+  const level=get('resume-level','student');
+  const name=get('resume-name','Your Name');
+  const email=get('resume-email','your@email.com');
+  const phone=get('resume-phone','+91 XXXXX XXXXX');
+  const location=get('resume-location','Your City');
+  const role=get('resume-role','Target Role');
+  const summaryInput=get('resume-summary','');
+  const education=get('resume-education','BCA - XYZ College');
+  const skills=get('resume-skills','HTML, CSS, JavaScript');
+  const projects=get('resume-projects','Project details preview yahan aayega.');
+  const achievements=get('resume-achievements','Achievements preview yahan aayega.');
+  const defaultSummaries={
+    student:'Motivated student with strong learning ability, project exposure, and a practical approach to solving real-world problems.',
+    intern:'Enthusiastic internship applicant with hands-on academic work, collaboration skills, and readiness to contribute quickly.',
+    experienced:'Results-oriented professional with execution strength, ownership mindset, and a track record of delivering strong outcomes.'
+  };
+  const summary=summaryInput || defaultSummaries[level] || defaultSummaries.student;
+  const titles={
+    ats:{summary:'Professional Summary',skills:'Keyword Skills',education:'Education',projects:'Work Experience / Projects',achievements:'Certifications / Achievements'},
+    professional:{summary:'Professional Summary',skills:'Core Skills',education:'Education',projects:'Experience',achievements:'Achievements'},
+    simple:{summary:'Profile',skills:'Skills',education:'Education',projects:'Projects / Experience',achievements:'Certifications'},
+    modern:{summary:'Professional Summary',skills:'Core Skills',education:'Education',projects:'Projects / Experience',achievements:'Achievements / Certifications'},
+    executive:{summary:'Executive Profile',skills:'Core Competencies',education:'Education',projects:'Leadership Highlights',achievements:'Awards / Certifications'},
+    creative:{summary:'Personal Brand Summary',skills:'Creative Toolkit',education:'Education',projects:'Featured Work / Projects',achievements:'Highlights'},
+  };
+  const copy=titles[template] || titles.modern;
+  const set=(id,text)=>{ const el=document.getElementById(id); if(el) el.textContent=text; };
+  const paper=document.getElementById('resume-paper');
+  if(paper) paper.className=`resume-paper ${template}`;
+  set('resume-paper-name', name);
+  set('resume-paper-role', role);
+  set('resume-paper-contact', `${email} | ${phone} | ${location}`);
+  set('resume-summary-title', copy.summary);
+  set('resume-skills-title', copy.skills);
+  set('resume-education-title', copy.education);
+  set('resume-projects-title', copy.projects);
+  set('resume-achievements-title', copy.achievements);
+  set('resume-paper-summary', summary);
+  set('resume-paper-skills', skills);
+  set('resume-paper-education', education);
+  set('resume-paper-projects', projects);
+  set('resume-paper-achievements', achievements);
+}
+
+function generateResume(){
+  const template=document.getElementById('resume-template')?.value || 'modern';
+  const level=document.getElementById('resume-level')?.value || 'student';
+  const name=document.getElementById('resume-name')?.value?.trim() || 'Your Name';
+  const email=document.getElementById('resume-email')?.value?.trim() || 'your@email.com';
+  const phone=document.getElementById('resume-phone')?.value?.trim() || '+91 XXXXX XXXXX';
+  const location=document.getElementById('resume-location')?.value?.trim() || 'Your City';
+  const role=document.getElementById('resume-role')?.value?.trim() || 'Target Role';
+  const summaryInput=document.getElementById('resume-summary')?.value?.trim();
+  const education=document.getElementById('resume-education')?.value?.trim() || 'Add education details';
+  const skills=document.getElementById('resume-skills')?.value?.trim() || 'Add skills';
+  const projects=document.getElementById('resume-projects')?.value?.trim() || 'Add projects / experience';
+  const achievements=document.getElementById('resume-achievements')?.value?.trim() || 'Add achievements / certifications';
+  const defaultSummaries={
+    student:'Motivated student with strong learning ability, practical problem-solving skills, and interest in building real-world projects.',
+    intern:'Enthusiastic internship applicant with hands-on academic project experience, teamwork mindset, and eagerness to contribute quickly.',
+    experienced:'Results-oriented professional with practical execution experience, ownership mindset, and the ability to deliver strong outcomes.'
+  };
+  const summary=summaryInput || defaultSummaries[level] || defaultSummaries.student;
+  let out='';
+  if(template==='executive'){
+    out=`${name}
+${role}
+${location} | ${email} | ${phone}
+
+EXECUTIVE PROFILE
+${summary}
+
+LEADERSHIP HIGHLIGHTS
+${projects}
+
+CORE COMPETENCIES
+${skills}
+
+EDUCATION
+${education}
+
+AWARDS / CERTIFICATIONS
+${achievements}`;
+  }else if(template==='creative'){
+    out=`${name}
+Creative Resume | ${role}
+${location} | ${email} | ${phone}
+
+PERSONAL BRAND SUMMARY
+${summary}
+
+KEY SKILLS
+${skills}
+
+FEATURED WORK / PROJECTS
+${projects}
+
+EDUCATION
+${education}
+
+CERTIFICATIONS / HIGHLIGHTS
+${achievements}`;
+  }else if(template==='ats'){
+    out=`${name}
+${role}
+${email} | ${phone} | ${location}
+
+PROFESSIONAL SUMMARY
+${summary}
+
+KEYWORDS / CORE SKILLS
+${skills}
+
+WORK EXPERIENCE / PROJECTS
+${projects}
+
+EDUCATION
+${education}
+
+CERTIFICATIONS / ACHIEVEMENTS
+${achievements}`;
+  }else if(template==='simple'){
+    out=`${name} | ${role}
+${location} | ${email} | ${phone}
+
+PROFILE
+${summary}
+
+SKILLS
+${skills}
+
+EXPERIENCE / PROJECTS
+${projects}
+
+EDUCATION
+${education}
+
+CERTIFICATIONS
+${achievements}`;
+  }else if(template==='professional'){
+    out=`${name}
+${role}
+${email} | ${phone} | ${location}
+
+PROFESSIONAL SUMMARY
+${summary}
+
+CORE SKILLS
+${skills}
+
+EXPERIENCE
+${projects}
+
+EDUCATION
+${education}
+
+ACHIEVEMENTS
+${achievements}`;
+  }else{
+    out=`${name}
+${role}
+${email} | ${phone} | ${location}
+
+PROFESSIONAL SUMMARY
+${summary}
+
+CORE SKILLS
+${skills}
+
+EXPERIENCE / PROJECTS
+${projects}
+
+EDUCATION
+${education}
+
+ACHIEVEMENTS / CERTIFICATIONS
+${achievements}`;
+  }
+  const box=document.getElementById('resume-output'); if(box) box.value=out;
+  renderResumeTemplatePreview();
+  toast('Resume draft ready','??????????');
+}
+
+function downloadResumeText(){
+  const content=document.getElementById('resume-output')?.value || '';
+  if(!content.trim()) return toast('Pehle resume generate karo','?????????????');
+  dlBlob(new Blob([content],{type:'text/plain;charset=utf-8'}),'resume.txt');
+}
+
+function generateCoverLetter(){
+  const name=document.getElementById('cl-name')?.value?.trim() || 'Your Name';
+  const role=document.getElementById('cl-role')?.value?.trim() || 'the role';
+  const company=document.getElementById('cl-company')?.value?.trim() || 'the company';
+  const skills=document.getElementById('cl-skills')?.value?.trim() || 'relevant skills';
+  const reason=document.getElementById('cl-reason')?.value?.trim() || 'my interest and ability to contribute';
+  const out=`Dear Hiring Manager,\n\nI am writing to express my interest in the ${role} position at ${company}. With my background in ${skills}, I believe I can contribute meaningfully to your team.\n\nWhat attracts me most to this opportunity is ${reason}. I am eager to apply my skills, learn quickly, and take ownership of the work assigned to me.\n\nI would welcome the opportunity to discuss how I can support ${company}. Thank you for your time and consideration.\n\nSincerely,\n${name}`;
+  const box=document.getElementById('cl-output'); if(box) box.value=out;
+  toast('Cover letter generated','ðŸ“‹');
+}
+
+function generateStudyPlanner(){
+  const subjects=(document.getElementById('planner-subjects')?.value || '').split(/\r?\n/).map(s=>s.trim()).filter(Boolean);
+  const hours=parseFloat(document.getElementById('planner-hours')?.value || '');
+  const days=parseInt(document.getElementById('planner-days')?.value || '',10);
+  if(!subjects.length || !Number.isFinite(hours) || !Number.isFinite(days) || hours<=0 || days<=0){
+    return toast('Subjects, hours aur days sahi se enter karo','â„¹ï¸');
+  }
+  const slots=Math.max(1, Math.floor((hours*60)/90));
+  const lines=[];
+  for(let d=1; d<=days; d++){
+    lines.push(`Day ${d}`);
+    for(let s=0; s<slots; s++){
+      const sub=subjects[(d+s-1)%subjects.length];
+      lines.push(`- ${sub} : 90 min focus session`);
+    }
+    lines.push('- 15 min revision + 10 min break planning');
+    lines.push('');
+  }
+  const box=document.getElementById('planner-output'); if(box) box.value=lines.join('\n').trim();
+  toast('Study plan ready','ðŸ“‹');
+}
+
+function calculateAttendance(showToast=true){
+  const attended=parseFloat(document.getElementById('att-attended')?.value || '');
+  const total=parseFloat(document.getElementById('att-total')?.value || '');
+  const target=parseFloat(document.getElementById('att-target')?.value || '');
+  if(!Number.isFinite(attended) || !Number.isFinite(total) || !Number.isFinite(target) || total<=0){
+    return showToast ? toast('Attendance values sahi enter karo','â„¹ï¸') : null;
+  }
+  const current=(attended/total)*100;
+  let need=0, canMiss=0;
+  if(current < target){
+    need=Math.max(0, Math.ceil((target*total - 100*attended)/(100-target)));
+  }else{
+    canMiss=Math.max(0, Math.floor((100*attended - target*total)/target));
+  }
+  const set=(id,val)=>{ const el=document.getElementById(id); if(el) el.textContent=val; };
+  set('att-current-result', `${current.toFixed(2)}%`);
+  set('att-need-result', String(need));
+  set('att-can-miss-result', String(canMiss));
+  if(showToast) toast('Attendance calculated','ðŸ“‹');
+}
+
+function resetAttendanceCalculator(){
+  ['att-attended','att-total','att-target'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+  const set=(id,val)=>{ const el=document.getElementById(id); if(el) el.textContent=val; };
+  set('att-current-result','0.00%');
+  set('att-need-result','0');
+  set('att-can-miss-result','0');
+}
+
+function generateTimeTable(){
+  const days=(document.getElementById('tt-days')?.value || '').split(/\r?\n/).map(s=>s.trim()).filter(Boolean);
+  const subjects=(document.getElementById('tt-subjects')?.value || '').split(/\r?\n/).map(s=>s.trim()).filter(Boolean);
+  if(!days.length || !subjects.length) return toast('Days aur subjects enter karo','â„¹ï¸');
+  const lines=[];
+  days.forEach((day,idx)=>{
+    lines.push(`${day}`);
+    subjects.forEach((sub,sIdx)=> lines.push(`- ${sub}${sIdx===subjects.length-1?'':' '}`));
+    if(idx!==days.length-1) lines.push('');
+  });
+  const box=document.getElementById('tt-output'); if(box) box.value=lines.join('\n');
+  toast('Time table generated','ðŸ“‹');
+}
+
+const UNIT_CONFIG = {
+  length: { meter:1, kilometer:1000, centimeter:0.01, inch:0.0254, foot:0.3048 },
+  weight: { kilogram:1, gram:0.001, pound:0.45359237, ounce:0.0283495 },
+  temperature: { celsius:'c', fahrenheit:'f', kelvin:'k' }
+};
+
+function updateUnitOptions(){
+  const category=document.getElementById('uc-category')?.value || 'length';
+  const from=document.getElementById('uc-from');
+  const to=document.getElementById('uc-to');
+  if(!from || !to) return;
+  const keys=Object.keys(UNIT_CONFIG[category]);
+  const opts=keys.map(k=>`<option value="${k}">${k}</option>`).join('');
+  from.innerHTML=opts;
+  to.innerHTML=opts;
+  if(keys[1]) to.value=keys[1];
+}
+
+function convertUnits(showToast=true){
+  const category=document.getElementById('uc-category')?.value || 'length';
+  const value=parseFloat(document.getElementById('uc-value')?.value || '');
+  const from=document.getElementById('uc-from')?.value;
+  const to=document.getElementById('uc-to')?.value;
+  const resultEl=document.getElementById('uc-result');
+  if(!Number.isFinite(value)){ if(showToast) toast('Valid value enter karo','â„¹ï¸'); return; }
+  let result=0;
+  if(category==='temperature'){
+    const toC = from==='celsius' ? value : from==='fahrenheit' ? (value-32)*5/9 : value-273.15;
+    result = to==='celsius' ? toC : to==='fahrenheit' ? (toC*9/5)+32 : toC+273.15;
+  }else{
+    const base=value*UNIT_CONFIG[category][from];
+    result=base/UNIT_CONFIG[category][to];
+  }
+  if(resultEl) resultEl.textContent=result.toFixed(4);
+  if(showToast) toast('Unit converted','ðŸ“‹');
+}
+
+function resetUnitConverter(){
+  const val=document.getElementById('uc-value'); if(val) val.value='';
+  const out=document.getElementById('uc-result'); if(out) out.textContent='0';
+  updateUnitOptions();
 }
 
 // ══════════════════════════════════════════════════════
@@ -249,8 +840,14 @@ async function handleSingleFile(input, tool) {
   state[tool+'File']=file;
   const opts=document.getElementById(TOOL_CONFIG[tool]?.optionsId || tool+'-options');
   if(opts) opts.style.display='block';
-  if(tool!=='watermark'){
+  if(tool!=='watermark' && tool!=='sign' && tool!=='annotate'){
     await renderToolPdfPreview(tool,file,3);
+  }
+  if(tool==='sign'){
+    await initSignPreview(file);
+  }
+  if(tool==='annotate'){
+    await initAnnotatePreview(file);
   }
   // show result banners hide
   const results=document.querySelectorAll('#panel-'+tool+' .result-banner');
@@ -1781,6 +2378,260 @@ function selectSignType(type,btn){
   document.querySelectorAll('#sign-options .tab-content').forEach(c=>c.classList.remove('active'));
   document.getElementById('sign-'+type+'-area').classList.add('active');
 }
+async function initSignPreview(file){
+  try{
+    const ab=await readAB(file);
+    state.signPreviewDoc=await pdfjsLib.getDocument({data:ab}).promise;
+    state.signPreviewTotal=state.signPreviewDoc.numPages;
+    state.signPreviewPageNum=Math.min(parseInt(document.getElementById('sign-page')?.value)||1,state.signPreviewTotal);
+    document.getElementById('sign-preview-total').textContent=state.signPreviewTotal;
+    document.getElementById('sign-preview-wrap').style.display='block';
+    bindSignPreviewControls();
+    await setSignPreviewPage(state.signPreviewPageNum);
+  }catch(e){
+    toast('Sign preview load error: '+e.message,'âŒ');
+  }
+}
+
+let signPreviewBound=false;
+function bindSignPreviewControls(){
+  if(signPreviewBound) return;
+  signPreviewBound=true;
+  const stage=document.getElementById('sign-stage');
+  const pageField=document.getElementById('sign-page');
+  if(pageField){
+    pageField.addEventListener('change',()=>setSignPreviewPage(parseInt(pageField.value)||1));
+    pageField.addEventListener('input',()=>setSignPreviewPage(parseInt(pageField.value)||1));
+  }
+  const getPos=e=>{
+    const canvas=document.getElementById('sign-preview-canvas');
+    const rect=canvas.getBoundingClientRect();
+    const point=e.touches ? e.touches[0] : e;
+    return {
+      x:clamp((point.clientX-rect.left)/rect.width,0,1),
+      y:clamp((point.clientY-rect.top)/rect.height,0,1)
+    };
+  };
+  const update=e=>{
+    const start=state.signUnderlineStart || getPos(e);
+    const current=getPos(e);
+    state.signPlacement={
+      page:state.signPreviewPageNum,
+      x1:Math.min(start.x,current.x),
+      x2:Math.max(start.x,current.x),
+      y:current.y
+    };
+    const posField=document.getElementById('sign-pos');
+    if(posField) posField.value='custom-underline';
+    renderSignUnderlineOverlay();
+  };
+  stage.addEventListener('mousedown',e=>{
+    state.signDragging=true;
+    state.signUnderlineStart=getPos(e);
+    update(e);
+  });
+  window.addEventListener('mousemove',e=>{
+    if(!state.signDragging) return;
+    update(e);
+  });
+  window.addEventListener('mouseup',()=>{
+    state.signDragging=false;
+    state.signUnderlineStart=null;
+  });
+  stage.addEventListener('touchstart',e=>{
+    e.preventDefault();
+    state.signDragging=true;
+    state.signUnderlineStart=getPos(e);
+    update(e);
+  },{passive:false});
+  window.addEventListener('touchmove',e=>{
+    if(!state.signDragging) return;
+    update(e);
+  },{passive:false});
+  window.addEventListener('touchend',()=>{
+    state.signDragging=false;
+    state.signUnderlineStart=null;
+  });
+  stage.addEventListener('click',e=>{
+    const p=getPos(e);
+    state.signPlacement={page:state.signPreviewPageNum,x1:Math.max(0,p.x-0.08),x2:Math.min(1,p.x+0.08),y:p.y};
+    const posField=document.getElementById('sign-pos');
+    if(posField) posField.value='custom-underline';
+    renderSignUnderlineOverlay();
+  });
+}
+
+async function setSignPreviewPage(pageNum){
+  if(!state.signPreviewDoc) return;
+  state.signPreviewPageNum=clamp(pageNum,1,state.signPreviewTotal);
+  const pageField=document.getElementById('sign-page');
+  if(pageField) pageField.value=state.signPreviewPageNum;
+  document.getElementById('sign-preview-cur').textContent=state.signPreviewPageNum;
+  state.signPreviewPage=await state.signPreviewDoc.getPage(state.signPreviewPageNum);
+  const viewport=state.signPreviewPage.getViewport({scale:getPreviewRenderScale(1.15,'text')});
+  const canvas=document.getElementById('sign-preview-canvas');
+  canvas.width=viewport.width;
+  canvas.height=viewport.height;
+  await state.signPreviewPage.render({canvasContext:canvas.getContext('2d'),viewport}).promise;
+  renderSignUnderlineOverlay();
+}
+
+function renderSignUnderlineOverlay(){
+  const line=document.getElementById('sign-underline');
+  const canvas=document.getElementById('sign-preview-canvas');
+  const note=document.getElementById('sign-preview-note');
+  if(!line || !canvas || !canvas.width){
+    return;
+  }
+  const placement=state.signPlacement;
+  if(!placement || placement.page!==state.signPreviewPageNum){
+    line.style.display='none';
+    if(note) note.textContent='Preview par underline drag karo, sign ussi jagah lagega.';
+    return;
+  }
+  line.style.display='block';
+  line.style.left=`${placement.x1*canvas.width}px`;
+  line.style.top=`${Math.max((placement.y*canvas.height)-10,0)}px`;
+  line.style.width=`${Math.max((placement.x2-placement.x1)*canvas.width,36)}px`;
+  line.style.height='20px';
+  if(note) note.textContent=`Underline placement set on page ${placement.page}. Signature yahin place hoga.`;
+}
+
+function prevSignPreviewPage(){
+  if(state.signPreviewPageNum>1) setSignPreviewPage(state.signPreviewPageNum-1);
+}
+
+function nextSignPreviewPage(){
+  if(state.signPreviewPageNum<state.signPreviewTotal) setSignPreviewPage(state.signPreviewPageNum+1);
+}
+
+async function initAnnotatePreview(file){
+  try{
+    const ab=await readAB(file);
+    state.annPreviewDoc=await pdfjsLib.getDocument({data:ab}).promise;
+    state.annPreviewTotal=state.annPreviewDoc.numPages;
+    state.annPreviewPageNum=Math.min(parseInt(document.getElementById('ann-page')?.value)||1,state.annPreviewTotal);
+    document.getElementById('ann-preview-total').textContent=state.annPreviewTotal;
+    document.getElementById('ann-preview-wrap').style.display='block';
+    bindAnnotatePreviewControls();
+    await setAnnotatePreviewPage(state.annPreviewPageNum);
+  }catch(e){
+    toast('Annotate preview load error: '+e.message,'âŒ');
+  }
+}
+
+let annPreviewBound=false;
+function bindAnnotatePreviewControls(){
+  if(annPreviewBound) return;
+  annPreviewBound=true;
+  const stage=document.getElementById('ann-stage');
+  const pageField=document.getElementById('ann-page');
+  if(pageField){
+    pageField.addEventListener('change',()=>setAnnotatePreviewPage(parseInt(pageField.value)||1));
+    pageField.addEventListener('input',()=>setAnnotatePreviewPage(parseInt(pageField.value)||1));
+  }
+  const getPos=e=>{
+    const canvas=document.getElementById('ann-preview-canvas');
+    const rect=canvas.getBoundingClientRect();
+    const point=e.touches ? e.touches[0] : e;
+    return {
+      x:clamp((point.clientX-rect.left)/rect.width,0,1),
+      y:clamp((point.clientY-rect.top)/rect.height,0,1)
+    };
+  };
+  const update=e=>{
+    const start=state.annSelectionStart || getPos(e);
+    const current=getPos(e);
+    state.annPlacement={
+      page:state.annPreviewPageNum,
+      x1:Math.min(start.x,current.x),
+      x2:Math.max(start.x,current.x),
+      y1:Math.min(start.y,current.y),
+      y2:Math.max(start.y,current.y)
+    };
+    renderAnnotateSelectionOverlay();
+  };
+  stage.addEventListener('mousedown',e=>{
+    state.annDragging=true;
+    state.annSelectionStart=getPos(e);
+    update(e);
+  });
+  window.addEventListener('mousemove',e=>{
+    if(!state.annDragging) return;
+    update(e);
+  });
+  window.addEventListener('mouseup',()=>{
+    state.annDragging=false;
+    state.annSelectionStart=null;
+  });
+  stage.addEventListener('touchstart',e=>{
+    e.preventDefault();
+    state.annDragging=true;
+    state.annSelectionStart=getPos(e);
+    update(e);
+  },{passive:false});
+  window.addEventListener('touchmove',e=>{
+    if(!state.annDragging) return;
+    update(e);
+  },{passive:false});
+  window.addEventListener('touchend',()=>{
+    state.annDragging=false;
+    state.annSelectionStart=null;
+  });
+  stage.addEventListener('click',e=>{
+    const p=getPos(e);
+    state.annPlacement={page:state.annPreviewPageNum,x1:Math.max(0,p.x-0.1),x2:Math.min(1,p.x+0.1),y1:Math.max(0,p.y-0.03),y2:Math.min(1,p.y+0.03)};
+    renderAnnotateSelectionOverlay();
+  });
+  const colorField=document.getElementById('ann-color');
+  if(colorField){
+    colorField.addEventListener('input',renderAnnotateSelectionOverlay);
+    colorField.addEventListener('change',renderAnnotateSelectionOverlay);
+  }
+}
+
+async function setAnnotatePreviewPage(pageNum){
+  if(!state.annPreviewDoc) return;
+  state.annPreviewPageNum=clamp(pageNum,1,state.annPreviewTotal);
+  const pageField=document.getElementById('ann-page');
+  if(pageField) pageField.value=state.annPreviewPageNum;
+  document.getElementById('ann-preview-cur').textContent=state.annPreviewPageNum;
+  state.annPreviewPage=await state.annPreviewDoc.getPage(state.annPreviewPageNum);
+  const viewport=state.annPreviewPage.getViewport({scale:getPreviewRenderScale(1.15,'text')});
+  const canvas=document.getElementById('ann-preview-canvas');
+  canvas.width=viewport.width;
+  canvas.height=viewport.height;
+  await state.annPreviewPage.render({canvasContext:canvas.getContext('2d'),viewport}).promise;
+  renderAnnotateSelectionOverlay();
+}
+
+function renderAnnotateSelectionOverlay(){
+  const box=document.getElementById('ann-selection');
+  const canvas=document.getElementById('ann-preview-canvas');
+  const note=document.getElementById('ann-preview-note');
+  if(!box || !canvas || !canvas.width) return;
+  const placement=state.annPlacement;
+  if(!placement || placement.page!==state.annPreviewPageNum){
+    box.style.display='none';
+    if(note) note.textContent='PDF par drag ya click karo, annotation ussi location par lagega.';
+    return;
+  }
+  box.style.display='block';
+  box.style.left=`${placement.x1*canvas.width}px`;
+  box.style.top=`${placement.y1*canvas.height}px`;
+  box.style.width=`${Math.max((placement.x2-placement.x1)*canvas.width,28)}px`;
+  box.style.height=`${Math.max((placement.y2-placement.y1)*canvas.height,10)}px`;
+  if(note) note.textContent=`Selection set on page ${placement.page}. Annotation yahin place hoga.`;
+}
+
+function prevAnnotatePreviewPage(){
+  if(state.annPreviewPageNum>1) setAnnotatePreviewPage(state.annPreviewPageNum-1);
+}
+
+function nextAnnotatePreviewPage(){
+  if(state.annPreviewPageNum<state.annPreviewTotal) setAnnotatePreviewPage(state.annPreviewPageNum+1);
+}
+
 async function signPDF(){
   if(!state.signFile){toast('Pehle PDF upload karo!','⚠️');return;}
   try{
@@ -1792,8 +2643,12 @@ async function signPDF(){
     const {width,height}=page.getSize();
     const sigSize=parseInt(document.getElementById('sign-size').value)||120;
     const posOpt=document.getElementById('sign-pos').value;
-    let sx,sy;
-    if(posOpt==='bottom-right'){sx=width-sigSize-30;sy=25;}
+    let sx,sy,targetWidth=sigSize;
+    if(posOpt==='custom-underline' && state.signPlacement && state.signPlacement.page===pageNum){
+      sx=width*state.signPlacement.x1;
+      sy=height*(1-state.signPlacement.y);
+      targetWidth=Math.max(width*(state.signPlacement.x2-state.signPlacement.x1),sigSize*0.55);
+    } else if(posOpt==='bottom-right'){sx=width-sigSize-30;sy=25;}
     else if(posOpt==='bottom-left'){sx=30;sy=25;}
     else if(posOpt==='bottom-center'){sx=width/2-sigSize/2;sy=25;}
     else{sx=width-sigSize-30;sy=height-40;}
@@ -1803,12 +2658,15 @@ async function signPDF(){
       const dataURL=canvas.toDataURL('image/png');
       const pngData=await fetch(dataURL).then(r=>r.arrayBuffer());
       const img=await pdf.embedPng(pngData);
-      const dim=img.scale(sigSize/img.width);
-      page.drawImage(img,{x:sx,y:sy,width:dim.width,height:dim.height});
+      const dim=img.scale(targetWidth/img.width);
+      page.drawImage(img,{x:sx,y:posOpt==='custom-underline'?sy-(dim.height*0.35):sy,width:dim.width,height:dim.height});
     } else if(state.signType==='type'){
       const name=document.getElementById('sign-name').value||'Signature';
       const font=await pdf.embedFont(PDFLib.StandardFonts.TimesRomanItalic);
-      page.drawText(name,{x:sx,y:sy+10,size:sigSize/5,font,color:PDFLib.rgb(0.1,0.1,0.5)});
+      const fontSize=posOpt==='custom-underline'
+        ? clamp(targetWidth/Math.max(name.length*0.55,4),18,Math.max(20,sigSize/4))
+        : sigSize/5;
+      page.drawText(name,{x:sx,y:posOpt==='custom-underline'?sy-(fontSize*0.2):sy+10,size:fontSize,font,color:PDFLib.rgb(0.1,0.1,0.5)});
     } else {
       const imgFile=document.getElementById('sign-img-file').files[0];
       if(!imgFile){toast('Signature image upload karo!','⚠️');return;}
@@ -1816,8 +2674,8 @@ async function signPDF(){
       let pdfImg;
       if(imgFile.type==='image/jpeg')pdfImg=await pdf.embedJpg(imgAB);
       else pdfImg=await pdf.embedPng(imgAB);
-      const dim=pdfImg.scale(sigSize/pdfImg.width);
-      page.drawImage(pdfImg,{x:sx,y:sy,width:dim.width,height:dim.height});
+      const dim=pdfImg.scale(targetWidth/pdfImg.width);
+      page.drawImage(pdfImg,{x:sx,y:posOpt==='custom-underline'?sy-(dim.height*0.35):sy,width:dim.width,height:dim.height});
     }
     const bytes=await pdf.save();
     const blob=new Blob([bytes],{type:'application/pdf'});
@@ -1843,41 +2701,53 @@ async function annotatePDF(){
     const text=(document.getElementById('ann-text').value||'Annotation').trim() || 'Annotation';
     const colorHex=document.getElementById('ann-color').value;
     const {r,g,b}=hexToRgb(colorHex);
-    const yPercent=clamp(parseFloat(document.getElementById('ann-y-pos').value)||50,0,100)/100;
-    const yPos=height*(1-yPercent);
     const type=state.annType;
     const lines=wrapTextLines(text,44);
+    const placement=state.annPlacement && state.annPlacement.page===pageNum ? state.annPlacement : null;
+    const x1=placement ? width*placement.x1 : 30;
+    const x2=placement ? width*placement.x2 : width-30;
+    const yTop=placement ? height*(1-placement.y1) : height*0.55;
+    const yBottom=placement ? height*(1-placement.y2) : height*0.45;
+    const selWidth=Math.max(Math.abs(x2-x1),80);
+    const selHeight=Math.max(Math.abs(yTop-yBottom),16);
+    const baseY=clamp(Math.min(yTop,yBottom),18,height-18);
     if(type==='textbox'||type==='comment'){
       const fontSize=11;
       const padding=8;
       const lineHeight=fontSize+3;
-      const boxWidth=Math.min(Math.max(...lines.map(line=>font.widthOfTextAtSize(line,fontSize)),80)+padding*2,width-60);
-      const boxHeight=Math.max(32,lines.length*lineHeight+padding*2-3);
-      const boxY=clamp(yPos-boxHeight/2,12,height-boxHeight-12);
-      page.drawRectangle({x:30,y:boxY,width:boxWidth,height:boxHeight,color:PDFLib.rgb(r,g,b),opacity:type==='comment'?0.2:0.25,borderColor:PDFLib.rgb(r,g,b),borderWidth:1});
+      const contentWidth=Math.max(...lines.map(line=>font.widthOfTextAtSize(line,fontSize)),80)+padding*2;
+      const boxWidth=Math.min(Math.max(contentWidth,selWidth),width-24);
+      const boxHeight=Math.max(32,Math.max(lines.length*lineHeight+padding*2-3,selHeight));
+      const boxX=clamp(x1,12,width-boxWidth-12);
+      const boxY=clamp(baseY-boxHeight/2,12,height-boxHeight-12);
+      page.drawRectangle({x:boxX,y:boxY,width:boxWidth,height:boxHeight,color:PDFLib.rgb(r,g,b),opacity:type==='comment'?0.2:0.25,borderColor:PDFLib.rgb(r,g,b),borderWidth:1});
       lines.forEach((line,idx)=>{
         const textY=boxY+boxHeight-padding-fontSize-(idx*lineHeight)+fontSize;
-        page.drawText(line,{x:38,y:clamp(textY,18,height-18),size:fontSize,font,color:PDFLib.rgb(0.1,0.1,0.1)});
+        page.drawText(line,{x:boxX+8,y:clamp(textY,18,height-18),size:fontSize,font,color:PDFLib.rgb(0.1,0.1,0.1)});
       });
     } else if(type==='highlight'){
-      const bandHeight=Math.max(20,lines.length*14);
-      const bandY=clamp(yPos-bandHeight/2,12,height-bandHeight-12);
-      page.drawRectangle({x:30,y:bandY,width:width-60,height:bandHeight,color:PDFLib.rgb(r,g,b),opacity:0.45});
+      const bandHeight=Math.max(20,selHeight);
+      const bandY=clamp(baseY-bandHeight/2,12,height-bandHeight-12);
+      const bandX=clamp(x1,12,width-32);
+      const bandWidth=Math.min(selWidth,width-bandX-12);
+      page.drawRectangle({x:bandX,y:bandY,width:bandWidth,height:bandHeight,color:PDFLib.rgb(r,g,b),opacity:0.45});
       lines.slice(0,3).forEach((line,idx)=>{
-        page.drawText(line,{x:38,y:clamp(bandY+bandHeight-14-(idx*14),18,height-18),size:11,font,color:PDFLib.rgb(0.1,0.1,0.1)});
+        page.drawText(line,{x:bandX+8,y:clamp(bandY+bandHeight-14-(idx*14),18,height-18),size:11,font,color:PDFLib.rgb(0.1,0.1,0.1)});
       });
     } else if(type==='underline'){
       const line=lines[0];
       const tw=font.widthOfTextAtSize(line,12);
-      const textY=clamp(yPos,18,height-18);
-      page.drawText(line,{x:30,y:textY,size:12,font,color:PDFLib.rgb(0.1,0.1,0.1)});
-      page.drawLine({start:{x:30,y:textY-2},end:{x:30+tw,y:textY-2},thickness:1.5,color:PDFLib.rgb(r,g,b)});
+      const textY=clamp(baseY,18,height-18);
+      const textX=clamp(x1,12,width-12);
+      page.drawText(line,{x:textX,y:textY,size:12,font,color:PDFLib.rgb(0.1,0.1,0.1)});
+      page.drawLine({start:{x:textX,y:textY-2},end:{x:textX+Math.max(tw,selWidth),y:textY-2},thickness:1.5,color:PDFLib.rgb(r,g,b)});
     } else if(type==='strike'){
       const line=lines[0];
       const tw=font.widthOfTextAtSize(line,12);
-      const textY=clamp(yPos,18,height-18);
-      page.drawText(line,{x:30,y:textY,size:12,font,color:PDFLib.rgb(0.1,0.1,0.1)});
-      page.drawLine({start:{x:30,y:textY+6},end:{x:30+tw,y:textY+6},thickness:1.5,color:PDFLib.rgb(r,g,b)});
+      const textY=clamp(baseY,18,height-18);
+      const textX=clamp(x1,12,width-12);
+      page.drawText(line,{x:textX,y:textY,size:12,font,color:PDFLib.rgb(0.1,0.1,0.1)});
+      page.drawLine({start:{x:textX,y:textY+6},end:{x:textX+Math.max(tw,selWidth),y:textY+6},thickness:1.5,color:PDFLib.rgb(r,g,b)});
     }
     const bytes=await pdf.save();
     const blob=new Blob([bytes],{type:'application/pdf'});
@@ -2072,6 +2942,32 @@ async function repairPDF(input){
 
 window.addEventListener('resize',()=>{
   document.documentElement.style.setProperty('--vh', `${window.innerHeight * 0.01}px`);
+});
+
+document.addEventListener('DOMContentLoaded',()=>{
+  document.documentElement.style.setProperty('--vh', `${window.innerHeight * 0.01}px`);
+  if(document.getElementById('cgpa-rows') && !document.querySelector('#cgpa-rows .cgpa-row')){
+    addCGPARow('Semester 1','','');
+    addCGPARow('Semester 2','','');
+    calculateCGPA(false);
+  }
+  if(document.getElementById('marks-rows') && !document.querySelector('#marks-rows .marks-row')){
+    addMarksRow('Subject 1','','');
+    addMarksRow('Subject 2','','');
+    addMarksRow('Subject 3','','');
+    calculateMarks(false);
+  }
+  if(document.getElementById('resume-template')){
+    syncResumeTemplatePreview(document.getElementById('resume-template').value || 'modern');
+    ['resume-template','resume-level','resume-name','resume-email','resume-phone','resume-location','resume-role','resume-summary','resume-education','resume-skills','resume-projects','resume-achievements'].forEach(id=>{
+      const el=document.getElementById(id);
+      if(el) el.addEventListener(el.tagName==='SELECT' ? 'change' : 'input', renderResumeTemplatePreview);
+    });
+    renderResumeTemplatePreview();
+  }
+  if(document.getElementById('uc-category')){
+    updateUnitOptions();
+  }
 });
 
 
