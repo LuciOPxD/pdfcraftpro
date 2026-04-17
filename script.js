@@ -39,7 +39,9 @@ const state = {
   previewDoc:null, previewPage:1, previewTotal:0,
   compareData:[null,null],
   htmlContent:'',
-  resultBlobs:{}
+  resultBlobs:{},
+  qrDataUrl:'',
+  passwordOptions:{upper:true,lower:true,number:true,symbol:true}
 };
 
 const TOOL_CONFIG = {
@@ -75,6 +77,41 @@ function filterTools(q) {
 
 function toggleTheme() {
   document.body.classList.toggle('light');
+}
+
+function initMobileSidebarSections(){
+  const sections=[...document.querySelectorAll('.sidebar .sidebar-section')];
+  if(!sections.length) return;
+
+  const applyMobileCollapseState=()=>{
+    const isMobile=window.innerWidth<=768;
+    sections.forEach((section,idx)=>{
+      const heading=section.querySelector('.sidebar-heading');
+      if(!heading) return;
+      heading.classList.toggle('is-collapsible',isMobile);
+      if(!isMobile){
+        section.classList.remove('collapsed');
+        return;
+      }
+      if(!section.dataset.mobileInit){
+        if(idx>1) section.classList.add('collapsed');
+        section.dataset.mobileInit='1';
+      }
+    });
+  };
+
+  sections.forEach(section=>{
+    const heading=section.querySelector('.sidebar-heading');
+    if(!heading || heading.dataset.boundToggle) return;
+    heading.dataset.boundToggle='1';
+    heading.addEventListener('click',()=>{
+      if(window.innerWidth>768) return;
+      section.classList.toggle('collapsed');
+    });
+  });
+
+  applyMobileCollapseState();
+  window.addEventListener('resize',applyMobileCollapseState);
 }
 
 function addCGPARow(semester='', sgpa='', credits='') {
@@ -381,6 +418,9 @@ function renderResumeTemplatePreview(){
     modern:{summary:'Professional Summary',skills:'Core Skills',education:'Education',projects:'Projects / Experience',achievements:'Achievements / Certifications'},
     executive:{summary:'Executive Profile',skills:'Core Competencies',education:'Education',projects:'Leadership Highlights',achievements:'Awards / Certifications'},
     creative:{summary:'Personal Brand Summary',skills:'Creative Toolkit',education:'Education',projects:'Featured Work / Projects',achievements:'Highlights'},
+    'premium-onyx':{summary:'Brand Statement',skills:'Core Strengths',education:'Education',projects:'Signature Projects',achievements:'Awards / Certifications'},
+    'premium-aura':{summary:'Profile Snapshot',skills:'Skill Stack',education:'Education',projects:'Impact Projects',achievements:'Highlights'},
+    'premium-slate':{summary:'Career Summary',skills:'Capabilities',education:'Education',projects:'Experience Highlights',achievements:'Recognition'},
   };
   const copy=titles[template] || titles.modern;
   const set=(id,text)=>{ const el=document.getElementById(id); if(el) el.textContent=text; };
@@ -422,9 +462,9 @@ function generateResume(){
   const summary=summaryInput || defaultSummaries[level] || defaultSummaries.student;
   let out='';
   if(template==='executive'){
-    out=`${name}
-${role}
-${location} | ${email} | ${phone}
+      out=`${name}
+  ${role}
+  ${location} | ${email} | ${phone}
 
 EXECUTIVE PROFILE
 ${summary}
@@ -434,15 +474,73 @@ ${projects}
 
 CORE COMPETENCIES
 ${skills}
-
-EDUCATION
-${education}
-
-AWARDS / CERTIFICATIONS
-${achievements}`;
-  }else if(template==='creative'){
-    out=`${name}
-Creative Resume | ${role}
+  
+  EDUCATION
+  ${education}
+  
+  AWARDS / CERTIFICATIONS
+  ${achievements}`;
+    }else if(template==='premium-onyx'){
+      out=`${name}
+  ${role}
+  ${email} | ${phone} | ${location}
+  
+  BRAND STATEMENT
+  ${summary}
+  
+  CORE STRENGTHS
+  ${skills}
+  
+  SIGNATURE PROJECTS
+  ${projects}
+  
+  EDUCATION
+  ${education}
+  
+  AWARDS / CERTIFICATIONS
+  ${achievements}`;
+    }else if(template==='premium-aura'){
+      out=`${name}
+  ${role}
+  ${location}
+  Contact: ${email} | ${phone}
+  
+  PROFILE SNAPSHOT
+  ${summary}
+  
+  SKILL STACK
+  ${skills}
+  
+  IMPACT PROJECTS
+  ${projects}
+  
+  EDUCATION
+  ${education}
+  
+  HIGHLIGHTS
+  ${achievements}`;
+    }else if(template==='premium-slate'){
+      out=`${name}
+  ${role}
+  ${email} | ${phone} | ${location}
+  
+  CAREER SUMMARY
+  ${summary}
+  
+  CAPABILITIES
+  ${skills}
+  
+  EXPERIENCE HIGHLIGHTS
+  ${projects}
+  
+  EDUCATION
+  ${education}
+  
+  RECOGNITION
+  ${achievements}`;
+    }else if(template==='creative'){
+      out=`${name}
+  Creative Resume | ${role}
 ${location} | ${email} | ${phone}
 
 PERSONAL BRAND SUMMARY
@@ -665,6 +763,108 @@ function resetUnitConverter(){
   updateUnitOptions();
 }
 
+function updateQRPlaceholder(){
+  const type=document.getElementById('qr-type')?.value || 'url';
+  const input=document.getElementById('qr-input');
+  if(!input) return;
+  const placeholders={
+    url:'https://example.com',
+    text:'Type any short text or message here',
+    email:'hello@example.com',
+    phone:'+91 9876543210'
+  };
+  input.placeholder=placeholders[type] || placeholders.url;
+}
+
+async function generateQRCode(){
+  const type=document.getElementById('qr-type')?.value || 'url';
+  const raw=(document.getElementById('qr-input')?.value || '').trim();
+  if(!raw) return toast('QR ke liye content enter karo','ℹ️');
+  let finalValue=raw;
+  if(type==='email' && !raw.startsWith('mailto:')) finalValue=`mailto:${raw}`;
+  if(type==='phone' && !raw.startsWith('tel:')) finalValue=`tel:${raw}`;
+  const dataUrl=`https://api.qrserver.com/v1/create-qr-code/?size=320x320&margin=16&data=${encodeURIComponent(finalValue)}`;
+  const canvas=document.getElementById('qr-canvas');
+  if(!canvas) return;
+  const ctx=canvas.getContext('2d');
+  ctx.fillStyle='#ffffff';
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+  await new Promise((resolve,reject)=>{
+    const img=new Image();
+    img.crossOrigin='anonymous';
+    img.onload=()=>{
+      ctx.drawImage(img,0,0,canvas.width,canvas.height);
+      state.qrDataUrl=canvas.toDataURL('image/png');
+      resolve();
+    };
+    img.onerror=reject;
+    img.src=dataUrl;
+  }).catch(()=>toast('QR generate nahi ho paya','❌'));
+  if(state.qrDataUrl) toast('QR ready hai','✅');
+}
+
+function downloadQRCode(){
+  if(!state.qrDataUrl) return toast('Pehle QR generate karo','ℹ️');
+  const a=document.createElement('a');
+  a.href=state.qrDataUrl;
+  a.download='qr-code.png';
+  a.click();
+}
+
+function togglePasswordOption(type){
+  state.passwordOptions[type]=!state.passwordOptions[type];
+  document.getElementById(`pw-opt-${type}`)?.classList.toggle('selected',state.passwordOptions[type]);
+}
+
+function evaluatePasswordStrength(password){
+  let score=0;
+  if(password.length>=8) score++;
+  if(password.length>=12) score++;
+  if(/[A-Z]/.test(password) && /[a-z]/.test(password)) score++;
+  if(/\d/.test(password) && /[^A-Za-z0-9]/.test(password)) score++;
+  const labels=['Weak','Basic','Good','Strong','Very Strong'];
+  return {score, label: labels[score] || 'Weak'};
+}
+
+function generatePassword(){
+  const length=clamp(parseInt(document.getElementById('pw-length')?.value)||14,6,64);
+  const mode=document.getElementById('pw-strength')?.value || 'balanced';
+  const pools={
+    upper:'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
+    lower:'abcdefghijklmnopqrstuvwxyz',
+    number:'0123456789',
+    symbol:'!@#$%^&*()_+-=[]{};:,.?/'
+  };
+  if(mode==='letters'){
+    state.passwordOptions.upper=true; state.passwordOptions.lower=true; state.passwordOptions.number=false; state.passwordOptions.symbol=false;
+  } else if(mode==='alnum'){
+    state.passwordOptions.upper=true; state.passwordOptions.lower=true; state.passwordOptions.number=true; state.passwordOptions.symbol=false;
+  } else if(mode==='strong'){
+    state.passwordOptions.upper=true; state.passwordOptions.lower=true; state.passwordOptions.number=true; state.passwordOptions.symbol=true;
+  }
+  ['upper','lower','number','symbol'].forEach(key=>{
+    document.getElementById(`pw-opt-${key}`)?.classList.toggle('selected',state.passwordOptions[key]);
+  });
+  let charset='';
+  Object.entries(state.passwordOptions).forEach(([key,enabled])=>{ if(enabled) charset+=pools[key]; });
+  if(!charset){
+    toast('At least one password option on rakho','ℹ️');
+    return;
+  }
+  let password='';
+  for(let i=0;i<length;i++){
+    password += charset[Math.floor(Math.random()*charset.length)];
+  }
+  const output=document.getElementById('pw-output');
+  if(output) output.value=password;
+  const strength=evaluatePasswordStrength(password);
+  const scoreEl=document.getElementById('pw-score');
+  const labelEl=document.getElementById('pw-label');
+  if(scoreEl) scoreEl.textContent=`${strength.score}/4`;
+  if(labelEl) labelEl.textContent=strength.label;
+  toast('Password generated','✅');
+}
+
 // ══════════════════════════════════════════════════════
 // TOAST
 // ══════════════════════════════════════════════════════
@@ -813,6 +1013,7 @@ async function renderToolPdfPreview(tool,file,maxPages=3){
 // ══════════════════════════════════════════════════════
 document.addEventListener('DOMContentLoaded',()=>{
   document.documentElement.style.setProperty('--vh', `${window.innerHeight * 0.01}px`);
+  initMobileSidebarSections();
   document.querySelectorAll('.dropzone').forEach(zone=>{
     zone.addEventListener('dragover',e=>{e.preventDefault();zone.classList.add('drag-over');});
     zone.addEventListener('dragleave',()=>zone.classList.remove('drag-over'));
@@ -838,6 +1039,27 @@ document.addEventListener('DOMContentLoaded',()=>{
 async function handleSingleFile(input, tool) {
   const file=input.files[0]; if(!file) return;
   state[tool+'File']=file;
+  const fileAliases={
+    watermarkFile:'watermarkFile',
+    annotateFile:'annotateFile',
+    delpagesFile:'delFile',
+    extractFile:'extractFile',
+    pdf2imgFile:'pdf2imgFile'
+  };
+  if(tool==='watermark'){
+    state.wmFile=file;
+    state.watermarkFile=file;
+  }
+  if(tool==='annotate'){
+    state.annFile=file;
+    state.annotateFile=file;
+  }
+  if(tool==='delpages'){
+    state.delFile=file;
+  }
+  if(tool==='extract'){
+    state.extractFile=file;
+  }
   const opts=document.getElementById(TOOL_CONFIG[tool]?.optionsId || tool+'-options');
   if(opts) opts.style.display='block';
   if(tool!=='watermark' && tool!=='sign' && tool!=='annotate'){
@@ -1707,20 +1929,26 @@ async function runOCR(inputOrFile){
       for(let i=1;i<=total;i++){
         const page=await pdf.getPage(i);
         const content=await page.getTextContent();
-        text+=`\n===== Page ${i} of ${total} =====\n`;
-        text+=content.items.map(item=>item.str).join(' ')+'\n';
         if(pageCount) pageCount.textContent=`(${i}/${total})`;
-        fill.style.width=(i/total*100)+'%';
+        let pageText=extractPdfPageText(content);
+        if(isWeakExtractedText(pageText)){
+          const viewport=page.getViewport({scale:getPreviewRenderScale(1.35,'text')});
+          const canvas=document.createElement('canvas');
+          canvas.width=viewport.width;
+          canvas.height=viewport.height;
+          await page.render({canvasContext:canvas.getContext('2d'),viewport}).promise;
+          const processed=await preprocessImageForOCR(canvas,{mode:'auto',scale:1});
+          const result=await recognizeCanvasText(processed,fill,((i-1)/total)*100,100/total);
+          pageText=(result?.data?.text || '').replace(/[ \t]+\n/g,'\n').trim();
+        } else {
+          fill.style.width=`${Math.max(5,Math.round((i/total)*100))}%`;
+        }
+        text+=`\n===== Page ${i} of ${total} =====\n${pageText}\n`;
       }
     } else {
       if(pageCount) pageCount.textContent='(image)';
-      const result=await Tesseract.recognize(file, 'eng', {
-        logger: info => {
-          if(info?.status === 'recognizing text' && typeof info.progress === 'number'){
-            fill.style.width=Math.max(5, Math.round(info.progress*100))+'%';
-          }
-        }
-      });
+      const processed=await preprocessImageForOCR(file,{mode:'auto',scale:1.6});
+      const result=await recognizeCanvasText(processed,fill,0,100);
       text=result?.data?.text || '';
       total=1;
       fill.style.width='100%';
@@ -1805,8 +2033,8 @@ async function runAdvancedOCR(inputOrFile){
         if(pageCount) pageCount.textContent=`(${i}/${total})`;
         const page=await pdf.getPage(i);
         const content=await page.getTextContent();
-        const directText=content.items.map(item=>item.str).join(' ').replace(/\s+/g,' ').trim();
-        if(directText.length>24){
+        const directText=extractPdfPageText(content);
+        if(!isWeakExtractedText(directText)){
           fill.style.width=`${Math.max(5,Math.round((i/total)*100))}%`;
           let text=keepLines?directText.replace(/(.{120,}?)\s+/g,'$1\n'):directText;
           pagesText.push(text.trim());
@@ -2393,6 +2621,23 @@ async function initSignPreview(file){
   }
 }
 
+function extractPdfPageText(content){
+  return (content?.items || [])
+    .map(item=>item.str || '')
+    .join(' ')
+    .replace(/\s+/g,' ')
+    .trim();
+}
+
+function isWeakExtractedText(text){
+  const clean=(text || '').replace(/\s+/g,' ').trim();
+  if(clean.length < 24) return true;
+  const words=clean.split(' ').filter(Boolean);
+  if(words.length < 6) return true;
+  const longWords=words.filter(word=>word.length > 2).length;
+  return longWords < 4;
+}
+
 let signPreviewBound=false;
 function bindSignPreviewControls(){
   if(signPreviewBound) return;
@@ -2967,6 +3212,23 @@ document.addEventListener('DOMContentLoaded',()=>{
   }
   if(document.getElementById('uc-category')){
     updateUnitOptions();
+  }
+  if(document.getElementById('qr-canvas')){
+    const canvas=document.getElementById('qr-canvas');
+    const ctx=canvas.getContext('2d');
+    ctx.fillStyle='#ffffff';
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.fillStyle='#d9d8e7';
+    ctx.font='600 18px DM Sans';
+    ctx.textAlign='center';
+    ctx.fillText('QR preview', canvas.width/2, canvas.height/2 - 8);
+    ctx.font='14px DM Sans';
+    ctx.fillStyle='#8b89a6';
+    ctx.fillText('Generate karte hi yahan dikhega', canvas.width/2, canvas.height/2 + 18);
+    updateQRPlaceholder();
+  }
+  if(document.getElementById('pw-output')){
+    generatePassword();
   }
 });
 
