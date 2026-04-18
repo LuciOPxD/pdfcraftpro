@@ -5,6 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>PDFCraft Pro - Complete Free PDF Editor</title>
 <link rel="icon" href="favicon.svg">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#000000">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="PDFCraft">
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
@@ -22,6 +27,7 @@
 </div>
   <div class="header-right">
     <span class="header-tag">&#10024; 100% Free</span>
+    <button id="install-btn" class="theme-btn" style="display:none;background:linear-gradient(135deg,#6c63ff,#ff6584);color:white;border:none" onclick="installApp()">⬇️ Install App</button>
     <button class="theme-btn" onclick="toggleTheme()">&#127769; Theme</button>
   </div>
 </header>
@@ -1651,6 +1657,38 @@
   </div>
   <div class="footer-bottom">Files stay on your device. No server upload for the main browser workflow.</div>
 </footer>
+
+<script>
+// Register Service Worker and PWA install prompt
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/service-worker.js').then((reg) => {
+    console.log('Service Worker registered:', reg);
+  }).catch((err) => {
+    console.log('Service Worker registration failed:', err);
+  });
+}
+
+// Prompt to install app
+let installPrompt = null;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  installPrompt = e;
+  console.log('App ready to install');
+});
+
+// You can optionally add an install button - here's the JS for it
+function installApp() {
+  if (installPrompt) {
+    installPrompt.prompt();
+    installPrompt.userChoice.then((choiceResult) => {
+      if (choiceResult.outcome === 'accepted') {
+        console.log('App installed');
+      }
+      installPrompt = null;
+    });
+  }
+}
+</script>
 </body>
 </html>
 

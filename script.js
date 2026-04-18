@@ -1905,65 +1905,163 @@ function downloadText(){
 // OCR PANEL (separate)
 // ══════════════════════════════════════════════════════
 
+// ── Fast Image OCR ─────────────────────────────
 async function runOCR(inputOrFile){
-  const file=inputOrFile?.files ? inputOrFile.files[0] : inputOrFile;
-  if(!file) return;
-  const progress=document.getElementById('ocr-progress');
-  const output=document.getElementById('ocr-output');
-  const previewWrap=document.getElementById('ocr-preview-wrap');
-  const fill=document.getElementById('ocr-fill');
-  const pageCount=document.getElementById('ocr-page-count');
-  progress.style.display='block';
-  output.style.display='none';
-  if(previewWrap) previewWrap.style.display='none';
-  fill.style.width='0%';
-  if(pageCount) pageCount.textContent='';
-  try{
-    let text='', total=0;
-    const isPdf=file.type==='application/pdf' || file.name.toLowerCase().endsWith('.pdf');
-    await renderOCRPreview(file, isPdf);
+  const file = inputOrFile?.files ? inputOrFile.files[0] : inputOrFile;
+  if(!file) {
+    toast('Pehle PDF ya image upload karo!', '⚠️');
+    return;
+  }
+
+  const progress = document.getElementById('ocr-progress');
+  const output = document.getElementById('ocr-output');
+  const previewWrap = document.getElementById('ocr-preview-wrap');
+  const fill = document.getElementById('ocr-fill');
+  const pageCount = document.getElementById('ocr-page-count');
+
+  progress.style.display = 'block';
+  output.style.display = 'none';
+  if(previewWrap) previewWrap.style.display = 'none';
+  fill.style.width = '0%';
+  if(pageCount) pageCount.textContent = '';
+
+  const startTime = performance.now();
+  toast('📖 Turbo mode se OCR shuru! 🚀', '⏳');
+
+  try {
+    let text = '', total = 0;
+    const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+
     if(isPdf){
-      const ab=await readAB(file);
-      const pdf=await pdfjsLib.getDocument({data:ab}).promise;
-      total=pdf.numPages;
-      for(let i=1;i<=total;i++){
-        const page=await pdf.getPage(i);
-        const content=await page.getTextContent();
-        if(pageCount) pageCount.textContent=`(${i}/${total})`;
-        let pageText=extractPdfPageText(content);
+      await renderOCRPreview(file, isPdf);
+      const ab = await readAB(file);
+      const pdf = await pdfjsLib.getDocument({data: ab}).promise;
+      total = pdf.numPages;
+
+      for(let i = 1; i <= total; i++){
+        const page = await pdf.getPage(i);
+        const content = await page.getTextContent();
+        if(pageCount) pageCount.textContent = `${i}/${total}`;
+
+        let pageText = extractPdfPageText(content);
+
         if(isWeakExtractedText(pageText)){
-          const viewport=page.getViewport({scale:getPreviewRenderScale(1.35,'text')});
-          const canvas=document.createElement('canvas');
-          canvas.width=viewport.width;
-          canvas.height=viewport.height;
-          await page.render({canvasContext:canvas.getContext('2d'),viewport}).promise;
-          const processed=await preprocessImageForOCR(canvas,{mode:'auto',scale:1});
-          const result=await recognizeCanvasText(processed,fill,((i-1)/total)*100,100/total);
-          pageText=(result?.data?.text || '').replace(/[ \t]+\n/g,'\n').trim();
+          const viewport = page.getViewport({scale: getPreviewRenderScale(1.2,'text')});
+          const canvas = document.createElement('canvas');
+          canvas.width = viewport.width;
+          canvas.height = viewport.height;
+          await page.render({canvasContext: canvas.getContext('2d'), viewport}).promise;
+
+          const processed = await preprocessImageForOCRFast(canvas);
+          const result = await recognizeCanvasTextFast(processed, fill, ((i-1)/total)*100, 100/total);
+          pageText = (result?.data?.text || '').replace(/[ \t]+\n/g, '\n').trim();
         } else {
-          fill.style.width=`${Math.max(5,Math.round((i/total)*100))}%`;
+          fill.style.width = `${Math.max(5, Math.round((i/total)*100))}%`;
         }
-        text+=`\n===== Page ${i} of ${total} =====\n${pageText}\n`;
+        text += `\n===== Page ${i} =====\n${pageText}\n`;
       }
     } else {
-      if(pageCount) pageCount.textContent='(image)';
-      const processed=await preprocessImageForOCR(file,{mode:'auto',scale:1.6});
-      const result=await recognizeCanvasText(processed,fill,0,100);
-      text=result?.data?.text || '';
-      total=1;
-      fill.style.width='100%';
+      // Fast image processing
+      await renderOCRPreview(file, isPdf);
+      if(pageCount) pageCount.textContent = 'Image processing...';
+
+      const processed = await preprocessImageForOCRFast(file);
+      const result = await recognizeCanvasTextFast(processed, fill, 0, 100);
+      text = result?.data?.text || '';
+      total = 1;
+      fill.style.width = '100%';
     }
-    const words=text.split(/\s+/).filter(w=>w.length>0).length;
-    document.getElementById('ocr-stats').innerHTML=`
+
+    const words = text.split(/\s+/).filter(w => w.length > 0).length;
+    const time = ((performance.now() - startTime) / 1000).toFixed(2);
+
+    document.getElementById('ocr-stats').innerHTML = `
       <div class="stat-card"><div class="st-val">${total}</div><div class="st-label">${isPdf ? 'Pages' : 'Image'}</div></div>
-      <div class="stat-card"><div class="st-val">${words.toLocaleString()}</div><div class="st-label">Words</div></div>`;
-    document.getElementById('ocr-text').value=text.trim();
-    output.style.display='block';
-    progress.style.display='none';
-    toast('OCR complete!','✅');
+      <div class="stat-card"><div class="st-val">${words.toLocaleString()}</div><div class="st-label">Words</div></div>
+      <div class="stat-card"><div class="st-val">${time}s</div><div class="st-label">Time</div></div>`;
+
+    document.getElementById('ocr-text').value = text.trim();
+    output.style.display = 'block';
+    progress.style.display = 'none';
+    toast(`✅ Done in ${time}s! Text ready! 🚀`, '✅');
   }catch(e){
-    progress.style.display='none';
-    toast('Error: '+e.message,'❌');
+    console.error('OCR Error:', e);
+    progress.style.display = 'none';
+    toast('❌ Error: ' + e.message, '❌');
+  }
+}
+
+// Ultra-fast image preprocessing
+async function preprocessImageForOCRFast(source){
+  const scale = 2; // Fixed scale for speed
+  const img = (source instanceof HTMLImageElement || source instanceof HTMLCanvasElement)
+    ? source
+    : await loadImageFromFile(source);
+
+  const canvas = document.createElement('canvas');
+  canvas.width = Math.max(1, Math.round(img.width * scale));
+  canvas.height = Math.max(1, Math.round(img.height * scale));
+
+  const ctx = canvas.getContext('2d', {willReadFrequently: true});
+  ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+  const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  const data = imageData.data;
+
+  // Fast auto-detect (sample only)
+  let totalLuma = 0;
+  for(let i = 0; i < Math.min(data.length, 10000); i += 4){
+    totalLuma += data[i]*0.299 + data[i+1]*0.587 + data[i+2]*0.114;
+  }
+  const avgLuma = totalLuma / Math.min(data.length/4, 2500);
+  const mode = avgLuma < 100 ? 'invert' : avgLuma > 200 ? 'threshold' : 'enhance';
+
+  // Ultra-fast processing
+  for(let i = 0; i < data.length; i += 4){
+    const r = data[i];
+    const g = data[i+1];
+    const b = data[i+2];
+    const gray = Math.round(r*0.299 + g*0.587 + b*0.114);
+
+    let val = gray;
+    if(mode === 'enhance'){
+      val = clamp((gray - 128) * 2 + 128, 0, 255);
+    } else if(mode === 'threshold'){
+      val = gray > 140 ? 255 : 0;
+    } else if(mode === 'invert'){
+      val = 255 - gray;
+    }
+
+    data[i] = data[i+1] = data[i+2] = val;
+  }
+
+  ctx.putImageData(imageData, 0, 0);
+  return canvas;
+}
+
+// Fast text recognition
+async function recognizeCanvasTextFast(canvas, fillEl, progressBase = 0, progressSpan = 100) {
+  try {
+    if (!window.Tesseract) {
+      throw new Error('Tesseract library missing');
+    }
+
+    // Use simple fast recognize
+    const result = await Tesseract.recognize(canvas, 'eng', {
+      tessedit_pageseg_mode: '6',
+      tessedit_write_output_file: '0',
+      logger: info => {
+        if (fillEl && info?.progress) {
+          const pct = progressBase + (info.progress * progressSpan);
+          fillEl.style.width = `${Math.max(3, Math.round(pct))}%`;
+        }
+      }
+    });
+
+    return result;
+  } catch (e) {
+    console.error('Fast OCR Error:', e);
+    throw new Error('Text recognition failed: ' + e.message);
   }
 }
 
@@ -2004,77 +2102,107 @@ async function renderMathOCRPreview(file, isPdf){
 }
 
 async function runAdvancedOCR(inputOrFile){
-  const file=inputOrFile?.files ? inputOrFile.files[0] : (inputOrFile || state.mathOCRFile);
-  if(!file){toast('Pehle PDF ya image upload karo!','⚠️');return;}
-  state.mathOCRFile=file;
-  document.getElementById('mathocr-options').style.display='block';
-  const progress=document.getElementById('mathocr-progress');
-  const output=document.getElementById('mathocr-output');
-  const fill=document.getElementById('mathocr-fill');
-  const pageCount=document.getElementById('mathocr-page-count');
-  progress.style.display='block';
-  output.style.display='none';
-  fill.style.width='0%';
-  if(pageCount) pageCount.textContent='';
-  const mode=document.getElementById('mathocr-mode').value;
-  const scale=document.getElementById('mathocr-scale').value;
-  const keepLines=document.getElementById('mathocr-keep-lines').checked;
-  const joinPages=document.getElementById('mathocr-join-pages').checked;
-  try{
-    const isPdf=file.type==='application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+  const file = inputOrFile?.files ? inputOrFile.files[0] : (inputOrFile || state.mathOCRFile);
+  if(!file){
+    toast('Pehle PDF ya image upload karo!','⚠️');
+    return;
+  }
+
+  state.mathOCRFile = file;
+  document.getElementById('mathocr-options').style.display = 'block';
+
+  const progress = document.getElementById('mathocr-progress');
+  const output = document.getElementById('mathocr-output');
+  const fill = document.getElementById('mathocr-fill');
+  const pageCount = document.getElementById('mathocr-page-count');
+
+  progress.style.display = 'block';
+  output.style.display = 'none';
+  fill.style.width = '0%';
+  if(pageCount) pageCount.textContent = '';
+
+  const startTime = performance.now();
+  toast('📐 Turbo mode OCR start! 🚀', '⏳');
+
+  const mode = document.getElementById('mathocr-mode').value;
+  const scale = document.getElementById('mathocr-scale').value;
+  const keepLines = document.getElementById('mathocr-keep-lines').checked;
+  const joinPages = document.getElementById('mathocr-join-pages').checked;
+
+  try {
+    const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
     await renderMathOCRPreview(file, isPdf);
-    let pagesText=[];
-    let total=1;
+
+    let pagesText = [];
+    let total = 1;
+
     if(isPdf){
-      const ab=await readAB(file);
-      const pdf=await pdfjsLib.getDocument({data:ab}).promise;
-      total=pdf.numPages;
-      for(let i=1;i<=total;i++){
-        if(pageCount) pageCount.textContent=`(${i}/${total})`;
-        const page=await pdf.getPage(i);
-        const content=await page.getTextContent();
-        const directText=extractPdfPageText(content);
+      const ab = await readAB(file);
+      const pdf = await pdfjsLib.getDocument({data: ab}).promise;
+      total = pdf.numPages;
+
+      for(let i = 1; i <= total; i++){
+        if(pageCount) pageCount.textContent = `${i}/${total}`;
+
+        const page = await pdf.getPage(i);
+        const content = await page.getTextContent();
+        const directText = extractPdfPageText(content);
+
         if(!isWeakExtractedText(directText)){
-          fill.style.width=`${Math.max(5,Math.round((i/total)*100))}%`;
-          let text=keepLines?directText.replace(/(.{120,}?)\s+/g,'$1\n'):directText;
+          fill.style.width = `${Math.max(5, Math.round((i/total)*100))}%`;
+          let text = keepLines
+            ? directText.replace(/(.{120,}?)\s+/g, '$1\n')
+            : directText;
           pagesText.push(text.trim());
           continue;
         }
-        const vp=page.getViewport({scale:parseFloat(scale)||2});
-        const canvas=document.createElement('canvas');
-        canvas.width=vp.width;
-        canvas.height=vp.height;
-        await page.render({canvasContext:canvas.getContext('2d'),viewport:vp}).promise;
-        const processed=await preprocessImageForOCR(canvas,{mode,scale:1});
-        const result=await recognizeCanvasText(processed,fill,((i-1)/total)*100,100/total);
-        let text=result?.data?.text || '';
-        if(!keepLines) text=text.replace(/\s*\n\s*/g,' ');
+
+        const vp = page.getViewport({scale: parseFloat(scale) || 1.5});
+        const canvas = document.createElement('canvas');
+        canvas.width = vp.width;
+        canvas.height = vp.height;
+        await page.render({canvasContext: canvas.getContext('2d', {willReadFrequently: true}), viewport: vp}).promise;
+
+        const processed = await preprocessImageForOCRFast(canvas);
+        const result = await recognizeCanvasTextFast(processed, fill, ((i-1)/total)*100, 100/total);
+
+        let text = result?.data?.text || '';
+        if(!keepLines) text = text.replace(/\s*\n\s*/g, ' ');
         pagesText.push(text.trim());
       }
     } else {
-      if(pageCount) pageCount.textContent='(image)';
-      const processed=await preprocessImageForOCR(file,{mode,scale});
-      const result=await recognizeCanvasText(processed,fill,0,100);
-      let text=result?.data?.text || '';
-      if(!keepLines) text=text.replace(/\s*\n\s*/g,' ');
-      pagesText=[text.trim()];
-      total=1;
-      fill.style.width='100%';
+      if(pageCount) pageCount.textContent = 'Processing...';
+      const processed = await preprocessImageForOCRFast(file);
+      const result = await recognizeCanvasTextFast(processed, fill, 0, 100);
+
+      let text = result?.data?.text || '';
+      if(!keepLines) text = text.replace(/\s*\n\s*/g, ' ');
+      pagesText = [text.trim()];
+      total = 1;
+      fill.style.width = '100%';
     }
-    const finalText=joinPages ? pagesText.join('\n') : pagesText.map((txt,idx)=>`===== Page ${idx+1} =====\n${txt}`).join('\n\n');
-    const formulaish=(finalText.match(/[=+\-/*^(){}\[\]∑√π∞≤≥≈]/g)||[]).length;
-    const chars=finalText.replace(/\s/g,'').length;
-    document.getElementById('mathocr-stats').innerHTML=`
-      <div class="stat-card"><div class="st-val">${total}</div><div class="st-label">${isPdf?'Pages':'Image'}</div></div>
+
+    const finalText = joinPages
+      ? pagesText.join('\n')
+      : pagesText.map((txt, idx) => `===== Page ${idx+1} =====\n${txt}`).join('\n\n');
+
+    const formulaish = (finalText.match(/[=+\-/*^(){}\[\]∑√π∞≤≥≈]/g) || []).length;
+    const chars = finalText.replace(/\s/g, '').length;
+    const time = ((performance.now() - startTime) / 1000).toFixed(2);
+
+    document.getElementById('mathocr-stats').innerHTML = `
+      <div class="stat-card"><div class="st-val">${total}</div><div class="st-label">${isPdf ? 'Pages' : 'Image'}</div></div>
       <div class="stat-card"><div class="st-val">${chars.toLocaleString()}</div><div class="st-label">Chars</div></div>
-      <div class="stat-card"><div class="st-val">${formulaish}</div><div class="st-label">Formula Symbols</div></div>`;
-    document.getElementById('mathocr-text').value=finalText.trim();
-    output.style.display='block';
-    progress.style.display='none';
-    toast('Advanced OCR complete!','✅');
+      <div class="stat-card"><div class="st-val">${time}s</div><div class="st-label">Speed</div></div>`;
+
+    document.getElementById('mathocr-text').value = finalText.trim();
+    output.style.display = 'block';
+    progress.style.display = 'none';
+    toast(`✅ Done in ${time}s! 🚀`, '✅');
   }catch(e){
-    progress.style.display='none';
-    toast('Error: '+e.message,'❌');
+    console.error('Advanced OCR Error:', e);
+    progress.style.display = 'none';
+    toast('❌ Error: ' + e.message, '❌');
   }
 }
 
@@ -2089,47 +2217,134 @@ async function loadImageFromFile(file){
 }
 
 async function preprocessImageForOCR(source, options={}){
-  let mode=options.mode || 'enhance';
-  const scale=parseFloat(options.scale)||2;
-  const img=(source instanceof HTMLImageElement || source instanceof HTMLCanvasElement) ? source : await loadImageFromFile(source);
-  const canvas=document.createElement('canvas');
-  canvas.width=Math.max(1,Math.round(img.width*scale));
-  canvas.height=Math.max(1,Math.round(img.height*scale));
-  const ctx=canvas.getContext('2d');
-  ctx.drawImage(img,0,0,canvas.width,canvas.height);
-  const imageData=ctx.getImageData(0,0,canvas.width,canvas.height);
-  const data=imageData.data;
-  if(mode==='auto'){
-    let totalLuma=0;
-    for(let i=0;i<data.length;i+=16){
+  let mode = options.mode || 'enhance';
+  const scale = parseFloat(options.scale) || 2;
+  const img = (source instanceof HTMLImageElement || source instanceof HTMLCanvasElement)
+    ? source
+    : await loadImageFromFile(source);
+
+  const canvas = document.createElement('canvas');
+  canvas.width = Math.max(1, Math.round(img.width * scale));
+  canvas.height = Math.max(1, Math.round(img.height * scale));
+
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+  const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  const data = imageData.data;
+
+  // Auto-detect best mode
+  if(mode === 'auto'){
+    let totalLuma = 0;
+    let count = 0;
+    for(let i = 0; i < data.length; i += 16){
       totalLuma += data[i]*0.299 + data[i+1]*0.587 + data[i+2]*0.114;
+      count++;
     }
-    const avgLuma=totalLuma/(data.length/16);
+    const avgLuma = totalLuma / count;
     mode = avgLuma < 110 ? 'invert' : avgLuma > 210 ? 'threshold' : 'enhance';
   }
-  for(let i=0;i<data.length;i+=4){
-    const gray=Math.round(data[i]*0.299 + data[i+1]*0.587 + data[i+2]*0.114);
-    let val=gray;
-    if(mode==='enhance') val=clamp((gray-128)*1.45+128,0,255);
-    else if(mode==='threshold') val=gray>170?255:0;
-    else if(mode==='invert') val=255-gray;
-    data[i]=data[i+1]=data[i+2]=val;
+
+  // Apply processing
+  for(let i = 0; i < data.length; i += 4){
+    const r = data[i];
+    const g = data[i+1];
+    const b = data[i+2];
+    const gray = Math.round(r*0.299 + g*0.587 + b*0.114);
+
+    let val = gray;
+
+    if(mode === 'enhance'){
+      // Enhanced contrast for better OCR
+      val = clamp((gray - 128) * 1.8 + 128, 0, 255);
+    } else if(mode === 'threshold'){
+      // Aggressive binarization
+      val = gray > 150 ? 255 : 0;
+    } else if(mode === 'invert'){
+      // Dark background
+      val = 255 - gray;
+    } else if(mode === 'denoising'){
+      // Smooth noise
+      val = clamp(gray + (Math.random() - 0.5) * 20, 0, 255);
+    }
+
+    data[i] = data[i+1] = data[i+2] = val;
   }
-  ctx.putImageData(imageData,0,0);
+
+  ctx.putImageData(imageData, 0, 0);
+
+  // Apply slight smoothing filter for better results
+  ctx.filter = 'contrast(1.2) brightness(1.1)';
+  ctx.drawImage(canvas, 0, 0);
+
   return canvas;
 }
 
-async function recognizeCanvasText(canvas, fillEl, progressBase=0, progressSpan=100){
-  return Tesseract.recognize(canvas,'eng',{
-    tessedit_pageseg_mode: '6',
-    preserve_interword_spaces: '1',
-    logger: info=>{
-      if(info?.status === 'recognizing text' && typeof info.progress === 'number' && fillEl){
-        const pct=progressBase + info.progress*progressSpan;
-        fillEl.style.width=`${Math.max(3,Math.round(pct))}%`;
-      }
+// ── Tesseract OCR Setup ─────────────────────────
+let tesseractWorker = null;
+let tesseractReady = false;
+
+async function initTesseract() {
+  if (tesseractReady) return tesseractWorker;
+
+  try {
+    if (!window.Tesseract) {
+      throw new Error('Tesseract library not loaded');
     }
-  });
+
+    // Create worker with proper config
+    tesseractWorker = await Tesseract.createWorker({
+      corePath: 'https://cdn.jsdelivr.net/npm/tesseract.js-core@4/tesseract-core.wasm.js',
+      langPath: 'https://cdn.jsdelivr.net/npm/tesseract.js-data/4.0.0_best'
+    });
+
+    // Load English language
+    await tesseractWorker.loadLanguage('eng');
+    await tesseractWorker.initialize('eng');
+
+    tesseractReady = true;
+    console.log('✅ Tesseract initialized successfully');
+    return tesseractWorker;
+  } catch (e) {
+    console.error('❌ Tesseract init error:', e);
+    throw new Error('OCR library load nahi ho paya. Internet check karo ya refresh karo.');
+  }
+}
+
+async function recognizeCanvasText(canvas, fillEl, progressBase = 0, progressSpan = 100) {
+  try {
+    if (!window.Tesseract) {
+      throw new Error('Tesseract library missing');
+    }
+
+    // Use simple recognize method if worker is not ready
+    if (!tesseractReady) {
+      console.log('🔄 Using simple recognize method...');
+      return await Tesseract.recognize(canvas, 'eng', {
+        logger: info => {
+          if (fillEl && info?.progress) {
+            const pct = progressBase + (info.progress * progressSpan);
+            fillEl.style.width = `${Math.max(3, Math.round(pct))}%`;
+          }
+        }
+      });
+    }
+
+    // Use worker if ready
+    const result = await tesseractWorker.recognize(canvas, {
+      logger: info => {
+        if (fillEl && info?.progress) {
+          const pct = progressBase + (info.progress * progressSpan);
+          fillEl.style.width = `${Math.max(3, Math.round(pct))}%`;
+        }
+      }
+    });
+
+    return result;
+  } catch (e) {
+    console.error('❌ OCR Recognition error:', e);
+    throw new Error('Text recognition failed: ' + e.message);
+  }
 }
 
 function handleImageResizeFile(files){
@@ -3230,7 +3445,176 @@ document.addEventListener('DOMContentLoaded',()=>{
   if(document.getElementById('pw-output')){
     generatePassword();
   }
+
+  // ── Animation Enhancements ──────────────────────
+  // Add stagger animation to file items
+  document.querySelectorAll('.file-item').forEach((item,idx)=>{
+    item.style.animationDelay = `${idx * 0.05}s`;
+  });
+
+  // Add stagger animation to option cards
+  document.querySelectorAll('.option-card').forEach((card,idx)=>{
+    card.style.animationDelay = `${idx * 0.08}s`;
+  });
+
+  // Add stagger animation to stat cards
+  document.querySelectorAll('.stat-card').forEach((card,idx)=>{
+    card.style.animationDelay = `${idx * 0.1}s`;
+  });
+
+  // Add stagger animation to tool cards
+  document.querySelectorAll('.tool-card').forEach((card,idx)=>{
+    card.style.animationDelay = `${idx * 0.08}s`;
+  });
+
+  // Add stagger animation to form groups
+  document.querySelectorAll('.form-group').forEach((group,idx)=>{
+    group.style.animationDelay = `${idx * 0.08}s`;
+  });
+
+  // Smooth scroll enhancement for anchor links
+  document.querySelectorAll('a[href^="#"]').forEach(anchor=>{
+    anchor.addEventListener('click',function(e){
+      const href = this.getAttribute('href');
+      if(href && href !== '#'){
+        e.preventDefault();
+        const target = document.querySelector(href);
+        if(target){
+          target.scrollIntoView({behavior:'smooth',block:'nearest'});
+        }
+      }
+    });
+  });
+
+  // Add ripple effect on button clicks
+  document.querySelectorAll('.btn, .tool-btn, .option-card').forEach(elem=>{
+    elem.addEventListener('click',function(e){
+      if(!this.classList.contains('ripple-container')){
+        const ripple = document.createElement('span');
+        const rect = this.getBoundingClientRect();
+        const size = Math.max(rect.width,rect.height);
+        const x = e.clientX - rect.left - size/2;
+        const y = e.clientY - rect.top - size/2;
+
+        ripple.style.cssText = `
+          position:absolute;
+          width:${size}px;
+          height:${size}px;
+          border-radius:50%;
+          background:rgba(255,255,255,0.5);
+          left:${x}px;
+          top:${y}px;
+          animation:ripple 0.6s ease-out;
+          pointer-events:none;
+        `;
+        this.style.position = 'relative';
+        this.appendChild(ripple);
+        setTimeout(()=>ripple.remove(),600);
+      }
+    });
+  });
+
+  // Page visibility animation
+  document.addEventListener('visibilitychange',()=>{
+    if(document.hidden){
+      document.body.style.filter = 'brightness(0.8)';
+    }else{
+      document.body.style.filter = 'brightness(1)';
+    }
+  });
 });
+
+// ══════════════════════════════════════════════════════
+// PWA INSTALLATION HANDLER
+// ══════════════════════════════════════════════════════
+let installPrompt = null;
+let isInstalled = false;
+
+// Register Service Worker
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/service-worker.js')
+    .then((reg) => {
+      console.log('✅ Service Worker registered:', reg);
+    })
+    .catch((err) => {
+      console.log('⚠️ Service Worker registration failed:', err);
+    });
+}
+
+// Check if app is already installed
+window.addEventListener('beforeinstallprompt', (e) => {
+  console.log('✅ beforeinstallprompt event fired');
+  e.preventDefault();
+  installPrompt = e;
+  showInstallButton();
+});
+
+// Handle successful installation
+window.addEventListener('appinstalled', () => {
+  console.log('✅ App installed successfully!');
+  isInstalled = true;
+  hideInstallButton();
+  toast('🎉 App installed! Home screen mein check karo!', '✅');
+});
+
+// Show install button when prompt is available
+function showInstallButton() {
+  const btn = document.getElementById('install-btn');
+  if (btn) {
+    btn.style.display = 'block';
+    btn.style.animation = 'slideInRight 0.5s ease';
+    console.log('🔘 Install button visible');
+  }
+}
+
+// Hide install button
+function hideInstallButton() {
+  const btn = document.getElementById('install-btn');
+  if (btn) {
+    btn.style.display = 'none';
+  }
+}
+
+// Install the app
+async function installApp() {
+  if (!installPrompt) {
+    toast('Installation option abhi available nahi hai. HTTPS par deploy karo ya Chrome browser use karo.', '⚠️');
+    return;
+  }
+
+  try {
+    installPrompt.prompt();
+    const { outcome } = await installPrompt.userChoice;
+    console.log(`User response to install prompt: ${outcome}`);
+
+    if (outcome === 'accepted') {
+      toast('🎉 Installing... Home screen mein check karo! ⬇️', '✅');
+      hideInstallButton();
+    } else {
+      toast('Installation cancel ho gaya', '❌');
+    }
+
+    installPrompt = null;
+  } catch (err) {
+    console.error('Installation error:', err);
+    toast('Installation failed: ' + err.message, '❌');
+  }
+}
+
+// Add ripple animation keyframes if not exists
+if(!document.querySelector('style[data-ripple]')){
+  const style = document.createElement('style');
+  style.setAttribute('data-ripple','true');
+  style.textContent = `
+    @keyframes ripple {
+      to {
+        transform:scale(4);
+        opacity:0;
+      }
+    }
+  `;
+  document.head.appendChild(style);
+}
 
 
 

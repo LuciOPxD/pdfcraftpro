@@ -1,0 +1,71 @@
+{
+  "name": "PDFCraft Pro - Free PDF Editor",
+  "short_name": "PDFCraft",
+  "description": "Complete free PDF editor - merge, split, compress, sign, watermark, annotate, and convert PDFs online",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#ffffff",
+  "theme_color": "#6c63ff",
+  "prefer_related_applications": false,
+  "icons": [
+    {
+      "src": "favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["productivity", "utilities"],
+  "screenshots": [
+    {
+      "src": "favicon.svg",
+      "sizes": "540x720",
+      "type": "image/svg+xml",
+      "form_factor": "narrow",
+      "platform": "narrow"
+    },
+    {
+      "src": "favicon.svg",
+      "sizes": "1280x720",
+      "type": "image/svg+xml",
+      "form_factor": "wide",
+      "platform": "wide"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Merge PDFs",
+      "short_name": "Merge",
+      "description": "Quickly merge multiple PDFs",
+      "url": "/?tool=merge",
+      "icons": [
+        {
+          "src": "favicon.svg",
+          "sizes": "96x96",
+          "type": "image/svg+xml"
+        }
+      ]
+    },
+    {
+      "name": "OCR Extract",
+      "short_name": "OCR",
+      "description": "Extract text from images and PDFs",
+      "url": "/?tool=ocr",
+      "icons": [
+        {
+          "src": "favicon.svg",
+          "sizes": "96x96",
+          "type": "image/svg+xml"
+        }
+      ]
+    }
+  ]
+}
