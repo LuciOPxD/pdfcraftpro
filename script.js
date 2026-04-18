@@ -1,7 +1,7 @@
 // ══════════════════════════════════════════════════════
 // SETUP
 // ══════════════════════════════════════════════════════
-pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdn.jsdelivr.net/npm/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.js`;
 
 const state = {
   mergeFiles: [],
@@ -10,7 +10,6 @@ const state = {
   rotateFile:null, rotateAngle:90,
   img2pdfFiles:[],
   imgResizeFile:null, imgResizeBlob:null, imgResizeMeta:null,
-  mathOCRFile:null,
   pdf2imgFile:null, pdf2imgCanvases:[],
   pdf2txtFile:null,
   wmFile:null,
@@ -55,13 +54,17 @@ const TOOL_CONFIG = {
 function showPanel(id) {
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.tool-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.mobile-tool-btn').forEach(b=>b.classList.remove('active'));
   const p=document.getElementById('panel-'+id);
   if(p) p.classList.add('active');
   const b=document.getElementById('btn-'+id);
-  if(b){
-    b.classList.add('active');
+  if(b) b.classList.add('active');
+  const mb=document.getElementById('mbtn-'+id);
+  if(mb) mb.classList.add('active');
+  if(b || mb){
+    const target = b || mb;
     if(window.innerWidth<=768){
-      b.scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'});
+      target.scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'});
     }
   }
   window.scrollTo(0,0);
@@ -826,7 +829,7 @@ function evaluatePasswordStrength(password){
   return {score, label: labels[score] || 'Weak'};
 }
 
-function generatePassword(){
+function generatePassword(silent = false){
   const length=clamp(parseInt(document.getElementById('pw-length')?.value)||14,6,64);
   const mode=document.getElementById('pw-strength')?.value || 'balanced';
   const pools={
@@ -862,7 +865,7 @@ function generatePassword(){
   const labelEl=document.getElementById('pw-label');
   if(scoreEl) scoreEl.textContent=`${strength.score}/4`;
   if(labelEl) labelEl.textContent=strength.label;
-  toast('Password generated','✅');
+  if(!silent) toast('Password generated','✅');
 }
 
 // ══════════════════════════════════════════════════════
@@ -2083,128 +2086,6 @@ async function renderOCRPreview(file, isPdf){
   }
 }
 
-async function renderMathOCRPreview(file, isPdf){
-  const wrap=document.getElementById('mathocr-preview-wrap');
-  const box=document.getElementById('mathocr-preview-box');
-  if(!wrap || !box) return;
-  box.innerHTML='';
-  wrap.style.display='block';
-  if(isPdf){
-    await renderPdfPreviewIntoBox(box,file,4,0.85,'text');
-  } else {
-    const src=await readURL(file);
-    const img=document.createElement('img');
-    img.src=src;
-    img.alt='Advanced OCR preview';
-    img.style.maxWidth='420px';
-    box.appendChild(img);
-  }
-}
-
-async function runAdvancedOCR(inputOrFile){
-  const file = inputOrFile?.files ? inputOrFile.files[0] : (inputOrFile || state.mathOCRFile);
-  if(!file){
-    toast('Pehle PDF ya image upload karo!','⚠️');
-    return;
-  }
-
-  state.mathOCRFile = file;
-  document.getElementById('mathocr-options').style.display = 'block';
-
-  const progress = document.getElementById('mathocr-progress');
-  const output = document.getElementById('mathocr-output');
-  const fill = document.getElementById('mathocr-fill');
-  const pageCount = document.getElementById('mathocr-page-count');
-
-  progress.style.display = 'block';
-  output.style.display = 'none';
-  fill.style.width = '0%';
-  if(pageCount) pageCount.textContent = '';
-
-  const startTime = performance.now();
-  toast('📐 Turbo mode OCR start! 🚀', '⏳');
-
-  const mode = document.getElementById('mathocr-mode').value;
-  const scale = document.getElementById('mathocr-scale').value;
-  const keepLines = document.getElementById('mathocr-keep-lines').checked;
-  const joinPages = document.getElementById('mathocr-join-pages').checked;
-
-  try {
-    const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
-    await renderMathOCRPreview(file, isPdf);
-
-    let pagesText = [];
-    let total = 1;
-
-    if(isPdf){
-      const ab = await readAB(file);
-      const pdf = await pdfjsLib.getDocument({data: ab}).promise;
-      total = pdf.numPages;
-
-      for(let i = 1; i <= total; i++){
-        if(pageCount) pageCount.textContent = `${i}/${total}`;
-
-        const page = await pdf.getPage(i);
-        const content = await page.getTextContent();
-        const directText = extractPdfPageText(content);
-
-        if(!isWeakExtractedText(directText)){
-          fill.style.width = `${Math.max(5, Math.round((i/total)*100))}%`;
-          let text = keepLines
-            ? directText.replace(/(.{120,}?)\s+/g, '$1\n')
-            : directText;
-          pagesText.push(text.trim());
-          continue;
-        }
-
-        const vp = page.getViewport({scale: parseFloat(scale) || 1.5});
-        const canvas = document.createElement('canvas');
-        canvas.width = vp.width;
-        canvas.height = vp.height;
-        await page.render({canvasContext: canvas.getContext('2d', {willReadFrequently: true}), viewport: vp}).promise;
-
-        const processed = await preprocessImageForOCRFast(canvas);
-        const result = await recognizeCanvasTextFast(processed, fill, ((i-1)/total)*100, 100/total);
-
-        let text = result?.data?.text || '';
-        if(!keepLines) text = text.replace(/\s*\n\s*/g, ' ');
-        pagesText.push(text.trim());
-      }
-    } else {
-      if(pageCount) pageCount.textContent = 'Processing...';
-      const processed = await preprocessImageForOCRFast(file);
-      const result = await recognizeCanvasTextFast(processed, fill, 0, 100);
-
-      let text = result?.data?.text || '';
-      if(!keepLines) text = text.replace(/\s*\n\s*/g, ' ');
-      pagesText = [text.trim()];
-      total = 1;
-      fill.style.width = '100%';
-    }
-
-    const finalText = joinPages
-      ? pagesText.join('\n')
-      : pagesText.map((txt, idx) => `===== Page ${idx+1} =====\n${txt}`).join('\n\n');
-
-    const formulaish = (finalText.match(/[=+\-/*^(){}\[\]∑√π∞≤≥≈]/g) || []).length;
-    const chars = finalText.replace(/\s/g, '').length;
-    const time = ((performance.now() - startTime) / 1000).toFixed(2);
-
-    document.getElementById('mathocr-stats').innerHTML = `
-      <div class="stat-card"><div class="st-val">${total}</div><div class="st-label">${isPdf ? 'Pages' : 'Image'}</div></div>
-      <div class="stat-card"><div class="st-val">${chars.toLocaleString()}</div><div class="st-label">Chars</div></div>
-      <div class="stat-card"><div class="st-val">${time}s</div><div class="st-label">Speed</div></div>`;
-
-    document.getElementById('mathocr-text').value = finalText.trim();
-    output.style.display = 'block';
-    progress.style.display = 'none';
-    toast(`✅ Done in ${time}s! 🚀`, '✅');
-  }catch(e){
-    console.error('Advanced OCR Error:', e);
-    progress.style.display = 'none';
-    toast('❌ Error: ' + e.message, '❌');
-  }
-}
 
 async function loadImageFromFile(file){
   const dataURL=await readURL(file);
@@ -2646,18 +2527,6 @@ async function convertPDFToExcel(input){
     showResult('pdf2excel',`${rows.length} row(s) exported from ${pdf.numPages} page(s)`);
     toast('Excel sheet ready!','✅');
   }catch(e){toast('Error: '+e.message,'❌');}
-}
-function downloadAdvancedOCR(){dlBlob(new Blob([document.getElementById('mathocr-text').value],{type:'text/plain'}),'advanced_formula_ocr.txt');}
-function cleanAdvancedOCR(){
-  const area=document.getElementById('mathocr-text');
-  area.value=area.value
-    .replace(/[ \t]+\n/g,'\n')
-    .replace(/\n{3,}/g,'\n\n')
-    .replace(/[ ]{2,}/g,' ')
-    .replace(/([=+\-/*^(){}\[\]])\s+/g,'$1')
-    .replace(/\s+([=+\-/*^(){}\[\]])/g,'$1')
-    .trim();
-  toast('Spacing cleaned!','✅');
 }
 function downloadOCR(){dlBlob(new Blob([document.getElementById('ocr-text').value],{type:'text/plain'}),'ocr_text.txt');}
 function searchInText(){const s=document.getElementById('ocr-search');s.style.display=s.style.display==='none'?'block':'none';}
@@ -3443,7 +3312,7 @@ document.addEventListener('DOMContentLoaded',()=>{
     updateQRPlaceholder();
   }
   if(document.getElementById('pw-output')){
-    generatePassword();
+    generatePassword(true);
   }
 
   // ── Animation Enhancements ──────────────────────
@@ -3615,6 +3484,48 @@ if(!document.querySelector('style[data-ripple]')){
   `;
   document.head.appendChild(style);
 }
+
+// ── Mobile Menu Functions ─────────────────────
+function toggleMobileMenu() {
+  const sidebar = document.getElementById('mobile-sidebar');
+  const overlay = document.getElementById('mobile-menu-overlay');
+
+  if (sidebar) {
+    sidebar.classList.toggle('active');
+    overlay.classList.toggle('active');
+    document.body.classList.toggle('mobile-menu-open');
+  }
+}
+
+function closeMobileMenu() {
+  const sidebar = document.getElementById('mobile-sidebar');
+  const overlay = document.getElementById('mobile-menu-overlay');
+
+  if (sidebar && sidebar.classList.contains('active')) {
+    sidebar.classList.remove('active');
+    overlay.classList.remove('active');
+    document.body.classList.remove('mobile-menu-open');
+  }
+}
+
+// Close mobile menu when pressing escape
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    closeMobileMenu();
+  }
+});
+
+// Close mobile menu when clicking outside
+document.addEventListener('click', (e) => {
+  const sidebar = document.getElementById('mobile-sidebar');
+  const hamburger = document.getElementById('hamburger-btn');
+
+  if (sidebar && sidebar.classList.contains('active')) {
+    if (!sidebar.contains(e.target) && !hamburger.contains(e.target)) {
+      closeMobileMenu();
+    }
+  }
+});
 
 
 

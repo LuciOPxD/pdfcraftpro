@@ -1,5 +1,5 @@
-const CACHE_NAME = 'pdfcraft-v1';
-const RUNTIME_CACHE = 'pdfcraft-runtime-v1';
+const CACHE_NAME = 'pdfcraft-v2';
+const RUNTIME_CACHE = 'pdfcraft-runtime-v2';
 
 const urlsToCache = [
   '/',
@@ -7,6 +7,7 @@ const urlsToCache = [
   '/style.css',
   '/script.js',
   '/favicon.svg',
+  '/icon-512.png',
   '/logo.svg',
   'https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap'
 ];
@@ -14,9 +15,10 @@ const urlsToCache = [
 // Cache external libraries
 const externalLibraries = [
   'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js',
-  'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js',
-  'https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js',
-  'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js'
+  'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js',
+  'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js',
+  'https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js',
+  'https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js'
 ];
 
 self.addEventListener('install', (event) => {

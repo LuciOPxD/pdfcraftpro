@@ -12,14 +12,17 @@
 <meta name="msapplication-config" content="browserconfig.xml">
 <meta name="format-detection" content="telephone=no">
 <meta name="format-detection" content="email=no">
+<meta name="color-scheme" content="dark">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="icon" href="favicon.svg" sizes="any" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon-512.png">
 <title>PDFCraft Pro - Complete Free PDF Editor</title>
-<link rel="icon" href="favicon.svg">
 <link rel="manifest" href="manifest.json">
-<link rel="alternate icon" href="favicon.svg" type="image/svg+xml">
+<link rel="alternate icon" href="icon-512.png" type="image/png" sizes="512x512">
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js" crossorigin="anonymous"></script>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="./style.css">
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1816823099804360"
@@ -28,27 +31,57 @@
 <body>
 <!-- HEADER -->
 <header>
- <div class="logo">
+ <div class="logo" onclick="showPanel('home')">
   <img src="logo.svg" alt="PDFCraft" style="height:40px;">
 </div>
   <div class="header-right">
     <span class="header-tag">&#10024; 100% Free</span>
     <button id="install-btn" class="theme-btn" style="display:none;background:linear-gradient(135deg,#6c63ff,#ff6584);color:white;border:none" onclick="installApp()">⬇️ Install App</button>
     <button class="theme-btn" onclick="toggleTheme()">&#127769; Theme</button>
+    <button class="hamburger-btn" id="hamburger-btn" onclick="toggleMobileMenu()">☰</button>
   </div>
 </header>
 
 <div class="app-layout">
+<!-- MOBILE MENU OVERLAY -->
+<div class="mobile-menu-overlay" id="mobile-menu-overlay" onclick="closeMobileMenu()"></div>
+
+<!-- MOBILE SIDEBAR -->
+<nav class="mobile-sidebar" id="mobile-sidebar">
+  <div class="mobile-sidebar-header">
+    <span>Menu</span>
+    <button onclick="closeMobileMenu()" class="close-btn">✕</button>
+  </div>
+
+  <div class="mobile-sidebar-section">
+    <div class="mobile-section-title">Navigation</div>
+    <button class="mobile-tool-btn active" id="mbtn-home" onclick="showPanel('home'); closeMobileMenu()"><span class="icon">🏠</span> Home / All Tools</button>
+    <div class="mobile-section-title">Featured Tools</div>
+    <button class="mobile-tool-btn" id="mbtn-merge" onclick="showPanel('merge'); closeMobileMenu()"><span class="icon">&#128279;</span> Merge PDF</button>
+    <button class="mobile-tool-btn" onclick="showPanel('split'); closeMobileMenu()"><span class="icon">&#9986;&#65039;</span> Split PDF</button>
+    <button class="mobile-tool-btn" onclick="showPanel('compress'); closeMobileMenu()"><span class="icon">&#128476;&#65039;</span> Compress</button>
+    <button class="mobile-tool-btn" onclick="showPanel('sign'); closeMobileMenu()"><span class="icon">&#9997;&#65039;</span> Sign PDF</button>
+    <button class="mobile-tool-btn" onclick="showPanel('watermark'); closeMobileMenu()"><span class="icon">&#128167;</span> Watermark</button>
+    <button class="mobile-tool-btn" onclick="showPanel('annotate'); closeMobileMenu()"><span class="icon">&#128172;</span> Annotate</button>
+    <button class="mobile-tool-btn" onclick="showPanel('ocr'); closeMobileMenu()"><span class="icon">&#128065;&#65039;</span> OCR / Text</button>
+  </div>
+
+  <div class="mobile-sidebar-section">
+    <div class="mobile-section-title">More Tools</div>
+    <button class="mobile-tool-btn" onclick="showPanel('preview'); closeMobileMenu()"><span class="icon">&#128064;</span> Preview</button>
+    <button class="mobile-tool-btn" onclick="showPanel('word2pdf'); closeMobileMenu()"><span class="icon">&#128221;</span> Word &rarr; PDF</button>
+    <button class="mobile-tool-btn" onclick="showPanel('pdf2txt'); closeMobileMenu()"><span class="icon">&#128196;</span> PDF &rarr; Text</button>
+    <button class="mobile-tool-btn" onclick="showPanel('img2pdf'); closeMobileMenu()"><span class="icon">&#128444;&#65039;</span> Image &rarr; PDF</button>
+    <button class="mobile-tool-btn" onclick="showPanel('html2pdf'); closeMobileMenu()"><span class="icon">&#127760;</span> HTML &rarr; PDF</button>
+    <button class="mobile-tool-btn" onclick="showPanel('pdf2img'); closeMobileMenu()"><span class="icon">&#128248;</span> PDF &rarr; Image</button>
+  </div>
+</nav>
+
 <!-- SIDEBAR -->
 <aside class="sidebar">
   <div class="sidebar-section">
-    <div class="sidebar-heading">Home</div>
-    <button class="tool-btn active" id="btn-home" onclick="showPanel('home')">
-      <span class="icon">&#127968;</span> All Tools
-    </button>
-  </div>
-
-  <div class="sidebar-section">
+    <button class="tool-btn active" id="btn-home" onclick="showPanel('home')"><span class="icon">🏠</span> Home / All Tools</button>
+    <div class="sidebar-divider"></div>
     <div class="sidebar-heading">Featured Tools</div>
     <button class="tool-btn" id="btn-merge" onclick="showPanel('merge')"><span class="icon">&#128279;</span> Merge PDF</button>
     <button class="tool-btn" id="btn-split" onclick="showPanel('split')"><span class="icon">&#9986;&#65039;</span> Split PDF</button>
@@ -58,7 +91,7 @@
     <button class="tool-btn" id="btn-annotate" onclick="showPanel('annotate')"><span class="icon">&#128172;</span> Annotate</button>
     <button class="tool-btn" id="btn-word2pdf" onclick="showPanel('word2pdf')"><span class="icon">&#128221;</span> Word &rarr; PDF</button>
     <button class="tool-btn" id="btn-pdf2txt" onclick="showPanel('pdf2txt')"><span class="icon">&#128196;</span> PDF &rarr; Text</button>
-    <button class="tool-btn" id="btn-ocr" onclick="showPanel('ocr')"><span class="icon">&#128065;&#65039;</span> OCR / Text Extract</button>
+    <button class="tool-btn" id="btn-ocr" onclick="showPanel('ocr')"><span class="icon">&#128065;&#65039;</span> OCR (PDF/Image)</button>
     <button class="tool-btn" id="btn-img2pdf" onclick="showPanel('img2pdf')"><span class="icon">&#128444;&#65039;</span> Image &rarr; PDF</button>
   </div>
 
@@ -68,7 +101,6 @@
     <button class="tool-btn" id="btn-preview" onclick="showPanel('preview')"><span class="icon">&#128064;</span> PDF Preview</button>
     <button class="tool-btn" id="btn-compare" onclick="showPanel('compare')"><span class="icon">&#9878;&#65039;</span> Compare PDFs</button>
     <button class="tool-btn" id="btn-inspect" onclick="showPanel('inspect')"><span class="icon">&#128269;</span> Inspector</button>
-    <button class="tool-btn" id="btn-mathocr" onclick="showPanel('mathocr')"><span class="icon">&sum;</span> Formula OCR</button>
     <button class="tool-btn" id="btn-ppt2pdf" onclick="showPanel('ppt2pdf')"><span class="icon">&#128253;&#65039;</span> PowerPoint &rarr; PDF</button>
     <button class="tool-btn" id="btn-excel2pdf" onclick="showPanel('excel2pdf')"><span class="icon">&#128215;</span> Excel &rarr; PDF</button>
     <button class="tool-btn" id="btn-pdf2excel" onclick="showPanel('pdf2excel')"><span class="icon">&#128202;</span> PDF &rarr; Excel</button>
@@ -145,7 +177,7 @@
   <div class="tool-card" onclick="showPanel('annotate')"><div class="tool-badge">Edit</div><div class="tc-icon">&#128172;</div><div class="tc-name">Annotate</div><div class="tc-desc">Notes & markup</div></div>
   <div class="tool-card" onclick="showPanel('word2pdf')"><div class="tool-badge">Convert</div><div class="tc-icon">&#128221;</div><div class="tc-name">Word &rarr; PDF</div><div class="tc-desc">DOCX text ko PDF banao</div></div>
   <div class="tool-card" onclick="showPanel('pdf2txt')"><div class="tool-badge">Extract</div><div class="tc-icon">&#128196;</div><div class="tc-name">PDF &rarr; Text</div><div class="tc-desc">Text extract karo</div></div>
-  <div class="tool-card" onclick="showPanel('ocr')"><div class="tool-badge">Strong OCR</div><div class="tc-icon">&#128065;&#65039;</div><div class="tc-name">OCR</div><div class="tc-desc">Scanned text extract karo</div></div>
+  <div class="tool-card" onclick="showPanel('ocr')"><div class="tool-badge">Strong OCR</div><div class="tc-icon">&#128065;&#65039;</div><div class="tc-name">OCR (PDF/Image)</div><div class="tc-desc">Scanned PDF ya photos se text nikaalo</div></div>
   <div class="tool-card" onclick="showPanel('img2pdf')"><div class="tool-badge">Fast</div><div class="tc-icon">&#128444;&#65039;</div><div class="tc-name">Image &rarr; PDF</div><div class="tc-desc">JPG/PNG to PDF</div></div>
 </div>
 
@@ -159,7 +191,6 @@
   <div class="tool-card" onclick="showPanel('imgresize')"><div class="tool-badge">Utility</div><div class="tc-icon">&#129668;</div><div class="tc-name">Image Resizer</div><div class="tc-desc">Target KB mein compress karo</div></div>
   <div class="tool-card" onclick="showPanel('preview')"><div class="tool-badge">View</div><div class="tc-icon">&#128064;</div><div class="tc-name">Preview</div><div class="tc-desc">PDF dekho browser mein</div></div>
   <div class="tool-card" onclick="showPanel('inspect')"><div class="tool-badge">Analyze</div><div class="tc-icon">&#128269;</div><div class="tc-name">Inspector</div><div class="tc-desc">PDF analyze karo</div></div>
-  <div class="tool-card" onclick="showPanel('mathocr')"><div class="tool-badge">New</div><div class="tc-icon">&sum;</div><div class="tc-name">Formula OCR</div><div class="tc-desc">Math + heavy text extract</div></div>
   <div class="tool-card" onclick="showPanel('compare')"><div class="tool-badge">Analyze</div><div class="tc-icon">&#9878;&#65039;</div><div class="tc-name">Compare</div><div class="tc-desc">Do PDFs compare karo</div></div>
 </div>
 
@@ -1097,11 +1128,11 @@
 
 <!--  OCR  -->
 <div class="panel" id="panel-ocr">
-  <h2 class="panel-title">OCR / Text Extract</h2>
-  <p class="panel-desc">PDF se text extract karo, PDF.js ke saath. Text-based PDFs ke liye best result milta hai.</p>
+  <h2 class="panel-title">OCR / Text Extract (PDF & Images)</h2>
+  <p class="panel-desc">Kisi bhi PDF ya Image (JPG/PNG) se text extract karo. Scanned documents aur photos par bhi kaam karta hai.</p>
   <div class="dropzone">
     <input type="file" id="ocr-input" accept=".pdf,image/*" onchange="runOCR(this)">
-    <div class="dz-icon">&#128196;</div><h3>PDF ya Image drop karo</h3><p>PDF.js text extraction use hoti hai</p>
+    <div class="dz-icon">&#128444;&#65039;</div><h3>PDF ya Image (JPG/PNG) drop karo</h3><p>Smart OCR text extraction</p>
   </div>
   <div id="ocr-progress" style="display:none;margin-top:1.5rem">
     <p style="color:var(--text2);font-size:0.88rem;margin-bottom:0.5rem">Extracting text... <span id="ocr-page-count"></span></p>
@@ -1122,60 +1153,6 @@
     <div id="ocr-search" style="display:none;margin-top:0.75rem">
       <div class="home-search"><span></span><input type="text" id="ocr-search-input" placeholder="Text mein search karo..." oninput="highlightSearch(this.value)"></div>
       <p id="ocr-search-result" style="font-size:0.8rem;color:var(--text2)"></p>
-    </div>
-  </div>
-</div>
-
-<div class="panel" id="panel-mathocr">
-  <h2 class="panel-title">Advanced Formula OCR</h2>
-  <p class="panel-desc">Math formulas, dense notes, equations aur heavy scanned text ke liye stronger OCR pass. Output best-effort hota hai, exact LaTeX conversion nahi.</p>
-  <div class="dropzone">
-    <input type="file" id="mathocr-input" accept=".pdf,image/*" onchange="runAdvancedOCR(this)">
-    <div class="dz-icon">&#128196;</div><h3>PDF ya image yahan drop karo</h3><p>Formula sheets, dense notes aur scanned pages supported</p>
-  </div>
-  <div id="mathocr-options" style="display:none;margin-top:1.5rem">
-    <div class="two-col">
-      <div>
-        <div class="form-group"><label class="form-label">Preprocess Mode</label>
-          <select id="mathocr-mode">
-            <option value="auto" selected>Auto (recommended)</option>
-            <option value="enhance">Enhance contrast</option>
-            <option value="threshold">Black & white</option>
-            <option value="invert">Invert light text</option>
-            <option value="gray">Grayscale</option>
-          </select>
-        </div>
-        <div class="form-group"><label class="form-label">Scale</label>
-          <select id="mathocr-scale">
-            <option value="1.5">1.5x</option>
-            <option value="2" selected>2x</option>
-            <option value="3">3x</option>
-          </select>
-        </div>
-      </div>
-      <div>
-        <div class="checkbox-row"><input type="checkbox" id="mathocr-keep-lines" checked><label for="mathocr-keep-lines">Line breaks preserve karo</label></div>
-        <div class="checkbox-row"><input type="checkbox" id="mathocr-join-pages"><label for="mathocr-join-pages">Pages ko continuous text banao</label></div>
-        <p style="color:var(--text2);font-size:0.8rem;margin-top:0.75rem">Tip: Printed equations ke liye `Threshold` ya `Enhance`; dark background scans ke liye `Invert` try karo.</p>
-      </div>
-    </div>
-    <div class="btn-row"><button class="btn btn-primary" onclick="runAdvancedOCR()"> Extract karo</button></div>
-  </div>
-  <div id="mathocr-progress" style="display:none;margin-top:1.5rem">
-    <p style="color:var(--text2);font-size:0.88rem;margin-bottom:0.5rem">Advanced OCR chal raha hai... <span id="mathocr-page-count"></span></p>
-    <div class="progress-bar"><div class="progress-fill" id="mathocr-fill" style="width:0%"></div></div>
-  </div>
-  <div id="mathocr-preview-wrap" style="display:none;margin-top:1.5rem">
-    <label class="form-label">Preview</label>
-    <div class="pdf-preview-box preview-extended" id="mathocr-preview-box"></div>
-  </div>
-  <div id="mathocr-output" style="display:none;margin-top:1.5rem">
-    <div class="stats-row" id="mathocr-stats"></div>
-    <div class="form-group"><label class="form-label">Extracted Formula / Text</label><textarea id="mathocr-text" style="min-height:340px"></textarea></div>
-    <div class="btn-row">
-      <button class="btn btn-primary" onclick="navigator.clipboard.writeText(document.getElementById('mathocr-text').value).then(()=>toast('Copied!',''))"> Copy</button>
-      <button class="btn btn-success" onclick="downloadAdvancedOCR()"> Download .txt</button>
-      <button class="btn btn-secondary" onclick="cleanAdvancedOCR()"> Clean Spacing</button>
     </div>
   </div>
 </div>
