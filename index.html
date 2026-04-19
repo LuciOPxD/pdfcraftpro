@@ -245,43 +245,6 @@
 </div>
 </div>
 
-<!-- PROFILE PAGE -->
-<div class="panel" id="panel-profile">
-  <div class="profile-header">
-    <div class="profile-avatar" id="prof-avatar">👤</div>
-    <div class="profile-info">
-      <h2 id="prof-name">User Name</h2>
-      <p id="prof-email">user@example.com</p>
-      <span class="badge" style="background:rgba(108,99,255,0.1);color:var(--accent)">Premium Member</span>
-    </div>
-  </div>
-
-  <div class="profile-section">
-    <h3 class="section-title">Recent Activity</h3>
-    <div class="activity-list" id="activity-list">
-      <div class="activity-item empty">No recent activity yet. Start editing PDFs!</div>
-    </div>
-  </div>
-
-  <div class="profile-section">
-    <h3 class="section-title">Account Settings</h3>
-    <div class="settings-grid">
-      <div class="setting-item">
-        <div class="si-label">Email Notifications</div>
-        <div class="si-action"><input type="checkbox" checked></div>
-      </div>
-      <div class="setting-item">
-        <div class="si-label">Dark Mode</div>
-        <div class="si-action"><button class="btn btn-secondary btn-sm" onclick="toggleTheme()">Toggle</button></div>
-      </div>
-    </div>
-  </div>
-
-  <div class="btn-row" style="margin-top:2rem">
-    <button class="btn btn-danger" onclick="firebase.auth().signOut()">Logout Account</button>
-  </div>
-</div>
-
 <div class="panel" id="panel-merge">
   <h2 class="panel-title">&#128279; Merge PDF</h2>
   <p class="panel-desc">Multiple PDF files ko ek single PDF mein combine karo. Files upload karke "Merge karo" click karo.</p>
@@ -1662,9 +1625,42 @@
 </main>
 </div>
 
-</div>
+<!-- PROFILE PAGE -->
+<div class="panel" id="panel-profile">
+  <div class="profile-header">
+    <div class="profile-avatar" id="prof-avatar">👤</div>
+    <div class="profile-info">
+      <h2 id="prof-name">User Name</h2>
+      <p id="prof-email">user@example.com</p>
+      <span class="badge" style="background:rgba(108,99,255,0.1);color:var(--accent)">Premium Member</span>
+    </div>
+  </div>
 
-<!-- PRIVACY POLICY -->
+  <div class="profile-section">
+    <h3 class="section-title">Recent Activity</h3>
+    <div class="activity-list" id="activity-list">
+      <div class="activity-item empty">No recent activity yet. Start editing PDFs!</div>
+    </div>
+  </div>
+
+  <div class="profile-section">
+    <h3 class="section-title">Account Settings</h3>
+    <div class="settings-grid">
+      <div class="setting-item">
+        <div class="si-label">Email Notifications</div>
+        <div class="si-action"><input type="checkbox" checked></div>
+      </div>
+      <div class="setting-item">
+        <div class="si-label">Dark Mode</div>
+        <div class="si-action"><button class="btn btn-secondary btn-sm" onclick="toggleTheme()">Toggle</button></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="btn-row" style="margin-top:2rem">
+    <button class="btn btn-danger" onclick="firebase.auth().signOut()">Logout Account</button>
+  </div>
+</div>
 
 <!-- PRIVACY POLICY -->
 <div class="panel" id="panel-privacy">
