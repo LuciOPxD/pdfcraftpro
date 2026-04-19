@@ -259,7 +259,14 @@ header{
 }
 
 /* ── Layout ───────────────────────────────────── */
-.app-layout{display:flex;min-height:calc(100vh - 60px);min-height:calc(100dvh - 60px);}
+.app-layout{
+  display:flex;
+  min-height:calc(100vh - 70px);
+  min-height:calc(100dvh - 70px);
+  width:100%;
+  max-width:100vw;
+  overflow-x:hidden;
+}
 
 /* ── Sidebar ──────────────────────────────────── */
 .sidebar{
@@ -348,10 +355,9 @@ header{
 .panel{
   display:none;
   flex-direction:column;
-  padding:2rem 3rem;
+  padding:1.5rem 2rem;
   width:100%;
-  max-width:1400px;
-  margin:0 auto;
+  box-sizing: border-box;
 }
 .panel.active{display:flex;}
 
