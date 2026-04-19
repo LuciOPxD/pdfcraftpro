@@ -338,9 +338,20 @@ header{
 .sidebar-divider{height:1px;background:linear-gradient(90deg,transparent,var(--border),transparent);margin:0.5rem 1rem;}
 
 /* ── Main ─────────────────────────────────────── */
-.main{flex:1;min-width:0;background:var(--bg);}
+.main{
+  flex:1;
+  min-width:0;
+  background:var(--bg);
+  display:flex;
+  flex-direction:column;
+}
 .panel{
-  display:none;flex-direction:column;padding:2rem;
+  display:none;
+  flex-direction:column;
+  padding:2rem 3rem;
+  width:100%;
+  max-width:1400px;
+  margin:0 auto;
 }
 .panel.active{display:flex;}
 
