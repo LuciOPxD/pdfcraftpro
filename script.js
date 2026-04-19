@@ -3644,37 +3644,39 @@ if (typeof firebase !== 'undefined') {
 
   // Monitor Auth State
   auth.onAuthStateChanged((user) => {
-    // Update all login buttons (Desktop & Mobile)
-    const loginBtns = document.querySelectorAll('button[onclick*="openAuthModal"]');
-    
-    if (user) {
-      console.log("User logged in:", user.email);
-      loginBtns.forEach(btn => {
-        btn.innerHTML = `👤 ${user.displayName || user.email.split('@')[0]}`;
-        btn.onclick = () => showPanel('profile');
-      });
-      
-      // Populate Profile Page
-      const profName = document.getElementById('prof-name');
-      const profEmail = document.getElementById('prof-email');
-      if(profName) profName.textContent = user.displayName || 'User Account';
-      if(profEmail) profEmail.textContent = user.email;
-      renderActivity();
-    } else {
-      console.log("User logged out");
-      loginBtns.forEach(btn => {
-        btn.innerHTML = `👤 Login`;
-        btn.onclick = openAuthModal;
-      });
-      // Clear profile data
-      const profName = document.getElementById('prof-name');
-      const profEmail = document.getElementById('prof-email');
-      if(profName) profName.textContent = 'User Account';
-      if(profEmail) profEmail.textContent = 'login to see details';
-      renderActivity([]);
-    }
+    updateAuthUI(user);
   });
 }
+
+function updateAuthUI(user) {
+  const loginBtns = document.querySelectorAll('button[onclick*="openAuthModal"]');
+  if (user) {
+    console.log("Updating UI for user:", user.email);
+    loginBtns.forEach(btn => {
+      btn.innerHTML = `👤 ${user.displayName || user.email.split('@')[0]}`;
+      btn.onclick = () => showPanel('profile');
+    });
+    
+    // Populate Profile Page
+    const profName = document.getElementById('prof-name');
+    const profEmail = document.getElementById('prof-email');
+    if(profName) profName.textContent = user.displayName || 'User Account';
+    if(profEmail) profEmail.textContent = user.email;
+    renderActivity();
+  } else {
+    console.log("Updating UI for guest");
+    loginBtns.forEach(btn => {
+      btn.innerHTML = `👤 Login`;
+      btn.onclick = openAuthModal;
+    });
+    const profName = document.getElementById('prof-name');
+    const profEmail = document.getElementById('prof-email');
+    if(profName) profName.textContent = 'User Account';
+    if(profEmail) profEmail.textContent = 'login to see details';
+    renderActivity([]);
+  }
+}
+
 
 function saveActivity(tool, detail) {
   const user = firebase.auth().currentUser;
@@ -3786,7 +3788,14 @@ async function mockAuth(type, e) {
     const auth = firebase.auth();
     if (type === 'signup') {
       const userCredential = await auth.createUserWithEmailAndPassword(email, password);
-      if (name) await userCredential.user.updateProfile({ displayName: name });
+      if (name) {
+        await userCredential.user.updateProfile({ displayName: name });
+        // Force refresh user object to get displayName immediately
+        await userCredential.user.reload();
+        const updatedUser = auth.currentUser;
+        // Trigger manual UI update
+        updateAuthUI(updatedUser);
+      }
       toast('Account created! Welcome to JustPDFCraft.', '✅');
     } else {
       await auth.signInWithEmailAndPassword(email, password);
