@@ -216,7 +216,9 @@ header{
 .logo{
   font-family:'Syne',sans-serif;font-size:1.3rem;font-weight:800;
   background:linear-gradient(135deg,var(--accent),var(--accent2));
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  -webkit-background-clip:text;
+  background-clip:text;
+  -webkit-text-fill-color:transparent;
   transition:all 0.3s ease;
   cursor:pointer;
 }
