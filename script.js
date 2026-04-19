@@ -68,8 +68,15 @@ function showPanel(id, addToHistory = true) {
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.tool-btn').forEach(b=>b.classList.remove('active'));
   document.querySelectorAll('.mobile-tool-btn').forEach(b=>b.classList.remove('active'));
-  const p=document.getElementById('panel-'+id);
   if(p) p.classList.add('active');
+  
+  // Scroll to top instantly on mobile, smooth on desktop
+  const isMobile = window.innerWidth <= 768;
+  window.scrollTo({
+    top: 0, 
+    behavior: isMobile ? 'auto' : 'smooth'
+  });
+
   const b=document.getElementById('btn-'+id);
   if(b) b.classList.add('active');
   const mb=document.getElementById('mbtn-'+id);
@@ -3818,7 +3825,25 @@ window.addEventListener('DOMContentLoaded', () => {
       if (banner) banner.classList.add('show');
     }, 3000);
   }
+
 });
+
+async function googleLogin() {
+  try {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    const result = await firebase.auth().signInWithPopup(provider);
+    toast(`Welcome ${result.user.displayName || 'User'}!`, '✅');
+    closeAuthModal();
+  } catch (error) {
+    console.error("Google Auth Error:", error);
+    if (error.code === 'auth/popup-blocked') {
+      toast("Popup block ho gaya hai, please allow karein.", "⚠️");
+    } else {
+      toast(error.message, '❌');
+    }
+  }
+}
+
 
 
 
