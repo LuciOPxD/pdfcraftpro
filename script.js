@@ -3660,8 +3660,15 @@ function updateAuthUI(user) {
     // Populate Profile Page
     const profName = document.getElementById('prof-name');
     const profEmail = document.getElementById('prof-email');
+    const profAuthBtn = document.getElementById('prof-auth-btn');
+    
     if(profName) profName.textContent = user.displayName || 'User Account';
     if(profEmail) profEmail.textContent = user.email;
+    if(profAuthBtn) {
+      profAuthBtn.textContent = 'Logout Account';
+      profAuthBtn.className = 'btn btn-danger';
+      profAuthBtn.onclick = () => firebase.auth().signOut();
+    }
     renderActivity();
   } else {
     console.log("Updating UI for guest");
@@ -3671,8 +3678,15 @@ function updateAuthUI(user) {
     });
     const profName = document.getElementById('prof-name');
     const profEmail = document.getElementById('prof-email');
-    if(profName) profName.textContent = 'User Account';
+    const profAuthBtn = document.getElementById('prof-auth-btn');
+    
+    if(profName) profName.textContent = 'Guest Account';
     if(profEmail) profEmail.textContent = 'login to see details';
+    if(profAuthBtn) {
+      profAuthBtn.textContent = 'Login to Account';
+      profAuthBtn.className = 'btn btn-primary';
+      profAuthBtn.onclick = openAuthModal;
+    }
     renderActivity([]);
   }
 }
