@@ -21,12 +21,23 @@
 }
 
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;touch-action:manipulation;max-width:100%;}
-html,body{overflow-x:hidden !important;width:100%;max-width:100vw;margin:0;padding:0;position:relative;}
 button,.tool-card,.btn,.tool-btn{user-select:none;-webkit-user-select:none;}
-html{scroll-behavior:smooth;}
+html,body{
+  height: 100%;
+  overflow: hidden !important;
+  width: 100%;
+  max-width: 100vw;
+  margin: 0;
+  padding: 0;
+  position: relative;
+  scroll-behavior: smooth;
+}
 body{
-  font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);
-  min-height:100vh;min-height:100dvh;overflow-x:hidden;
+  font-family:'DM Sans',sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  display: flex;
+  flex-direction: column;
   -webkit-text-size-adjust:100%;
   overscroll-behavior-x:none;
   animation:pageLoad 0.3s cubic-bezier(0.4,0,0.2,1);
@@ -196,10 +207,12 @@ header{
   padding:0 1.5rem;
   height:60px;
   display:flex;align-items:center;justify-content:space-between;
-  position:sticky;top:0;z-index:200;
+  position:relative; /* Changed from sticky to relative since parent is flex */
+  z-index:200;
   backdrop-filter:blur(30px);
   -webkit-backdrop-filter:blur(30px);
   animation:slideInDown 0.5s ease;
+  flex-shrink: 0;
 }
 
 @keyframes slideInDown {
@@ -261,11 +274,10 @@ header{
 /* ── Layout ───────────────────────────────────── */
 .app-layout{
   display:flex;
-  min-height:calc(100vh - 70px);
-  min-height:calc(100dvh - 70px);
+  flex: 1;
   width:100%;
   max-width:100%;
-  overflow-x:hidden;
+  overflow: hidden; /* Important for independent children scroll */
   position: relative;
 }
 
@@ -275,7 +287,7 @@ header{
   background:rgba(15,15,26,0.4);
   border-right:1px solid rgba(37,37,56,0.3);
   overflow-y:auto;overflow-x:hidden;
-  position:sticky;top:70px;height:calc(100vh - 70px);height:calc(100dvh - 70px);
+  height: 100%;
   backdrop-filter:blur(20px);
   -webkit-backdrop-filter:blur(20px);
   animation:slideInLeft 0.5s ease 0.1s both;
@@ -352,6 +364,10 @@ header{
   background:var(--bg);
   display:flex;
   flex-direction:column;
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  position: relative;
 }
 .panel{
   display:none;
@@ -2058,7 +2074,20 @@ input[type="radio"] {
   .app-layout {
     flex-direction: column !important;
     gap: 0;
+    overflow-y: auto; /* Allow app-layout to scroll on mobile if needed, or main */
     padding-bottom: env(safe-area-inset-bottom);
+  }
+  .main {
+    height: auto !important;
+    overflow-y: visible !important;
+  }
+  body {
+    overflow-y: auto !important;
+    height: auto !important;
+  }
+  html {
+    height: auto !important;
+    overflow-y: auto !important;
   }
   main {
     flex: 1;

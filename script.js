@@ -80,7 +80,8 @@ function showPanel(id, addToHistory = true) {
       target.scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'});
     }
   }
-  window.scrollTo({top: 0, behavior: 'instant'});
+  const mainEl = document.querySelector('.main');
+  if (mainEl) mainEl.scrollTo({top: 0, behavior: 'instant'});
 
   if (addToHistory) {
     const stateObj = { panelId: id };
