@@ -850,7 +850,12 @@ function downloadQRCode(){
   const a=document.createElement('a');
   a.href=state.qrDataUrl;
   a.download='qr-code.png';
+  a.style.display = 'none';
+  document.body.appendChild(a);
   a.click();
+  setTimeout(() => {
+    if (a.parentNode) document.body.removeChild(a);
+  }, 1000);
 }
 
 function togglePasswordOption(type){
@@ -925,7 +930,65 @@ function toast(msg, icon='ℹ️', duration=3500) {
 const fmtSize=b=>b<1024?b+' B':b<1048576?(b/1024).toFixed(1)+' KB':(b/1048576).toFixed(1)+' MB';
 const readAB=f=>new Promise((res,rej)=>{const r=new FileReader();r.onload=e=>res(e.target.result);r.onerror=rej;r.readAsArrayBuffer(f);});
 const readURL=f=>new Promise((res,rej)=>{const r=new FileReader();r.onload=e=>res(e.target.result);r.onerror=rej;r.readAsDataURL(f);});
-function dlBlob(blob,name){const u=URL.createObjectURL(blob);const a=document.createElement('a');a.href=u;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(u),2000);}
+function dlBlob(blob, name) {
+  // 1. Determine correct Mime Type based on extension
+  const ext = name.split('.').pop().toLowerCase();
+  const mimeMap = {
+    'pdf': 'application/pdf',
+    'zip': 'application/zip',
+    'png': 'image/png',
+    'jpg': 'image/jpeg',
+    'jpeg': 'image/jpeg',
+    'txt': 'text/plain',
+    'xls': 'application/vnd.ms-excel',
+    'csv': 'text/csv'
+  };
+  const type = mimeMap[ext] || 'application/octet-stream';
+
+  // 2. Ensure we have a Blob with the explicit mime type
+  // Re-wrapping the blob ensures the browser treats it as the specified type
+  const safeBlob = (blob instanceof Blob) 
+    ? new Blob([blob], { type: type }) 
+    : new Blob([blob], { type: type });
+
+  // 3. Handle Legacy IE (just in case)
+  if (window.navigator?.msSaveOrOpenBlob) {
+    window.navigator.msSaveOrOpenBlob(safeBlob, name);
+    return;
+  }
+
+  // 4. Create Object URL
+  const u = URL.createObjectURL(safeBlob);
+  const a = document.createElement('a');
+  a.href = u;
+  a.download = name;
+  
+  // 5. Mobile/Android Robustness:
+  // Android browsers can be picky about the click event and the link state
+  const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+  
+  a.style.display = 'none';
+  document.body.appendChild(a);
+  
+  if (isMobile) {
+    // For mobile, a small timeout ensures the UI thread is ready to handle the download
+    setTimeout(() => {
+      a.click();
+      // Revoke after a longer delay (2 minutes) to ensure the download manager has started
+      setTimeout(() => {
+        if (a.parentNode) document.body.removeChild(a);
+        URL.revokeObjectURL(u);
+      }, 120000);
+    }, 150);
+  } else {
+    a.click();
+    // Revoke after 1 minute for desktop
+    setTimeout(() => {
+      if (a.parentNode) document.body.removeChild(a);
+      URL.revokeObjectURL(u);
+    }, 60000);
+  }
+}
 function showResult(id,text){const el=document.getElementById(id+'-result');if(el)el.classList.add('show');const t=document.getElementById(id+'-result-text');if(t&&text)t.textContent=text;}
 function setProgress(id,pct,label){const w=document.getElementById(id+'-progress');const f=document.getElementById(id+'-fill');if(w)w.classList.add('show');if(f)f.style.width=pct+'%';if(label){const l=document.getElementById(id+'-plab');if(l)l.textContent=label;}}
 function selectOpt(el,scope){document.querySelectorAll(scope).forEach(c=>c.classList.remove('selected'));el.classList.add('selected');}
@@ -2765,68 +2828,11 @@ let signPreviewBound=false;
 function bindSignPreviewControls(){
   if(signPreviewBound) return;
   signPreviewBound=true;
-  const stage=document.getElementById('sign-stage');
   const pageField=document.getElementById('sign-page');
   if(pageField){
     pageField.addEventListener('change',()=>setSignPreviewPage(parseInt(pageField.value)||1));
     pageField.addEventListener('input',()=>setSignPreviewPage(parseInt(pageField.value)||1));
   }
-  const getPos=e=>{
-    const canvas=document.getElementById('sign-preview-canvas');
-    const rect=canvas.getBoundingClientRect();
-    const point=e.touches ? e.touches[0] : e;
-    return {
-      x:clamp((point.clientX-rect.left)/rect.width,0,1),
-      y:clamp((point.clientY-rect.top)/rect.height,0,1)
-    };
-  };
-  const update=e=>{
-    const start=state.signUnderlineStart || getPos(e);
-    const current=getPos(e);
-    state.signPlacement={
-      page:state.signPreviewPageNum,
-      x1:Math.min(start.x,current.x),
-      x2:Math.max(start.x,current.x),
-      y:current.y
-    };
-    const posField=document.getElementById('sign-pos');
-    if(posField) posField.value='custom-underline';
-    renderSignUnderlineOverlay();
-  };
-  stage.addEventListener('mousedown',e=>{
-    state.signDragging=true;
-    state.signUnderlineStart=getPos(e);
-    update(e);
-  });
-  window.addEventListener('mousemove',e=>{
-    if(!state.signDragging) return;
-    update(e);
-  });
-  window.addEventListener('mouseup',()=>{
-    state.signDragging=false;
-    state.signUnderlineStart=null;
-  });
-  stage.addEventListener('touchstart',e=>{
-    e.preventDefault();
-    state.signDragging=true;
-    state.signUnderlineStart=getPos(e);
-    update(e);
-  },{passive:false});
-  window.addEventListener('touchmove',e=>{
-    if(!state.signDragging) return;
-    update(e);
-  },{passive:false});
-  window.addEventListener('touchend',()=>{
-    state.signDragging=false;
-    state.signUnderlineStart=null;
-  });
-  stage.addEventListener('click',e=>{
-    const p=getPos(e);
-    state.signPlacement={page:state.signPreviewPageNum,x1:Math.max(0,p.x-0.08),x2:Math.min(1,p.x+0.08),y:p.y};
-    const posField=document.getElementById('sign-pos');
-    if(posField) posField.value='custom-underline';
-    renderSignUnderlineOverlay();
-  });
 }
 
 async function setSignPreviewPage(pageNum){
@@ -2841,29 +2847,8 @@ async function setSignPreviewPage(pageNum){
   canvas.width=viewport.width;
   canvas.height=viewport.height;
   await state.signPreviewPage.render({canvasContext:canvas.getContext('2d'),viewport}).promise;
-  renderSignUnderlineOverlay();
 }
 
-function renderSignUnderlineOverlay(){
-  const line=document.getElementById('sign-underline');
-  const canvas=document.getElementById('sign-preview-canvas');
-  const note=document.getElementById('sign-preview-note');
-  if(!line || !canvas || !canvas.width){
-    return;
-  }
-  const placement=state.signPlacement;
-  if(!placement || placement.page!==state.signPreviewPageNum){
-    line.style.display='none';
-    if(note) note.textContent='Preview par underline drag karo, sign ussi jagah lagega.';
-    return;
-  }
-  line.style.display='block';
-  line.style.left=`${placement.x1*canvas.width}px`;
-  line.style.top=`${Math.max((placement.y*canvas.height)-10,0)}px`;
-  line.style.width=`${Math.max((placement.x2-placement.x1)*canvas.width,36)}px`;
-  line.style.height='20px';
-  if(note) note.textContent=`Underline placement set on page ${placement.page}. Signature yahin place hoga.`;
-}
 
 function prevSignPreviewPage(){
   if(state.signPreviewPageNum>1) setSignPreviewPage(state.signPreviewPageNum-1);
@@ -3012,14 +2997,10 @@ async function signPDF(){
     const sigSize=parseInt(document.getElementById('sign-size').value)||120;
     const posOpt=document.getElementById('sign-pos').value;
     let sx,sy,targetWidth=sigSize;
-    if(posOpt==='custom-underline' && state.signPlacement && state.signPlacement.page===pageNum){
-      sx=width*state.signPlacement.x1;
-      sy=height*(1-state.signPlacement.y);
-      targetWidth=Math.max(width*(state.signPlacement.x2-state.signPlacement.x1),sigSize*0.55);
-    } else if(posOpt==='bottom-right'){sx=width-sigSize-30;sy=25;}
+    if(posOpt==='bottom-right'){sx=width-sigSize-30;sy=25;}
     else if(posOpt==='bottom-left'){sx=30;sy=25;}
     else if(posOpt==='bottom-center'){sx=width/2-sigSize/2;sy=25;}
-    else{sx=width-sigSize-30;sy=height-40;}
+    else{sx=width-sigSize-30;sy=height-sigSize-40;}
 
     if(state.signType==='draw'){
       const canvas=document.getElementById('sign-canvas');
@@ -3027,14 +3008,12 @@ async function signPDF(){
       const pngData=await fetch(dataURL).then(r=>r.arrayBuffer());
       const img=await pdf.embedPng(pngData);
       const dim=img.scale(targetWidth/img.width);
-      page.drawImage(img,{x:sx,y:posOpt==='custom-underline'?sy-(dim.height*0.35):sy,width:dim.width,height:dim.height});
+      page.drawImage(img,{x:sx,y:sy,width:dim.width,height:dim.height});
     } else if(state.signType==='type'){
       const name=document.getElementById('sign-name').value||'Signature';
       const font=await pdf.embedFont(PDFLib.StandardFonts.TimesRomanItalic);
-      const fontSize=posOpt==='custom-underline'
-        ? clamp(targetWidth/Math.max(name.length*0.55,4),18,Math.max(20,sigSize/4))
-        : sigSize/5;
-      page.drawText(name,{x:sx,y:posOpt==='custom-underline'?sy-(fontSize*0.2):sy+10,size:fontSize,font,color:PDFLib.rgb(0.1,0.1,0.5)});
+      const fontSize=sigSize/5;
+      page.drawText(name,{x:sx,y:sy+10,size:fontSize,font,color:PDFLib.rgb(0.1,0.1,0.5)});
     } else {
       const imgFile=document.getElementById('sign-img-file').files[0];
       if(!imgFile){toast('Signature image upload karo!','⚠️');return;}
@@ -3043,7 +3022,7 @@ async function signPDF(){
       if(imgFile.type==='image/jpeg')pdfImg=await pdf.embedJpg(imgAB);
       else pdfImg=await pdf.embedPng(imgAB);
       const dim=pdfImg.scale(targetWidth/pdfImg.width);
-      page.drawImage(pdfImg,{x:sx,y:posOpt==='custom-underline'?sy-(dim.height*0.35):sy,width:dim.width,height:dim.height});
+      page.drawImage(pdfImg,{x:sx,y:sy,width:dim.width,height:dim.height});
     }
     const bytes=await pdf.save();
     const blob=new Blob([bytes],{type:'application/pdf'});
@@ -3565,6 +3544,5 @@ document.addEventListener('click', (e) => {
     }
   }
 });
-
 
 

@@ -17,6 +17,7 @@
   --purple: #a55eea;
   --pink: #fd79a8;
   --sidebar-w: 260px;
+  color-scheme: dark;
 }
 
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
@@ -555,23 +556,29 @@ header{
 .form-label{
   display:block;
   font-size:0.82rem;
-  color:var(--text2);
+  color:var(--text);
+  opacity: 0.85;
   margin-bottom:0.45rem;
-  font-weight:500;
+  font-weight:600;
   transition:color 0.3s ease;
 }
 
 select,input[type=text],input[type=number],input[type=password],input[type=email]{
   width:100%;
-  background:rgba(23,23,37,0.6);
-  border:1px solid rgba(37,37,56,0.4);
+  background:var(--surface2);
+  border:1px solid var(--border);
   border-radius:12px;
-  padding:0.6rem 0.8rem;
+  padding:0.65rem 0.9rem;
   color:var(--text);
   font-family:'DM Sans',sans-serif;
   font-size:0.88rem;
   outline:none;
   transition:all 0.3s ease;
+}
+
+select option {
+  background-color: var(--surface2);
+  color: var(--text);
 }
 
 select:focus,input:focus{
@@ -1571,6 +1578,7 @@ body.light{
   --border:#ddddef;
   --text:#1a1a2e;
   --text2:#666680;
+  color-scheme: light;
 }
 
 /* ── Split layout for wide screens ───────────── */
