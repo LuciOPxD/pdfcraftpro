@@ -27,6 +27,10 @@
 <link rel="stylesheet" href="./style.css">
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1816823099804360"
      crossorigin="anonymous"></script>
+
+<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
 </head>
 <body>
 <!-- HEADER -->
@@ -37,7 +41,7 @@
   <div class="header-right">
     <span class="header-tag">&#10024; 100% Free</span>
     <button id="install-btn" class="theme-btn" style="display:none;background:linear-gradient(135deg,#6c63ff,#ff6584);color:white;border:none" onclick="installApp()">⬇️ Install App</button>
-    <button class="theme-btn" onclick="toggleTheme()">&#127769; Theme</button>
+    <button class="theme-btn btn-primary" onclick="openAuthModal()" style="margin-left:0.5rem">👤 Login</button>
     <button class="hamburger-btn" id="hamburger-btn" onclick="toggleMobileMenu()">☰</button>
   </div>
 </header>
@@ -135,6 +139,12 @@
     <button class="tool-btn" id="btn-metaedit" onclick="showPanel('metaedit')"><span class="icon">ME</span> Metadata Editor</button>
     <button class="tool-btn" id="btn-repair" onclick="showPanel('repair')"><span class="icon">&#128736;&#65039;</span> Repair PDF</button>
     <button class="tool-btn" id="btn-about" onclick="showPanel('about')"><span class="icon">&#8505;&#65039;</span> About</button>
+    
+    <!-- Sidebar Ad Slot -->
+    <div class="ad-slot sidebar-ad">
+      <div class="ad-label">Advertisement</div>
+      <!-- Paste AdSense Code Here -->
+    </div>
   </div>
 </aside>
 
@@ -167,17 +177,23 @@
     <input type="text" placeholder="Tool search karo..." id="tool-search" oninput="filterTools(this.value)">
   </div>
 
+  <!-- Header Ad Slot -->
+  <div class="ad-slot header-ad">
+    <div class="ad-label">Advertisement</div>
+    <!-- Paste AdSense Code Here -->
+  </div>
+
 <div class="tool-section-title">Most Used</div>
 <div class="tools-grid">
   <div class="tool-card premium-card" onclick="showPanel('merge')"><div class="tool-badge">Popular</div><div class="tc-icon">&#128279;</div><div class="tc-name">Merge PDF</div><div class="tc-desc">Multiple PDFs join karo</div></div>
   <div class="tool-card premium-card" onclick="showPanel('split')"><div class="tool-badge">Popular</div><div class="tc-icon">&#9986;&#65039;</div><div class="tc-name">Split PDF</div><div class="tc-desc">Pages alag karo</div></div>
   <div class="tool-card premium-card" onclick="showPanel('compress')"><div class="tool-badge">Fast</div><div class="tc-icon">&#128476;&#65039;</div><div class="tc-name">Compress</div><div class="tc-desc">Size kam karo</div></div>
-  <div class="tool-card premium-card" onclick="showPanel('sign')"><div class="tool-badge">Popular</div><div class="tc-icon">&#9997;&#65039;</div><div class="tc-name">Sign PDF</div><div class="tc-desc">Signature lagao</div></div>
-  <div class="tool-card" onclick="showPanel('watermark')"><div class="tool-badge">Branding</div><div class="tc-icon">&#128167;</div><div class="tc-name">Watermark</div><div class="tc-desc">Text watermark lagao</div></div>
+  <div class="tool-card premium-card" onclick="showPanel('sign')"><div class="tool-badge">PRO</div><div class="tc-icon">&#9997;&#65039;</div><div class="tc-name">Sign PDF</div><div class="tc-desc">Signature lagao</div></div>
+  <div class="tool-card" onclick="showPanel('watermark')"><div class="tool-badge">PRO</div><div class="tc-icon">&#128167;</div><div class="tc-name">Watermark</div><div class="tc-desc">Text watermark lagao</div></div>
   <div class="tool-card" onclick="showPanel('annotate')"><div class="tool-badge">Edit</div><div class="tc-icon">&#128172;</div><div class="tc-name">Annotate</div><div class="tc-desc">Notes & markup</div></div>
   <div class="tool-card" onclick="showPanel('word2pdf')"><div class="tool-badge">Convert</div><div class="tc-icon">&#128221;</div><div class="tc-name">Word &rarr; PDF</div><div class="tc-desc">DOCX text ko PDF banao</div></div>
   <div class="tool-card" onclick="showPanel('pdf2txt')"><div class="tool-badge">Extract</div><div class="tc-icon">&#128196;</div><div class="tc-name">PDF &rarr; Text</div><div class="tc-desc">Text extract karo</div></div>
-  <div class="tool-card" onclick="showPanel('ocr')"><div class="tool-badge">Strong OCR</div><div class="tc-icon">&#128065;&#65039;</div><div class="tc-name">OCR (PDF/Image)</div><div class="tc-desc">Scanned PDF ya photos se text nikaalo</div></div>
+  <div class="tool-card" onclick="showPanel('ocr')"><div class="tool-badge">PRO</div><div class="tc-icon">&#128065;&#65039;</div><div class="tc-name">OCR (PDF/Image)</div><div class="tc-desc">Scanned PDF ya photos se text nikaalo</div></div>
   <div class="tool-card" onclick="showPanel('img2pdf')"><div class="tool-badge">Fast</div><div class="tc-icon">&#128444;&#65039;</div><div class="tc-name">Image &rarr; PDF</div><div class="tc-desc">JPG/PNG to PDF</div></div>
 </div>
 
@@ -202,8 +218,8 @@
   <div class="tool-card" onclick="showPanel('duplicate')"><div class="tool-badge">Organize</div><div class="tc-icon">DP</div><div class="tc-name">Duplicate Pages</div><div class="tc-desc">Same page copies insert karo</div></div>
   <div class="tool-card" onclick="showPanel('rotate')"><div class="tool-badge">Edit</div><div class="tc-icon">&#128260;</div><div class="tc-name">Rotate</div><div class="tc-desc">Pages ghuma do</div></div>
   <div class="tool-card" onclick="showPanel('crop')"><div class="tool-badge">Edit</div><div class="tc-icon">&#9986;&#65039;</div><div class="tc-name">Crop Pages</div><div class="tc-desc">Page margins trim karo</div></div>
-  <div class="tool-card" onclick="showPanel('redact')"><div class="tool-badge">Secure</div><div class="tc-icon">&#11035;</div><div class="tc-name">Redact</div><div class="tc-desc">Content black out karo</div></div>
-  <div class="tool-card" onclick="showPanel('reorder')"><div class="tool-badge">Organize</div><div class="tc-icon">&#128209;</div><div class="tc-name">Reorder Pages</div><div class="tc-desc">Pages ki order badlo</div></div>
+  <div class="tool-card" onclick="showPanel('redact')"><div class="tool-badge">PRO</div><div class="tc-icon">&#11035;</div><div class="tc-name">Redact</div><div class="tc-desc">Content black out karo</div></div>
+  <div class="tool-card" onclick="showPanel('reorder')"><div class="tool-badge">PRO</div><div class="tc-icon">&#128209;</div><div class="tc-name">Reorder Pages</div><div class="tc-desc">Pages ki order badlo</div></div>
   <div class="tool-card" onclick="showPanel('delete-pages')"><div class="tool-badge">Organize</div><div class="tc-icon">&#128465;&#65039;</div><div class="tc-name">Delete Pages</div><div class="tc-desc">Specific pages hatao</div></div>
   <div class="tool-card" onclick="showPanel('extract-pages')"><div class="tool-badge">Organize</div><div class="tc-icon">&#128228;</div><div class="tc-name">Extract Pages</div><div class="tc-desc">Pages alag PDF mein</div></div>
 </div>
@@ -224,7 +240,7 @@
   <div class="tool-card" onclick="showPanel('password')"><div class="tool-badge">Utility</div><div class="tc-icon">&#128273;</div><div class="tc-name">Password Generator</div><div class="tc-desc">Strong passwords instantly</div></div>
   <div class="tool-card" onclick="showPanel('repair')"><div class="tool-badge">Utility</div><div class="tc-icon">&#128736;&#65039;</div><div class="tc-name">Repair PDF</div><div class="tc-desc">Corrupt PDF fix karo</div></div>
   <div class="tool-card" onclick="showPanel('blank')"><div class="tool-badge">Utility</div><div class="tc-icon">&#128195;</div><div class="tc-name">Blank PDF</div><div class="tc-desc">Empty PDF generate karo</div></div>
-  <div class="tool-card" onclick="showPanel('metaedit')"><div class="tool-badge">Utility</div><div class="tc-icon">ME</div><div class="tc-name">Metadata Editor</div><div class="tc-desc">Title, author aur keywords edit karo</div></div>
+  <div class="tool-card" onclick="showPanel('metaedit')"><div class="tool-badge">PRO</div><div class="tc-icon">ME</div><div class="tc-name">Metadata Editor</div><div class="tc-desc">Title, author aur keywords edit karo</div></div>
   <div class="tool-card" onclick="showPanel('about')"><div class="tool-badge">Info</div><div class="tc-icon">&#8505;&#65039;</div><div class="tc-name">About</div><div class="tc-desc">Project details dekho</div></div>
 </div>
 </div>
@@ -1607,6 +1623,163 @@
 </div>
 
 </main>
+</div>
+
+<!-- PROFILE PAGE -->
+<div class="panel" id="panel-profile">
+  <div class="profile-header">
+    <div class="profile-avatar" id="prof-avatar">👤</div>
+    <div class="profile-info">
+      <h2 id="prof-name">User Name</h2>
+      <p id="prof-email">user@example.com</p>
+      <span class="badge" style="background:rgba(108,99,255,0.1);color:var(--accent)">Premium Member</span>
+    </div>
+  </div>
+
+  <div class="profile-section">
+    <h3 class="section-title">Recent Activity</h3>
+    <div class="activity-list" id="activity-list">
+      <div class="activity-item empty">No recent activity yet. Start editing PDFs!</div>
+    </div>
+  </div>
+
+  <div class="profile-section">
+    <h3 class="section-title">Account Settings</h3>
+    <div class="settings-grid">
+      <div class="setting-item">
+        <div class="si-label">Email Notifications</div>
+        <div class="si-action"><input type="checkbox" checked></div>
+      </div>
+      <div class="setting-item">
+        <div class="si-label">Dark Mode</div>
+        <div class="si-action"><button class="btn btn-secondary btn-sm" onclick="toggleTheme()">Toggle</button></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="btn-row" style="margin-top:2rem">
+    <button class="btn btn-danger" onclick="firebase.auth().signOut()">Logout Account</button>
+  </div>
+</div>
+
+<!-- PRIVACY POLICY -->
+<div class="panel" id="panel-privacy">
+  <h2 class="panel-title">Privacy Policy</h2>
+  <div class="content-block">
+    <p>Last updated: April 2026</p>
+    <p>At JustPDFCraft, we value your privacy. This policy explains how we handle your data.</p>
+    <h3>1. Data Processing</h3>
+    <p>All PDF processing is done locally in your browser. We do not upload your documents to our servers unless specifically requested for cloud storage features.</p>
+    <h3>2. Cookies</h3>
+    <p>We use cookies to improve user experience and for Google AdSense to serve relevant ads.</p>
+    <h3>3. Contact</h3>
+    <p>If you have questions, contact us at support@justpdfcraft.com</p>
+  </div>
+</div>
+
+<!-- TERMS OF SERVICE -->
+<div class="panel" id="panel-terms">
+  <h2 class="panel-title">Terms of Service</h2>
+  <div class="content-block">
+    <p>By using JustPDFCraft, you agree to these terms:</p>
+    <ul>
+      <li>You are responsible for the content you process.</li>
+      <li>Do not use the tool for illegal purposes.</li>
+      <li>The service is provided "as is" without warranty.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- CONTACT US -->
+<div class="panel" id="panel-contact">
+  <h2 class="panel-title">Contact Us</h2>
+  <p class="panel-desc">Humein koi bhi query ya feedback ke liye message karein.</p>
+  <div class="content-block">
+    <div class="form-group">
+      <label class="form-label">Name</label>
+      <input type="text" placeholder="Aapka Naam">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Email</label>
+      <input type="email" placeholder="Aapka Email">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Message</label>
+      <textarea rows="5" placeholder="Aapka Message..."></textarea>
+    </div>
+    <button class="btn btn-primary">Send Message</button>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer class="site-footer">
+  <div class="footer-links">
+    <a href="javascript:void(0)" onclick="showPanel('privacy')">Privacy Policy</a>
+    <a href="javascript:void(0)" onclick="showPanel('terms')">Terms of Service</a>
+    <a href="javascript:void(0)" onclick="showPanel('contact')">Contact Us</a>
+    <a href="javascript:void(0)" onclick="showPanel('about')">About</a>
+  </div>
+  <p>&copy; 2026 JustPDFCraft. All rights reserved.</p>
+</footer>
+
+<!-- COOKIE BANNER -->
+<div class="cookie-banner" id="cookie-banner">
+  <div class="cb-content">
+    <span>🍪 Hum cookies use karte hain taaki aapko best experience mile.</span>
+    <button class="btn btn-primary btn-sm" onclick="acceptCookies()">Got it!</button>
+  </div>
+</div>
+
+<!-- AUTH MODAL -->
+<div class="modal-overlay" id="auth-modal" onclick="closeAuthModal(event)">
+  <div class="modal-content" onclick="event.stopPropagation()">
+    <button class="modal-close" onclick="closeAuthModal()">✕</button>
+    <div class="auth-tabs">
+      <div class="auth-tab active" id="tab-login" onclick="switchAuthTab('login')">Login</div>
+      <div class="auth-tab" id="tab-signup" onclick="switchAuthTab('signup')">Sign Up</div>
+    </div>
+    
+    <div id="auth-login-form" class="auth-form active">
+      <h2 class="auth-title">Welcome Back</h2>
+      <p class="auth-subtitle">Login to your JustPDFCraft account</p>
+      <div class="form-group">
+        <label class="form-label">Email Address</label>
+        <input type="email" placeholder="email@example.com">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input type="password" placeholder="••••••••">
+      </div>
+      <button class="btn btn-primary auth-submit-btn" style="width:100%;justify-content:center" onclick="mockAuth('login', event)">Login</button>
+      <div class="auth-divider"><span>OR</span></div>
+      <div class="social-auth">
+        <button class="btn btn-secondary social-btn" onclick="mockAuth('login', event)"><img src="https://www.google.com/favicon.ico" width="16"> Google</button>
+        <button class="btn btn-secondary social-btn" onclick="mockAuth('login', event)"><img src="https://github.com/favicon.ico" width="16"> GitHub</button>
+      </div>
+    </div>
+
+    <div id="auth-signup-form" class="auth-form">
+      <h2 class="auth-title">Create Account</h2>
+      <p class="auth-subtitle">Join JustPDFCraft and start editing</p>
+      <div class="form-group">
+        <label class="form-label">Full Name</label>
+        <input type="text" placeholder="John Doe">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email Address</label>
+        <input type="email" placeholder="email@example.com">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input type="password" placeholder="••••••••">
+      </div>
+      <button class="btn btn-primary auth-submit-btn" style="width:100%;justify-content:center" onclick="mockAuth('signup', event)">Sign Up</button>
+      <div class="auth-divider"><span>OR</span></div>
+      <div class="social-auth" style="justify-content:center">
+        <button class="btn btn-secondary social-btn" onclick="googleLogin()"><img src="https://www.google.com/favicon.ico" width="16"> Google</button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <div id="toast-container"></div>

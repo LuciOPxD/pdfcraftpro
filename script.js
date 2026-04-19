@@ -48,10 +48,23 @@ const TOOL_CONFIG = {
   annotate: { optionsId: 'ann-options' }
 };
 
+// Tools that require login
+const PREMIUM_TOOLS = ['ocr', 'sign', 'watermark', 'redact', 'protect', 'metaedit', 'reorder'];
+
 // ══════════════════════════════════════════════════════
 // NAVIGATION
 // ══════════════════════════════════════════════════════
 function showPanel(id, addToHistory = true) {
+  // Enforce Login for premium tools
+  if (PREMIUM_TOOLS.includes(id)) {
+    const user = firebase.auth().currentUser;
+    if (!user) {
+      toast("Ye tool use karne ke liye Login zaroori hai! 🔐", "🔒");
+      openAuthModal();
+      return;
+    }
+  }
+
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.tool-btn').forEach(b=>b.classList.remove('active'));
   document.querySelectorAll('.mobile-tool-btn').forEach(b=>b.classList.remove('active'));
@@ -1306,6 +1319,7 @@ async function mergePDFs(){
     showResult('merge',`${state.mergeFiles.length} files merged • ${fmtSize(blob.size)}`);
     setProgress('merge',100);
     toast('Merge complete!','✅');
+    saveActivity('merge', `${state.mergeFiles.length} files combined`);
   }catch(e){toast('Error: '+e.message,'❌');}
 }
 
@@ -1354,17 +1368,77 @@ async function splitPDF(){
     document.getElementById('split-result-text').textContent=`${pages.length} PDF files created`;
     showResult('split');
     toast('Split complete!','✅');
+    saveActivity('split', `Split into ${pages.length} files`);
   }catch(e){toast('Error: '+e.message,'❌');}
 }
 
 // ══════════════════════════════════════════════════════
 // REORDER
 // ══════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════
+// REORDER (Interactive Drag & Drop)
+// ══════════════════════════════════════════════════════
+let dragSrcEl = null;
+
 function renderReorderGrid(count){
-  const g=document.getElementById('reorder-page-grid'); g.innerHTML='';
-  for(let i=1;i<=count;i++){
-    g.innerHTML+=`<div class="page-thumb"><span>📄</span><span class="pg-num">${i}</span></div>`;
+  const g = document.getElementById('reorder-page-grid'); 
+  g.innerHTML = '';
+  for(let i=1; i<=count; i++){
+    const thumb = document.createElement('div');
+    thumb.className = 'page-thumb draggable-page';
+    thumb.draggable = true;
+    thumb.dataset.page = i;
+    thumb.innerHTML = `<span>📄</span><span class="pg-num">${i}</span>`;
+    
+    thumb.addEventListener('dragstart', handleDragStart);
+    thumb.addEventListener('dragover', handleDragOver);
+    thumb.addEventListener('drop', handleDrop);
+    thumb.addEventListener('dragend', handleDragEnd);
+    
+    g.appendChild(thumb);
   }
+  updateReorderInput();
+}
+
+function handleDragStart(e) {
+  dragSrcEl = this;
+  this.classList.add('dragging');
+  e.dataTransfer.effectAllowed = 'move';
+}
+
+function handleDragOver(e) {
+  if (e.preventDefault) e.preventDefault();
+  return false;
+}
+
+function handleDrop(e) {
+  if (e.stopPropagation) e.stopPropagation();
+  
+  if (dragSrcEl !== this) {
+    const list = document.getElementById('reorder-page-grid');
+    const nodes = Array.from(list.children);
+    const fromIdx = nodes.indexOf(dragSrcEl);
+    const toIdx = nodes.indexOf(this);
+
+    if (fromIdx < toIdx) {
+      this.after(dragSrcEl);
+    } else {
+      this.before(dragSrcEl);
+    }
+    updateReorderInput();
+  }
+  return false;
+}
+
+function handleDragEnd() {
+  document.querySelectorAll('.draggable-page').forEach(p => p.classList.remove('dragging'));
+}
+
+function updateReorderInput() {
+  const nodes = Array.from(document.querySelectorAll('#reorder-page-grid .draggable-page'));
+  const order = nodes.map(n => n.dataset.page).join(',');
+  const input = document.getElementById('reorder-val');
+  if (input) input.value = order;
 }
 function reversePages(){
   if(!state.reorderFile){toast('Pehle PDF upload karo!','⚠️');return;}
@@ -1388,6 +1462,7 @@ async function reorderPages(){
     document.getElementById('reorder-download').onclick=()=>dlBlob(blob,'reordered.pdf');
     showResult('reorder');
     toast('Pages reordered!','✅');
+    saveActivity('reorder', `New order: ${val}`);
   }catch(e){toast('Error: '+e.message,'❌');}
 }
 
@@ -1411,6 +1486,7 @@ async function deletePages(){
     document.getElementById('delpages-download').onclick=()=>dlBlob(blob,'modified.pdf');
     showResult('delpages',`${state.delSelected.length} pages deleted, ${keep.length} pages remaining`);
     toast('Pages deleted!','✅');
+    saveActivity('delete', `${state.delSelected.length} pages removed`);
   }catch(e){toast('Error: '+e.message,'❌');}
 }
 
@@ -1468,6 +1544,7 @@ async function compressPDF(){
     showResult('compress',`${fmtSize(orig)} → ${fmtSize(nw)} (${savings}% smaller)`);
     setProgress('compress',100);
     toast('Compression complete!','✅');
+    saveActivity('compress', `${fmtSize(file.size)} → ${fmtSize(blob.size)}`);
   }catch(e){toast('Error: '+e.message,'❌');}
 }
 
@@ -3544,5 +3621,205 @@ document.addEventListener('click', (e) => {
     }
   }
 });
+
+// ══════════════════════════════════════════════════════
+// FIREBASE AUTHENTICATION (Real Implementation)
+// ══════════════════════════════════════════════════════
+
+// TODO: Replace with your actual Firebase config from Firebase Console
+const firebaseConfig = {
+  apiKey: "AIzaSyAnUKaSfVx2NxA_njLSHoEsNGeoI1NvAaE",
+  authDomain: "justpdfcraft.firebaseapp.com",
+  projectId: "justpdfcraft",
+  storageBucket: "justpdfcraft.firebasestorage.app",
+  messagingSenderId: "268319849456",
+  appId: "1:268319849456:web:34e15b8a8a14c9e9307b35",
+  measurementId: "G-VSBGYTCFW2"
+};
+
+// Initialize Firebase
+if (typeof firebase !== 'undefined') {
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+
+  // Monitor Auth State
+  auth.onAuthStateChanged((user) => {
+    const loginBtn = document.querySelector('button[onclick="openAuthModal()"]');
+    if (user) {
+      console.log("User logged in:", user.email);
+      // Update header button to link to Profile
+      if (loginBtn) {
+        loginBtn.innerHTML = `👤 ${user.displayName || user.email.split('@')[0]}`;
+        loginBtn.onclick = () => showPanel('profile');
+      }
+      // Populate Profile Page
+      const profName = document.getElementById('prof-name');
+      const profEmail = document.getElementById('prof-email');
+      if(profName) profName.textContent = user.displayName || 'User Account';
+      if(profEmail) profEmail.textContent = user.email;
+      renderActivity();
+    } else {
+      console.log("User logged out");
+      if (loginBtn) {
+        loginBtn.innerHTML = `👤 Login`;
+        loginBtn.onclick = openAuthModal;
+      }
+      // Clear activity if logged out
+      renderActivity([]);
+    }
+  });
+}
+
+function saveActivity(tool, detail) {
+  const user = firebase.auth().currentUser;
+  if (!user) return;
+  
+  const key = `activity_${user.uid}`;
+  const history = JSON.parse(localStorage.getItem(key) || '[]');
+  
+  const iconMap = {
+    merge: '🔗', split: '✂️', compress: '📉', ocr: '🔍', 
+    sign: '🖋️', watermark: '💧', protect: '🔐', reorder: '📑',
+    delete: '🗑️'
+  };
+
+  const item = {
+    tool: tool.charAt(0).toUpperCase() + tool.slice(1),
+    detail: detail,
+    icon: iconMap[tool] || '📄',
+    time: new Date().toLocaleString()
+  };
+  
+  history.unshift(item);
+  localStorage.setItem(key, JSON.stringify(history.slice(0, 10))); // Keep last 10
+  if (document.getElementById('panel-profile').classList.contains('active')) renderActivity();
+}
+
+function renderActivity() {
+  const user = firebase.auth().currentUser;
+  const list = document.getElementById('activity-list');
+  if (!list) return;
+
+  if (!user) {
+    list.innerHTML = '<div class="activity-item empty">Login to see your activity.</div>';
+    return;
+  }
+
+  const key = `activity_${user.uid}`;
+  const history = JSON.parse(localStorage.getItem(key) || '[]');
+  
+  if (history.length === 0) {
+    list.innerHTML = '<div class="activity-item empty">No recent activity yet. Start editing PDFs!</div>';
+    return;
+  }
+
+  list.innerHTML = history.map(item => `
+    <div class="activity-item">
+      <div class="ai-icon">${item.icon}</div>
+      <div class="ai-details">
+        <div class="ai-name">${item.tool}</div>
+        <div class="ai-time">${item.detail} • ${item.time}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function openAuthModal() {
+  const modal = document.getElementById('auth-modal');
+  if (modal) {
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+  }
+}
+
+function closeAuthModal(e) {
+  if (e && e.target !== e.currentTarget && !e.target.closest('.modal-close')) return;
+  const modal = document.getElementById('auth-modal');
+  if (modal) {
+    modal.classList.remove('active');
+    document.body.style.overflow = '';
+  }
+}
+
+function switchAuthTab(type) {
+  document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
+  
+  if (type === 'login') {
+    document.getElementById('tab-login')?.classList.add('active');
+    document.getElementById('auth-login-form')?.classList.add('active');
+  } else {
+    document.getElementById('tab-signup')?.classList.add('active');
+    document.getElementById('auth-signup-form')?.classList.add('active');
+  }
+}
+
+async function mockAuth(type, e) {
+  if (e) e.preventDefault();
+  const btn = e ? e.currentTarget : event.currentTarget;
+  if (!btn) return;
+
+  const authForm = btn.closest('.auth-form');
+  const email = authForm.querySelector('input[type="email"]')?.value;
+  const password = authForm.querySelector('input[type="password"]')?.value;
+  const name = authForm.querySelector('input[type="text"]')?.value;
+
+  if (!email || !password) {
+    toast("Email aur Password zaroori hain!", "⚠️");
+    return;
+  }
+
+  const originalText = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = `<span style="display:flex;align-items:center;gap:0.5rem;justify-content:center">
+    <svg width="18" height="18" viewBox="0 0 24 24" style="animation: rotate 1s linear infinite"><path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    Processing...
+  </span>`;
+  
+  try {
+    const auth = firebase.auth();
+    if (type === 'signup') {
+      const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+      if (name) await userCredential.user.updateProfile({ displayName: name });
+      toast('Account created! Welcome to JustPDFCraft.', '✅');
+    } else {
+      await auth.signInWithEmailAndPassword(email, password);
+      toast('Welcome back! Logged in successfully.', '✅');
+    }
+    closeAuthModal();
+  } catch (error) {
+    console.error("Auth Error:", error);
+    toast(error.message, '❌');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = originalText;
+  }
+}
+
+// Add rotate animation for the loader
+if(!document.querySelector('style[data-auth-anim]')){
+  const style = document.createElement('style');
+  style.setAttribute('data-auth-anim','true');
+  style.textContent = `@keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`;
+  document.head.appendChild(style);
+}
+
+function acceptCookies() {
+  localStorage.setItem('cookieConsent', 'true');
+  const banner = document.getElementById('cookie-banner');
+  if (banner) banner.classList.remove('show');
+}
+
+// Show cookie banner on load if not accepted
+window.addEventListener('DOMContentLoaded', () => {
+  if (!localStorage.getItem('cookieConsent')) {
+    setTimeout(() => {
+      const banner = document.getElementById('cookie-banner');
+      if (banner) banner.classList.add('show');
+    }, 3000);
+  }
+});
+
+
 
 
