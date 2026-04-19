@@ -26,7 +26,7 @@ body{
   min-height:100vh;min-height:100dvh;overflow-x:hidden;
   -webkit-text-size-adjust:100%;
   overscroll-behavior-x:none;
-  animation:pageLoad 0.6s cubic-bezier(0.4,0,0.2,1);
+  animation:pageLoad 0.3s cubic-bezier(0.4,0,0.2,1);
 }
 
 /* ── Loading Animations ───────────────────────── */
@@ -336,7 +336,6 @@ header{
 .main{flex:1;min-width:0;background:var(--bg);}
 .panel{
   display:none;flex-direction:column;padding:2rem;
-  animation:fadeUp 0.35s cubic-bezier(0.34,1.56,0.64,1);
 }
 .panel.active{display:flex;}
 
@@ -345,12 +344,10 @@ header{
   background:linear-gradient(135deg,var(--accent),var(--accent2));
   -webkit-background-clip:text;
   -webkit-text-fill-color:transparent;
-  animation:slideInLeft 0.5s ease;
 }
 
 .panel-desc{
   color:var(--text2);font-size:0.88rem;margin-bottom:1.8rem;line-height:1.6;
-  animation:slideInLeft 0.6s ease 0.1s both;
 }
 
 /* ── Drop Zone ────────────────────────────────── */
@@ -428,7 +425,6 @@ header{
   align-items:center;
   gap:0.75rem;
   transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1);
-  animation:slideInLeft 0.4s ease both;
 }
 
 .file-item:hover{
@@ -530,7 +526,7 @@ header{
 .btn-row{display:flex;gap:0.75rem;flex-wrap:wrap;margin-top:1rem;}
 
 /* ── Forms ────────────────────────────────────── */
-.form-group{margin-bottom:1.1rem;animation:fadeUp 0.4s ease both;}
+.form-group{margin-bottom:1.1rem;}
 
 .form-label{
   display:block;
@@ -622,7 +618,6 @@ textarea:focus{
   text-align:center;
   position:relative;
   overflow:hidden;
-  animation:scaleIn 0.4s ease both;
 }
 
 .option-card::before {
@@ -676,7 +671,6 @@ textarea:focus{
   box-shadow:0 20px 50px rgba(0,0,0,0.25);
   border:1px solid rgba(255,255,255,0.65);
   transition:all 0.4s ease;
-  animation:fadeUp 0.5s ease;
 }
 
 .resume-paper:hover {

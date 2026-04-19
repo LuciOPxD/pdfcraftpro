@@ -67,7 +67,7 @@ function showPanel(id) {
       target.scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'});
     }
   }
-  window.scrollTo(0,0);
+  window.scrollTo({top: 0, behavior: 'instant'});
 }
 
 function filterTools(q) {
