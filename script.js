@@ -3644,14 +3644,16 @@ if (typeof firebase !== 'undefined') {
 
   // Monitor Auth State
   auth.onAuthStateChanged((user) => {
-    const loginBtn = document.querySelector('button[onclick="openAuthModal()"]');
+    // Update all login buttons (Desktop & Mobile)
+    const loginBtns = document.querySelectorAll('button[onclick*="openAuthModal"]');
+    
     if (user) {
       console.log("User logged in:", user.email);
-      // Update header button to link to Profile
-      if (loginBtn) {
-        loginBtn.innerHTML = `👤 ${user.displayName || user.email.split('@')[0]}`;
-        loginBtn.onclick = () => showPanel('profile');
-      }
+      loginBtns.forEach(btn => {
+        btn.innerHTML = `👤 ${user.displayName || user.email.split('@')[0]}`;
+        btn.onclick = () => showPanel('profile');
+      });
+      
       // Populate Profile Page
       const profName = document.getElementById('prof-name');
       const profEmail = document.getElementById('prof-email');
@@ -3660,11 +3662,15 @@ if (typeof firebase !== 'undefined') {
       renderActivity();
     } else {
       console.log("User logged out");
-      if (loginBtn) {
-        loginBtn.innerHTML = `👤 Login`;
-        loginBtn.onclick = openAuthModal;
-      }
-      // Clear activity if logged out
+      loginBtns.forEach(btn => {
+        btn.innerHTML = `👤 Login`;
+        btn.onclick = openAuthModal;
+      });
+      // Clear profile data
+      const profName = document.getElementById('prof-name');
+      const profEmail = document.getElementById('prof-email');
+      if(profName) profName.textContent = 'User Account';
+      if(profEmail) profEmail.textContent = 'login to see details';
       renderActivity([]);
     }
   });
@@ -3755,8 +3761,8 @@ function switchAuthTab(type) {
 }
 
 async function mockAuth(type, e) {
-  if (e) e.preventDefault();
-  const btn = e ? e.currentTarget : event.currentTarget;
+  if (e && e.preventDefault) e.preventDefault();
+  const btn = e ? (e.currentTarget || e.target) : null;
   if (!btn) return;
 
   const authForm = btn.closest('.auth-form');
