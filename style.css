@@ -2587,6 +2587,12 @@ input[type="radio"] {
     overflow-y: auto;
     padding: 1.5rem !important;
   }
+  .mobile-ad {
+    display: flex !important;
+    margin: 1.5rem auto;
+    width: 92%;
+    min-height: 120px;
+  }
 }
 
 
