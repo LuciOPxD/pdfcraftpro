@@ -51,7 +51,7 @@ const TOOL_CONFIG = {
 // ══════════════════════════════════════════════════════
 // NAVIGATION
 // ══════════════════════════════════════════════════════
-function showPanel(id) {
+function showPanel(id, addToHistory = true) {
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.tool-btn').forEach(b=>b.classList.remove('active'));
   document.querySelectorAll('.mobile-tool-btn').forEach(b=>b.classList.remove('active'));
@@ -68,7 +68,46 @@ function showPanel(id) {
     }
   }
   window.scrollTo({top: 0, behavior: 'instant'});
+
+  if (addToHistory) {
+    const stateObj = { panelId: id };
+    const url = id === 'home' ? window.location.pathname : `?tool=${id}`;
+    history.pushState(stateObj, '', url);
+  }
 }
+
+// Handle browser back/forward buttons
+window.addEventListener('popstate', (event) => {
+  if (event.state && event.state.panelId) {
+    showPanel(event.state.panelId, false);
+  } else {
+    // If no state, default to home or check URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const tool = urlParams.get('tool');
+    showPanel(tool || 'home', false);
+  }
+});
+
+// Set initial state on load
+window.addEventListener('load', () => {
+  const urlParams = new URLSearchParams(window.location.search);
+  const tool = urlParams.get('tool') || 'home';
+  history.replaceState({ panelId: tool }, '', window.location.search || window.location.pathname);
+  showPanel(tool, false);
+
+  // Inject back buttons into panels
+  document.querySelectorAll('.panel:not(#panel-home)').forEach(panel => {
+    if (!panel.querySelector('.panel-back-btn')) {
+      const backBtn = document.createElement('div');
+      backBtn.className = 'panel-back-btn';
+      backBtn.innerHTML = '← Back to Home';
+      backBtn.onclick = () => showPanel('home');
+      panel.prepend(backBtn);
+    }
+  });
+});
+
+
 
 function filterTools(q) {
   q=q.toLowerCase();
