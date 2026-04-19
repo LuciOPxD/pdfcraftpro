@@ -1,5 +1,5 @@
-const CACHE_NAME = 'pdfcraft-v2';
-const RUNTIME_CACHE = 'pdfcraft-runtime-v2';
+const CACHE_NAME = 'justpdfcraft-v2';
+const RUNTIME_CACHE = 'justpdfcraft-runtime-v2';
 
 const urlsToCache = [
   '/',

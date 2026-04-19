@@ -1033,7 +1033,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   });
   initSignCanvas();
   showPanel('home');
-  toast('PDFCraft Pro ready hai! 🎉','🚀',2500);
+  toast('JustPDFCraft ready hai! 🎉','🚀',2500);
 });
 
 // ══════════════════════════════════════════════════════
@@ -1352,7 +1352,7 @@ async function compressPDF(){
     setProgress('compress',50);
     const pdf=await PDFLib.PDFDocument.load(ab,{ignoreEncryption:true});
     const removeMeta=document.getElementById('compress-meta').checked;
-    if(removeMeta){pdf.setTitle('');pdf.setAuthor('');pdf.setSubject('');pdf.setKeywords([]);pdf.setProducer('PDFCraft');pdf.setCreator('PDFCraft');}
+    if(removeMeta){pdf.setTitle('');pdf.setAuthor('');pdf.setSubject('');pdf.setKeywords([]);pdf.setProducer('JustPDFCraft');pdf.setCreator('JustPDFCraft');}
     setProgress('compress',80);
     const comp=await pdf.save({useObjectStreams:true,addDefaultPage:false,objectsPerTick:50});
     const blob=new Blob([comp],{type:'application/pdf'});
@@ -1711,8 +1711,8 @@ async function loadMetadataEditor(file){
     document.getElementById('meta-author').value=pdf.getAuthor()||'';
     document.getElementById('meta-subject').value=pdf.getSubject()||'';
     document.getElementById('meta-keywords').value=(pdf.getKeywords()||[]).join(', ');
-    document.getElementById('meta-producer').value=pdf.getProducer()||'PDFCraft Pro';
-    document.getElementById('meta-creator').value=pdf.getCreator()||'PDFCraft Pro';
+    document.getElementById('meta-producer').value=pdf.getProducer()||'JustPDFCraft';
+    document.getElementById('meta-creator').value=pdf.getCreator()||'JustPDFCraft';
   }catch(e){toast('Metadata read error: '+e.message,'❌');}
 }
 
@@ -1732,8 +1732,8 @@ async function saveMetadataEditor(){
     pdf.setAuthor(document.getElementById('meta-author').value||'');
     pdf.setSubject(document.getElementById('meta-subject').value||'');
     pdf.setKeywords((document.getElementById('meta-keywords').value||'').split(',').map(s=>s.trim()).filter(Boolean));
-    pdf.setProducer(document.getElementById('meta-producer').value||'PDFCraft Pro');
-    pdf.setCreator(document.getElementById('meta-creator').value||'PDFCraft Pro');
+    pdf.setProducer(document.getElementById('meta-producer').value||'JustPDFCraft');
+    pdf.setCreator(document.getElementById('meta-creator').value||'JustPDFCraft');
     const blob=new Blob([await pdf.save()],{type:'application/pdf'});
     document.getElementById('metaedit-download').onclick=()=>dlBlob(blob,'metadata-updated.pdf');
     showResult('metaedit','Metadata updated successfully');
