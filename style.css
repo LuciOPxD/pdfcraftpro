@@ -34,13 +34,17 @@ html,body{
 }
 body{
   font-family:'DM Sans',sans-serif;
-  background:var(--bg);
+  background:
+    radial-gradient(circle at 12% 12%, rgba(108,99,255,0.16), transparent 26%),
+    radial-gradient(circle at 88% 18%, rgba(255,101,132,0.12), transparent 24%),
+    radial-gradient(circle at 50% 100%, rgba(67,233,123,0.08), transparent 30%),
+    var(--bg);
   color:var(--text);
   display: flex;
   flex-direction: column;
   -webkit-text-size-adjust:100%;
   overscroll-behavior-x:none;
-  animation:pageLoad 0.3s cubic-bezier(0.4,0,0.2,1);
+  animation:pageLoad 0.45s cubic-bezier(0.22,1,0.36,1);
 }
 
 /* ── Loading Animations ───────────────────────── */
@@ -184,6 +188,46 @@ body{
   }
   to {
     opacity:1;
+  }
+}
+
+@keyframes panelReveal {
+  from {
+    opacity:0;
+    transform:translateY(22px) scale(0.985);
+    filter:blur(8px);
+  }
+  to {
+    opacity:1;
+    transform:translateY(0) scale(1);
+    filter:blur(0);
+  }
+}
+
+@keyframes ambientFloat {
+  0%, 100% {
+    transform:translate3d(0,0,0) scale(1);
+  }
+  50% {
+    transform:translate3d(18px,-20px,0) scale(1.08);
+  }
+}
+
+@keyframes ambientFloatReverse {
+  0%, 100% {
+    transform:translate3d(0,0,0) scale(1);
+  }
+  50% {
+    transform:translate3d(-16px,18px,0) scale(1.05);
+  }
+}
+
+@keyframes spotlightSweep {
+  0% {
+    transform:translateX(-120%) skewX(-18deg);
+  }
+  100% {
+    transform:translateX(140%) skewX(-18deg);
   }
 }
 
@@ -377,8 +421,12 @@ header{
   padding:1.5rem 2rem;
   width:100%;
   box-sizing: border-box;
+  transform-origin:top center;
 }
-.panel.active{display:flex;}
+.panel.active{
+  display:flex;
+  animation:panelReveal 0.55s cubic-bezier(0.22,1,0.36,1);
+}
 
 .panel-title{
   font-family:'Syne',sans-serif;font-size:1.7rem;font-weight:800;margin-bottom:0.3rem;
@@ -1070,10 +1118,10 @@ textarea:focus{
 /* ── Home Grid ────────────────────────────────── */
 .home-hero{
   background:
-    radial-gradient(circle at top right, rgba(108,99,255,0.18), transparent 32%),
-    radial-gradient(circle at bottom left, rgba(255,101,132,0.12), transparent 28%),
-    linear-gradient(135deg,rgba(108,99,255,0.08),rgba(255,101,132,0.05));
-  border:1px solid rgba(37,37,56,0.4);
+    radial-gradient(circle at top right, rgba(108,99,255,0.22), transparent 32%),
+    radial-gradient(circle at bottom left, rgba(255,101,132,0.15), transparent 28%),
+    linear-gradient(135deg,rgba(108,99,255,0.1),rgba(255,101,132,0.06));
+  border:1px solid rgba(110,102,255,0.28);
   border-radius:28px;
   padding:2.5rem;
   margin-bottom:2rem;
@@ -1082,8 +1130,10 @@ textarea:focus{
   gap:2rem;
   box-shadow:0 20px 60px rgba(0,0,0,0.22);
   backdrop-filter:blur(10px);
-  animation:slideInDown 0.6s ease;
-  transition:all 0.4s ease;
+  animation:slideInDown 0.7s cubic-bezier(0.22,1,0.36,1);
+  transition:all 0.45s ease;
+  position:relative;
+  overflow:hidden;
 }
 
 .home-hero:hover {
@@ -1234,7 +1284,7 @@ textarea:focus{
   position:relative;
   overflow:hidden;
   min-height:144px;
-  animation:fadeUp 0.4s ease both;
+  animation:fadeUp 0.45s cubic-bezier(0.22,1,0.36,1) both;
 }
 
 .tool-card::before{
@@ -2662,7 +2712,3 @@ input[type="radio"] {
     will-change: scroll-position;
   }
 }
-
-
-
-
