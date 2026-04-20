@@ -437,27 +437,42 @@ const RESUME_TEMPLATE_META = {
   },
   executive: {
     title: 'Executive',
-    tag: 'Leadership-first premium layout',
-    badge: 'Premium',
+    tag: 'Leadership-first professional structure',
+    badge: 'Featured',
     layout: 'Headline + Impact Summary + Core Skills + Experience Highlights',
     note: 'Best for senior profiles, leadership roles and polished client-facing resumes.'
   },
   creative: {
     title: 'Creative',
     tag: 'Portfolio-style standout presentation',
-    badge: 'Premium',
+    badge: 'Featured',
     layout: 'Brand-style intro + Skills + Projects + Achievements',
     note: 'Best for designers, creators, marketing roles and visually expressive profiles.'
   }
 };
 
+function updateActiveResumeTemplateCard(value){
+  document.querySelectorAll('.resume-template-grid .template-card').forEach(card=>{
+    const onclickValue=card.getAttribute('onclick') || '';
+    card.classList.toggle('active', onclickValue.includes(`'${value}'`));
+  });
+}
+
 function syncResumeTemplatePreview(value){
+  const select=document.getElementById('resume-template');
+  const template=value || select?.value || 'modern';
+  if(select && value) select.value=value;
+  updateActiveResumeTemplateCard(template);
   renderResumeTemplatePreview();
 }
 
 function setResumeTemplate(value, card){
   const select=document.getElementById('resume-template');
   if(select) select.value=value;
+  if(card){
+    document.querySelectorAll('.resume-template-grid .template-card').forEach(btn=>btn.classList.remove('active'));
+    card.classList.add('active');
+  }
   syncResumeTemplatePreview(value);
 }
 
@@ -531,10 +546,10 @@ function generateResume(){
   };
   const summary=summaryInput || defaultSummaries[level] || defaultSummaries.student;
   let out='';
-  if(template==='executive'){
+    if(template==='executive'){
       out=`${name}
-  ${role}
-  ${location} | ${email} | ${phone}
+${role}
+${location} | ${email} | ${phone}
 
 EXECUTIVE PROFILE
 ${summary}
@@ -544,70 +559,70 @@ ${projects}
 
 CORE COMPETENCIES
 ${skills}
-  
-  EDUCATION
-  ${education}
-  
-  AWARDS / CERTIFICATIONS
-  ${achievements}`;
+
+EDUCATION
+${education}
+
+AWARDS / CERTIFICATIONS
+${achievements}`;
     }else if(template==='premium-onyx'){
       out=`${name}
-  ${role}
-  ${email} | ${phone} | ${location}
-  
-  BRAND STATEMENT
-  ${summary}
-  
-  CORE STRENGTHS
-  ${skills}
-  
-  SIGNATURE PROJECTS
-  ${projects}
-  
-  EDUCATION
-  ${education}
-  
-  AWARDS / CERTIFICATIONS
-  ${achievements}`;
+${role}
+${email} | ${phone} | ${location}
+
+BRAND STATEMENT
+${summary}
+
+CORE STRENGTHS
+${skills}
+
+SIGNATURE PROJECTS
+${projects}
+
+EDUCATION
+${education}
+
+AWARDS / CERTIFICATIONS
+${achievements}`;
     }else if(template==='premium-aura'){
       out=`${name}
-  ${role}
-  ${location}
-  Contact: ${email} | ${phone}
-  
-  PROFILE SNAPSHOT
-  ${summary}
-  
-  SKILL STACK
-  ${skills}
-  
-  IMPACT PROJECTS
-  ${projects}
-  
-  EDUCATION
-  ${education}
-  
-  HIGHLIGHTS
-  ${achievements}`;
+${role}
+${location}
+Contact: ${email} | ${phone}
+
+PROFILE SNAPSHOT
+${summary}
+
+SKILL STACK
+${skills}
+
+IMPACT PROJECTS
+${projects}
+
+EDUCATION
+${education}
+
+HIGHLIGHTS
+${achievements}`;
     }else if(template==='premium-slate'){
       out=`${name}
-  ${role}
-  ${email} | ${phone} | ${location}
-  
-  CAREER SUMMARY
-  ${summary}
-  
-  CAPABILITIES
-  ${skills}
-  
-  EXPERIENCE HIGHLIGHTS
-  ${projects}
-  
-  EDUCATION
-  ${education}
-  
-  RECOGNITION
-  ${achievements}`;
+${role}
+${email} | ${phone} | ${location}
+
+CAREER SUMMARY
+${summary}
+
+CAPABILITIES
+${skills}
+
+EXPERIENCE HIGHLIGHTS
+${projects}
+
+EDUCATION
+${education}
+
+RECOGNITION
+${achievements}`;
     }else if(template==='creative'){
       out=`${name}
   Creative Resume | ${role}

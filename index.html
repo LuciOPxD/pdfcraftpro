@@ -1382,7 +1382,74 @@
 
 <div class="panel" id="panel-resume">
   <h2 class="panel-title">Resume Builder</h2>
-    <p class="panel-desc">Professional, ATS aur premium templates ke saath strong resume draft banao.</p>
+    <p class="panel-desc">Professional, ATS aur modern templates ke saath strong resume draft banao.</p>
+  <div class="resume-template-showcase">
+    <div class="resume-template-showcase__head">
+      <div>
+        <label class="form-label">Choose Resume Template</label>
+        <p class="resume-template-showcase__sub">Canva-style elite gallery se template pick karo, live preview right side mein update hoga.</p>
+      </div>
+      <div class="resume-template-showcase__meta">
+        <span class="resume-template-chip">9 layouts</span>
+      </div>
+    </div>
+    <div class="resume-template-grid">
+      <button type="button" class="template-card active" onclick="setResumeTemplate('ats', this)">
+        <span class="template-card__badge">Featured</span>
+        <span class="template-card__thumb ats"></span>
+        <span class="template-card__title">ATS</span>
+        <span class="template-card__desc">Keyword-safe recruiter layout</span>
+      </button>
+      <button type="button" class="template-card" onclick="setResumeTemplate('professional', this)">
+        <span class="template-card__badge">Featured</span>
+        <span class="template-card__thumb professional"></span>
+        <span class="template-card__title">Professional</span>
+        <span class="template-card__desc">Classic hiring-safe format</span>
+      </button>
+      <button type="button" class="template-card" onclick="setResumeTemplate('simple', this)">
+        <span class="template-card__badge">Clean</span>
+        <span class="template-card__thumb simple"></span>
+        <span class="template-card__title">Simple</span>
+        <span class="template-card__desc">Minimal one-page layout</span>
+      </button>
+      <button type="button" class="template-card" onclick="setResumeTemplate('modern', this)">
+        <span class="template-card__badge">Popular</span>
+        <span class="template-card__thumb modern"></span>
+        <span class="template-card__title">Modern</span>
+        <span class="template-card__desc">Sharp spacing and clean sections</span>
+      </button>
+      <button type="button" class="template-card" onclick="setResumeTemplate('creative', this)">
+        <span class="template-card__badge">Creative</span>
+        <span class="template-card__thumb creative"></span>
+        <span class="template-card__title">Creative</span>
+        <span class="template-card__desc">Portfolio-style standout profile</span>
+      </button>
+      <button type="button" class="template-card" onclick="setResumeTemplate('executive', this)">
+        <span class="template-card__badge">Featured</span>
+        <span class="template-card__thumb executive"></span>
+        <span class="template-card__title">Executive</span>
+        <span class="template-card__desc">Leadership-first professional look</span>
+      </button>
+      <button type="button" class="template-card" onclick="setResumeTemplate('premium-onyx', this)">
+        <span class="template-card__badge">Modern</span>
+        <span class="template-card__thumb premium-onyx"></span>
+        <span class="template-card__title">Onyx</span>
+        <span class="template-card__desc">Bold dark accent business style</span>
+      </button>
+      <button type="button" class="template-card" onclick="setResumeTemplate('premium-aura', this)">
+        <span class="template-card__badge">Modern</span>
+        <span class="template-card__thumb premium-aura"></span>
+        <span class="template-card__title">Aura</span>
+        <span class="template-card__desc">Elegant colorful modern branding</span>
+      </button>
+      <button type="button" class="template-card" onclick="setResumeTemplate('premium-slate', this)">
+        <span class="template-card__badge">Modern</span>
+        <span class="template-card__thumb premium-slate"></span>
+        <span class="template-card__title">Slate</span>
+        <span class="template-card__desc">Refined slate accent corporate layout</span>
+      </button>
+    </div>
+  </div>
   <div class="two-col">
     <div>
       <div class="two-col">
@@ -1395,9 +1462,9 @@
               <option value="modern">Modern</option>
               <option value="creative">Creative</option>
               <option value="executive">Executive</option>
-              <option value="premium-onyx">Premium Onyx</option>
-              <option value="premium-aura">Premium Aura</option>
-              <option value="premium-slate">Premium Slate</option>
+              <option value="premium-onyx">Onyx</option>
+              <option value="premium-aura">Aura</option>
+              <option value="premium-slate">Slate</option>
             </select>
           </div>
         <div class="form-group">
@@ -1846,17 +1913,3 @@ function installApp() {
 </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
