@@ -132,12 +132,17 @@ window.addEventListener('load', () => {
 
 
 
+let filterTimeout;
 function filterTools(q) {
-  q=q.toLowerCase();
-  document.querySelectorAll('.tool-card').forEach(c=>{
-    const t=(c.querySelector('.tc-name')?.textContent+' '+c.querySelector('.tc-desc')?.textContent).toLowerCase();
-    c.style.display=(!q||t.includes(q))?'':'none';
-  });
+  clearTimeout(filterTimeout);
+  filterTimeout = setTimeout(() => {
+    q=q.toLowerCase();
+    const cards = document.querySelectorAll('.tool-card');
+    cards.forEach(c=>{
+      const t=(c.querySelector('.tc-name')?.textContent+' '+c.querySelector('.tc-desc')?.textContent).toLowerCase();
+      c.style.display=(!q||t.includes(q))?'':'none';
+    });
+  }, 150);
 }
 
 function toggleTheme() {

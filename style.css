@@ -47,11 +47,11 @@ body{
 @keyframes pageLoad {
   from {
     opacity:0;
-    filter:blur(8px);
+    transform: translateY(10px);
   }
   to {
     opacity:1;
-    filter:blur(0);
+    transform: translateY(0);
   }
 }
 
@@ -202,17 +202,18 @@ body{
 
 /* ── Header ───────────────────────────────────── */
 header{
-  background:rgba(15,15,26,0.7);
+  background:rgba(15,15,26,0.85);
   border-bottom:1px solid rgba(37,37,56,0.5);
   padding:0 1.5rem;
   height:60px;
   display:flex;align-items:center;justify-content:space-between;
-  position:relative; /* Changed from sticky to relative since parent is flex */
+  position:relative; 
   z-index:200;
-  backdrop-filter:blur(30px);
-  -webkit-backdrop-filter:blur(30px);
+  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
   animation:slideInDown 0.5s ease;
   flex-shrink: 0;
+  will-change: transform, opacity;
 }
 
 @keyframes slideInDown {
@@ -284,13 +285,14 @@ header{
 /* ── Sidebar ──────────────────────────────────── */
 .sidebar{
   width:var(--sidebar-w);flex-shrink:0;
-  background:rgba(15,15,26,0.4);
+  background:rgba(15,15,26,0.8);
   border-right:1px solid rgba(37,37,56,0.3);
   overflow-y:auto;overflow-x:hidden;
   height: 100%;
-  backdrop-filter:blur(20px);
-  -webkit-backdrop-filter:blur(20px);
+  backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);
   animation:slideInLeft 0.5s ease 0.1s both;
+  will-change: transform, opacity;
 }
 
 .sidebar-section{margin-bottom:0.25rem;}
@@ -460,6 +462,7 @@ header{
   margin-bottom:0.8rem;
   animation:float 3s ease-in-out infinite;
   transition:all 0.3s ease;
+  will-change: transform;
 }
 
 .dropzone:hover .dz-icon {
@@ -2621,6 +2624,42 @@ input[type="radio"] {
     margin: 1.5rem auto;
     width: 92%;
     min-height: 120px;
+  }
+}
+
+/* ── Mobile Performance Optimizations ──────────────── */
+@media (max-width: 768px) {
+  * {
+    text-rendering: optimizeSpeed;
+  }
+  
+  .backdrop-blur, header, .sidebar, .mobile-sidebar {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    background: var(--surface) !important;
+  }
+
+  .tool-card, .btn, .panel, .dropzone {
+    box-shadow: none !important;
+    transition: transform 0.1s ease !important;
+  }
+
+  .dz-icon, .icon, .file-icon, .opt-icon {
+    animation: none !important;
+  }
+
+  .premium-card::after {
+    display: none !important;
+  }
+
+  /* Faster smooth scroll */
+  html, body {
+    scroll-behavior: auto !important;
+  }
+  
+  /* Prevent layout shifts during scroll */
+  .main {
+    will-change: scroll-position;
   }
 }
 
