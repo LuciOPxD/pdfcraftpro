@@ -76,12 +76,21 @@ function showPanel(id, addToHistory = true) {
   if(mb) mb.classList.add('active');
   if(b || mb){
     const target = b || mb;
-    if(window.innerWidth<=768){
-      target.scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'});
+    // Only scroll into view if on desktop or if specifically needed. 
+    // Smooth scroll on mobile can cause jumpy behavior when switching panels.
+    if(window.innerWidth > 768){
+       target.scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'});
     }
   }
   const mainEl = document.querySelector('.main');
-  if (mainEl) mainEl.scrollTo({top: 0, behavior: 'instant'});
+  const appLayout = document.querySelector('.app-layout');
+  if (mainEl) mainEl.scrollTo({top: 0, behavior: 'auto'});
+  if (appLayout) appLayout.scrollTo({top: 0, behavior: 'auto'});
+  
+  // Mobile/Android fix: ensure window also scrolls to top
+  window.scrollTo({top: 0, behavior: 'auto'});
+  document.documentElement.scrollTop = 0;
+  document.body.scrollTop = 0;
 
   if (addToHistory) {
     const stateObj = { panelId: id };
