@@ -83,6 +83,12 @@
 
 <!-- SIDEBAR -->
 <aside class="sidebar">
+  <div class="sidebar-search">
+    <div class="sidebar-search-wrap">
+      <input type="text" id="sidebar-search-input" placeholder="Search tools..." onkeyup="filterSidebarTools()">
+      <span class="search-icon">🔍</span>
+    </div>
+  </div>
   <div class="sidebar-section">
     <button class="tool-btn active" id="btn-home" onclick="showPanel('home')"><span class="icon">🏠</span> Home / All Tools</button>
     <div class="sidebar-divider"></div>
@@ -102,24 +108,13 @@
   <div class="sidebar-divider"></div>
   <div class="sidebar-section">
     <div class="sidebar-heading">More Tools</div>
-    <button class="tool-btn" id="btn-preview" onclick="showPanel('preview')"><span class="icon">&#128064;</span> PDF Preview</button>
-    <button class="tool-btn" id="btn-compare" onclick="showPanel('compare')"><span class="icon">&#9878;&#65039;</span> Compare PDFs</button>
-    <button class="tool-btn" id="btn-inspect" onclick="showPanel('inspect')"><span class="icon">&#128269;</span> Inspector</button>
-    <button class="tool-btn" id="btn-ppt2pdf" onclick="showPanel('ppt2pdf')"><span class="icon">&#128253;&#65039;</span> PowerPoint &rarr; PDF</button>
-    <button class="tool-btn" id="btn-excel2pdf" onclick="showPanel('excel2pdf')"><span class="icon">&#128215;</span> Excel &rarr; PDF</button>
-    <button class="tool-btn" id="btn-pdf2excel" onclick="showPanel('pdf2excel')"><span class="icon">&#128202;</span> PDF &rarr; Excel</button>
     <button class="tool-btn" id="btn-pdf2img" onclick="showPanel('pdf2img')"><span class="icon">&#128248;</span> PDF &rarr; Image</button>
     <button class="tool-btn" id="btn-html2pdf" onclick="showPanel('html2pdf')"><span class="icon">&#127760;</span> HTML &rarr; PDF</button>
-    <button class="tool-btn" id="btn-blank" onclick="showPanel('blank')"><span class="icon">&#128195;</span> Blank PDF</button>
-    <button class="tool-btn" id="btn-cgpa" onclick="showPanel('cgpa')"><span class="icon">&#127891;</span> CGPA Calculator</button>
     <button class="tool-btn" id="btn-percentage" onclick="showPanel('percentage')"><span class="icon">%</span> Percentage Calculator</button>
     <button class="tool-btn" id="btn-imgresize" onclick="showPanel('imgresize')"><span class="icon">&#129668;</span> Image Resizer</button>
     <button class="tool-btn" id="btn-resume" onclick="showPanel('resume')"><span class="icon">&#128196;</span> Resume Builder</button>
-    <button class="tool-btn" id="btn-attendance" onclick="showPanel('attendance')"><span class="icon">&#128202;</span> Attendance Calculator</button>
-    <button class="tool-btn" id="btn-stamp" onclick="showPanel('stamp')"><span class="icon">&#128204;</span> Stamp PDF</button>
     <button class="tool-btn" id="btn-hf" onclick="showPanel('hf')"><span class="icon">HF</span> Header / Footer</button>
     <button class="tool-btn" id="btn-pagenumber" onclick="showPanel('pagenumber')"><span class="icon">&#128290;</span> Page Numbers</button>
-    <button class="tool-btn" id="btn-duplicate" onclick="showPanel('duplicate')"><span class="icon">DP</span> Duplicate Pages</button>
     <button class="tool-btn" id="btn-rotate" onclick="showPanel('rotate')"><span class="icon">&#128260;</span> Rotate</button>
     <button class="tool-btn" id="btn-crop" onclick="showPanel('crop')"><span class="icon">&#9986;&#65039;</span> Crop Pages</button>
     <button class="tool-btn" id="btn-redact" onclick="showPanel('redact')"><span class="icon">&#11035;</span> Redact</button>
@@ -128,16 +123,11 @@
     <button class="tool-btn" id="btn-extract-pages" onclick="showPanel('extract-pages')"><span class="icon">&#128228;</span> Extract Pages</button>
     <button class="tool-btn" id="btn-protect" onclick="showPanel('protect')"><span class="icon">&#128274;</span> Protect PDF</button>
     <button class="tool-btn" id="btn-unlock" onclick="showPanel('unlock')"><span class="icon">&#128275;</span> Unlock PDF</button>
-    <button class="tool-btn" id="btn-gpa-converter" onclick="showPanel('gpa-converter')"><span class="icon">&#8646;</span> GPA Converter</button>
     <button class="tool-btn" id="btn-marks" onclick="showPanel('marks')"><span class="icon">&#128202;</span> Marks Calculator</button>
     <button class="tool-btn" id="btn-cover-letter" onclick="showPanel('cover-letter')"><span class="icon">&#128221;</span> Cover Letter Generator</button>
-    <button class="tool-btn" id="btn-study-planner" onclick="showPanel('study-planner')"><span class="icon">&#128218;</span> Study Planner</button>
-    <button class="tool-btn" id="btn-timetable" onclick="showPanel('timetable')"><span class="icon">&#9201;</span> Time Table Generator</button>
     <button class="tool-btn" id="btn-unit-converter" onclick="showPanel('unit-converter')"><span class="icon">&#128290;</span> Unit Converter</button>
     <button class="tool-btn" id="btn-qr" onclick="showPanel('qr')"><span class="icon">&#128279;</span> QR Generator</button>
     <button class="tool-btn" id="btn-password" onclick="showPanel('password')"><span class="icon">&#128273;</span> Password Generator</button>
-    <button class="tool-btn" id="btn-metaedit" onclick="showPanel('metaedit')"><span class="icon">ME</span> Metadata Editor</button>
-    <button class="tool-btn" id="btn-repair" onclick="showPanel('repair')"><span class="icon">&#128736;&#65039;</span> Repair PDF</button>
     <button class="tool-btn" id="btn-about" onclick="showPanel('about')"><span class="icon">&#8505;&#65039;</span> About</button>
     
     <!-- Sidebar Ad Slot -->
@@ -244,16 +234,10 @@
   <div class="tool-card" onclick="showPanel('html2pdf')"><div class="tool-badge">Convert</div><div class="tc-icon">&#127760;</div><div class="tc-name">HTML &rarr; PDF</div><div class="tc-desc">HTML se PDF banao</div></div>
   <div class="tool-card" onclick="showPanel('imgresize')"><div class="tool-badge">Utility</div><div class="tc-icon">&#129668;</div><div class="tc-name">Image Resizer</div><div class="tc-desc">Target KB mein compress karo</div></div>
   <div class="tool-card" onclick="showPanel('preview')"><div class="tool-badge">View</div><div class="tc-icon">&#128064;</div><div class="tc-name">Preview</div><div class="tc-desc">PDF dekho browser mein</div></div>
-  <div class="tool-card" onclick="showPanel('inspect')"><div class="tool-badge">Analyze</div><div class="tc-icon">&#128269;</div><div class="tc-name">Inspector</div><div class="tc-desc">PDF analyze karo</div></div>
-  <div class="tool-card" onclick="showPanel('compare')"><div class="tool-badge">Analyze</div><div class="tc-icon">&#9878;&#65039;</div><div class="tc-name">Compare</div><div class="tc-desc">Do PDFs compare karo</div></div>
 </div>
 
 <div class="tool-section-title">Edit & Organize</div>
 <div class="tools-grid">
-  <div class="tool-card" onclick="showPanel('stamp')"><div class="tool-badge">Edit</div><div class="tc-icon">&#128204;</div><div class="tc-name">Stamp PDF</div><div class="tc-desc">Approved / Paid style stamps</div></div>
-  <div class="tool-card" onclick="showPanel('hf')"><div class="tool-badge">Edit</div><div class="tc-icon">HF</div><div class="tc-name">Header / Footer</div><div class="tc-desc">Top-bottom text add karo</div></div>
-  <div class="tool-card" onclick="showPanel('pagenumber')"><div class="tool-badge">Edit</div><div class="tc-icon">&#128290;</div><div class="tc-name">Page Numbers</div><div class="tc-desc">Numbering add karo</div></div>
-  <div class="tool-card" onclick="showPanel('duplicate')"><div class="tool-badge">Organize</div><div class="tc-icon">DP</div><div class="tc-name">Duplicate Pages</div><div class="tc-desc">Same page copies insert karo</div></div>
   <div class="tool-card" onclick="showPanel('rotate')"><div class="tool-badge">Edit</div><div class="tc-icon">&#128260;</div><div class="tc-name">Rotate</div><div class="tc-desc">Pages ghuma do</div></div>
   <div class="tool-card" onclick="showPanel('crop')"><div class="tool-badge">Edit</div><div class="tc-icon">&#9986;&#65039;</div><div class="tc-name">Crop Pages</div><div class="tc-desc">Page margins trim karo</div></div>
   <div class="tool-card" onclick="showPanel('redact')"><div class="tool-badge">PRO</div><div class="tc-icon">&#11035;</div><div class="tc-name">Redact</div><div class="tc-desc">Content black out karo</div></div>
@@ -264,21 +248,13 @@
 
 <div class="tool-section-title">Student & Utility</div>
 <div class="tools-grid">
-  <div class="tool-card" onclick="showPanel('cgpa')"><div class="tool-badge">Student</div><div class="tc-icon">&#127891;</div><div class="tc-name">CGPA Calculator</div><div class="tc-desc">Credits aur SGPA se CGPA nikalo</div></div>
   <div class="tool-card" onclick="showPanel('percentage')"><div class="tool-badge">Student</div><div class="tc-icon">%</div><div class="tc-name">Percentage Calculator</div><div class="tc-desc">Obtained aur total marks se percentage nikalo</div></div>
-  <div class="tool-card" onclick="showPanel('gpa-converter')"><div class="tool-badge">Student</div><div class="tc-icon">&#8646;</div><div class="tc-name">GPA Converter</div><div class="tc-desc">GPA se percentage aur reverse</div></div>
   <div class="tool-card" onclick="showPanel('marks')"><div class="tool-badge">Student</div><div class="tc-icon">&#128202;</div><div class="tc-name">Marks Calculator</div><div class="tc-desc">Total, average aur percentage nikalo</div></div>
   <div class="tool-card" onclick="showPanel('resume')"><div class="tool-badge">Popular</div><div class="tc-icon">&#128196;</div><div class="tc-name">Resume Builder</div><div class="tc-desc">Quick resume template banao</div></div>
   <div class="tool-card" onclick="showPanel('cover-letter')"><div class="tool-badge">Student</div><div class="tc-icon">&#128221;</div><div class="tc-name">Cover Letter Generator</div><div class="tc-desc">Job-specific cover letter generate karo</div></div>
-  <div class="tool-card" onclick="showPanel('attendance')"><div class="tool-badge">Student</div><div class="tc-icon">&#128202;</div><div class="tc-name">Attendance Calculator</div><div class="tc-desc">Required attendance track karo</div></div>
-  <div class="tool-card" onclick="showPanel('study-planner')"><div class="tool-badge">Student</div><div class="tc-icon">&#128218;</div><div class="tc-name">Study Planner</div><div class="tc-desc">Weekly study plan auto banao</div></div>
-  <div class="tool-card" onclick="showPanel('timetable')"><div class="tool-badge">Student</div><div class="tc-icon">&#9201;</div><div class="tc-name">Time Table Generator</div><div class="tc-desc">Class schedule neatly arrange karo</div></div>
   <div class="tool-card" onclick="showPanel('unit-converter')"><div class="tool-badge">Utility</div><div class="tc-icon">&#128290;</div><div class="tc-name">Unit Converter</div><div class="tc-desc">Length, weight, temp convert karo</div></div>
   <div class="tool-card" onclick="showPanel('qr')"><div class="tool-badge">New</div><div class="tc-icon">&#128279;</div><div class="tc-name">QR Generator</div><div class="tc-desc">Links aur text ke QR banao</div></div>
   <div class="tool-card" onclick="showPanel('password')"><div class="tool-badge">Utility</div><div class="tc-icon">&#128273;</div><div class="tc-name">Password Generator</div><div class="tc-desc">Strong passwords instantly</div></div>
-  <div class="tool-card" onclick="showPanel('repair')"><div class="tool-badge">Utility</div><div class="tc-icon">&#128736;&#65039;</div><div class="tc-name">Repair PDF</div><div class="tc-desc">Corrupt PDF fix karo</div></div>
-  <div class="tool-card" onclick="showPanel('blank')"><div class="tool-badge">Utility</div><div class="tc-icon">&#128195;</div><div class="tc-name">Blank PDF</div><div class="tc-desc">Empty PDF generate karo</div></div>
-  <div class="tool-card" onclick="showPanel('metaedit')"><div class="tool-badge">PRO</div><div class="tc-icon">ME</div><div class="tc-name">Metadata Editor</div><div class="tc-desc">Title, author aur keywords edit karo</div></div>
   <div class="tool-card" onclick="showPanel('about')"><div class="tool-badge">Info</div><div class="tc-icon">&#8505;&#65039;</div><div class="tc-name">About</div><div class="tc-desc">Project details dekho</div></div>
 </div>
 </div>
@@ -376,6 +352,10 @@
   <div id="delpages-options" style="display:none;margin-top:1.5rem">
     <div class="form-group">
       <label class="form-label">Delete karne wale pages choose karo (click to toggle)</label>
+      <div class="btn-row" style="margin-bottom:0.8rem">
+        <button class="btn btn-secondary btn-sm" onclick="toggleSelectAllDelete(true)">Select All</button>
+        <button class="btn btn-secondary btn-sm" onclick="toggleSelectAllDelete(false)">Deselect All</button>
+      </div>
       <div class="page-grid" id="delpages-page-grid"></div>
     </div>
     <p style="font-size:0.75rem;color:var(--orange);margin-bottom:0.75rem">Selected pages permanently delete ho jayenge</p>
@@ -499,13 +479,25 @@
         <div class="wm-stage" id="wm-stage">
           <canvas id="wm-preview-canvas"></canvas>
           <div class="wm-overlay-text" id="wm-overlay-text"></div>
+          <img class="wm-overlay-image" id="wm-overlay-image" style="display:none;position:absolute;pointer-events:none;transform-origin:center;max-width:300px;max-height:300px">
         </div>
       </div>
       <p id="wm-preview-note" style="color:var(--text2);font-size:0.78rem;margin-top:0.55rem">Preview first page dikhata hai. Click location se watermark ka placement set hoga.</p>
     </div>
+    <div class="form-group">
+      <label class="form-label">Watermark Type</label>
+      <div class="btn-row" style="margin-top:0">
+        <button class="btn btn-secondary btn-sm active" id="wm-type-text" onclick="setWatermarkType('text')">Text</button>
+        <button class="btn btn-secondary btn-sm" id="wm-type-image" onclick="setWatermarkType('image')">Image / Logo</button>
+      </div>
+    </div>
     <div class="two-col">
       <div>
-        <div class="form-group"><label class="form-label">Watermark Text</label><input type="text" id="wm-text" value="CONFIDENTIAL" placeholder="Watermark text likhao"></div>
+        <div id="wm-text-group" class="form-group"><label class="form-label">Watermark Text</label><input type="text" id="wm-text" value="CONFIDENTIAL" placeholder="Watermark text likhao"></div>
+        <div id="wm-image-group" class="form-group" style="display:none">
+          <label class="form-label">Watermark Image (Logo)</label>
+          <input type="file" id="wm-image-input" accept="image/*" onchange="handleWatermarkImage(this)">
+        </div>
         <div class="form-group"><label class="form-label">Font Size: <span id="wm-size-val">60</span>pt</label><input type="range" id="wm-size" min="12" max="150" value="60" oninput="document.getElementById('wm-size-val').textContent=this.value"></div>
         <div class="form-group"><label class="form-label">Opacity: <span id="wm-opacity-val">30</span>%</label><input type="range" id="wm-opacity" min="5" max="100" value="30" oninput="document.getElementById('wm-opacity-val').textContent=this.value"></div>
         <div class="form-group"><label class="form-label">Rotation: <span id="wm-rot-val">45</span></label><input type="range" id="wm-rot" min="0" max="360" value="45" oninput="document.getElementById('wm-rot-val').textContent=this.value"></div>
@@ -587,55 +579,7 @@
   </div>
 </div>
 
-<div class="panel" id="panel-stamp">
-  <h2 class="panel-title">Stamp PDF</h2>
-  <p class="panel-desc">Approved, Paid, Confidential ya custom stamp quick tarike se PDF par lagao.</p>
-  <div class="dropzone">
-    <input type="file" id="stamp-input" accept=".pdf" onchange="handleSingleFile(this,'stamp')">
-    <div class="dz-icon">&#128196;</div><h3>PDF yahan drop karo</h3>
-  </div>
-  <div id="stamp-options" style="display:none;margin-top:1.5rem">
-    <div class="two-col">
-      <div>
-        <div class="form-group"><label class="form-label">Preset</label>
-          <select id="stamp-preset" onchange="syncStampPreset()">
-            <option value="APPROVED">APPROVED</option>
-            <option value="PAID">PAID</option>
-            <option value="CONFIDENTIAL">CONFIDENTIAL</option>
-            <option value="REJECTED">REJECTED</option>
-            <option value="custom">Custom Text</option>
-          </select>
-        </div>
-        <div class="form-group"><label class="form-label">Stamp Text</label><input type="text" id="stamp-text" value="APPROVED"></div>
-        <div class="form-group"><label class="form-label">Color</label><input type="color" id="stamp-color" value="#d62828"></div>
-      </div>
-      <div>
-        <div class="form-group"><label class="form-label">Position</label>
-          <select id="stamp-pos">
-            <option value="center">Center</option>
-            <option value="top-right">Top Right</option>
-            <option value="top-left">Top Left</option>
-            <option value="bottom-right">Bottom Right</option>
-            <option value="bottom-left">Bottom Left</option>
-          </select>
-        </div>
-        <div class="form-group"><label class="form-label">Apply To</label>
-          <select id="stamp-apply">
-            <option value="all">All Pages</option>
-            <option value="first">First Page Only</option>
-            <option value="page">Custom Single Page</option>
-          </select>
-        </div>
-        <div class="form-group"><label class="form-label">Page Number</label><input type="number" id="stamp-page" value="1" min="1"></div>
-      </div>
-    </div>
-    <div class="btn-row"><button class="btn btn-primary" onclick="stampPDF()">Stamp lagao</button></div>
-  </div>
-  <div class="result-banner" id="stamp-result">
-    <div class="res-icon">&#10004;&#65039;</div><div class="res-text"><h4>Stamp Added!</h4><p>PDF ready hai.</p></div>
-    <button class="btn btn-success" id="stamp-download" >&#11015;&#65039; Download</button>
-  </div>
-</div>
+
 
 <div class="panel" id="panel-hf">
   <h2 class="panel-title">Header / Footer</h2>
@@ -671,58 +615,9 @@
   </div>
 </div>
 
-<div class="panel" id="panel-duplicate">
-  <h2 class="panel-title">Duplicate Pages</h2>
-  <p class="panel-desc">Kisi specific page ki multiple copies insert karo. Forms, templates aur cover pages ke liye useful.</p>
-  <div class="dropzone">
-    <input type="file" id="duplicate-input" accept=".pdf" onchange="handleSingleFile(this,'duplicate')">
-    <div class="dz-icon">&#128196;</div><h3>PDF yahan drop karo</h3>
-  </div>
-  <div id="duplicate-options" style="display:none;margin-top:1.5rem">
-    <div class="two-col">
-      <div class="form-group"><label class="form-label">Duplicate kaunsi page</label><input type="number" id="duplicate-page" value="1" min="1"></div>
-      <div class="form-group"><label class="form-label">Kitni extra copies</label><input type="number" id="duplicate-count" value="1" min="1" max="50"></div>
-      <div class="form-group"><label class="form-label">Copies insert after page</label><input type="number" id="duplicate-after" value="1" min="1"></div>
-      <div class="checkbox-row"><input type="checkbox" id="duplicate-all-after"><label for="duplicate-all-after">Copies original page ke turant baad lagao</label></div>
-    </div>
-    <div class="btn-row"><button class="btn btn-primary" onclick="duplicatePagesPDF()">Duplicate karo</button></div>
-  </div>
-  <div class="result-banner" id="duplicate-result">
-    <div class="res-icon">&#10004;&#65039;</div><div class="res-text"><h4>Pages Duplicated!</h4><p>PDF ready hai.</p></div>
-    <button class="btn btn-success" id="duplicate-download" >&#11015;&#65039; Download</button>
-  </div>
-</div>
 
-<div class="panel" id="panel-metaedit">
-  <h2 class="panel-title">Metadata Editor</h2>
-  <p class="panel-desc">PDF ka title, author, subject aur keywords edit karo. Clean metadata professional sharing ke liye useful hota hai.</p>
-  <div class="dropzone">
-    <input type="file" id="metaedit-input" accept=".pdf" onchange="handleSingleFile(this,'metaedit')">
-    <div class="dz-icon">&#128196;</div><h3>PDF yahan drop karo</h3>
-  </div>
-  <div id="metaedit-options" style="display:none;margin-top:1.5rem">
-    <div class="two-col">
-      <div>
-        <div class="form-group"><label class="form-label">Title</label><input type="text" id="meta-title"></div>
-        <div class="form-group"><label class="form-label">Author</label><input type="text" id="meta-author"></div>
-        <div class="form-group"><label class="form-label">Subject</label><input type="text" id="meta-subject"></div>
-      </div>
-      <div>
-        <div class="form-group"><label class="form-label">Keywords</label><input type="text" id="meta-keywords" placeholder="pdf, report, invoice"></div>
-        <div class="form-group"><label class="form-label">Producer</label><input type="text" id="meta-producer" placeholder="JustPDFCraft"></div>
-        <div class="form-group"><label class="form-label">Creator</label><input type="text" id="meta-creator" placeholder="JustPDFCraft"></div>
-      </div>
-    </div>
-    <div class="btn-row">
-      <button class="btn btn-primary" onclick="saveMetadataEditor()">Save Metadata</button>
-      <button class="btn btn-secondary" onclick="clearMetadataFields()" >Clear Fields</button>
-    </div>
-  </div>
-  <div class="result-banner" id="metaedit-result">
-    <div class="res-icon">&#10004;&#65039;</div><div class="res-text"><h4>Metadata Updated!</h4><p>PDF ready hai.</p></div>
-    <button class="btn btn-success" id="metaedit-download" >&#11015;&#65039; Download</button>
-  </div>
-</div>
+
+
 <!--  CROP  -->
 <div class="panel" id="panel-crop">
   <h2 class="panel-title">Crop PDF Pages</h2>
@@ -782,7 +677,7 @@
   <h2 class="panel-title">Image Resizer</h2>
   <p class="panel-desc">Image ko target KB ke aas-paas compress karo. Width limit, format aur quality browser mein hi control hogi.</p>
   <div class="dropzone">
-    <input type="file" id="imgresize-input" accept="image/*" onchange="handleImageResizeFile(this.files)">
+    <input type="file" id="imgresize-input" multiple accept="image/*" onchange="handleImageResizeFile(this.files)">
     <div class="dz-icon"></div><h3>Image yahan drop karo</h3><p>JPG, PNG, WebP supported</p>
   </div>
   <div class="file-list" id="imgresize-list"></div>
@@ -813,9 +708,12 @@
     </div>
     <div class="btn-row"><button class="btn btn-primary" onclick="resizeImageToTarget()"> Resize karo</button></div>
   </div>
-  <div class="result-banner" id="imgresize-result">
-    <div class="res-icon">&#10004;&#65039;</div><div class="res-text"><h4>Resized Image Ready!</h4><p id="imgresize-result-text"></p></div>
-    <button class="btn btn-success" id="imgresize-download">&#11015;&#65039; Download Image</button>
+    <div class="result-banner" id="imgresize-result">
+    <div class="res-icon">&#10004;&#65039;</div><div class="res-text"><h4>Resized Images Ready!</h4><p id="imgresize-result-text"></p></div>
+    <div class="btn-row">
+      <button class="btn btn-success" id="imgresize-download-zip" style="display:none">&#11015;&#65039; Download All (ZIP)</button>
+      <button class="btn btn-success" id="imgresize-download">&#11015;&#65039; Download Image</button>
+    </div>
   </div>
 </div>
 
@@ -958,28 +856,7 @@
 </div>
 
 <!--  BLANK PDF  -->
-<div class="panel" id="panel-blank">
-  <h2 class="panel-title">Blank PDF Generator</h2>
-  <p class="panel-desc">Custom size aur page count ke saath blank PDF generate karo.</p>
-  <div class="two-col" style="max-width:600px">
-    <div class="form-group"><label class="form-label">Number of Pages</label><input type="number" id="blank-pages" value="1" min="1" max="500"></div>
-    <div class="form-group"><label class="form-label">Page Size</label>
-      <select id="blank-size"><option value="A4">A4 (210297 mm)</option><option value="Letter">Letter (8.511 in)</option><option value="A3">A3 (297420 mm)</option><option value="A5">A5 (148210 mm)</option><option value="Legal">Legal (8.514 in)</option></select>
-    </div>
-    <div class="form-group"><label class="form-label">Orientation</label>
-      <select id="blank-orient"><option value="portrait">Portrait</option><option value="landscape">Landscape</option></select>
-    </div>
-    <div class="form-group"><label class="form-label">Background Color</label><input type="color" id="blank-color" value="#ffffff"></div>
-    <div class="form-group"><label class="form-label">Add Lines (Ruled)</label>
-      <select id="blank-lines"><option value="none">No Lines (Plain)</option><option value="ruled">Ruled Lines</option><option value="grid">Grid</option><option value="dotted">Dotted Grid</option></select>
-    </div>
-  </div>
-  <div class="btn-row"><button class="btn btn-primary" onclick="generateBlank()"> Generate karo</button></div>
-  <div class="result-banner" id="blank-result">
-    <div class="res-icon">&#10004;&#65039;</div><div class="res-text"><h4>Blank PDF Ready!</h4><p id="blank-result-text"></p></div>
-    <button class="btn btn-success" id="blank-download">&#11015;&#65039; Download</button>
-  </div>
-</div>
+
 
 <!--  PROTECT  -->
 <div class="panel" id="panel-protect">
@@ -1159,24 +1036,7 @@
 </div>
 
 <!--  INSPECT  -->
-<div class="panel" id="panel-inspect">
-  <h2 class="panel-title">PDF Inspector</h2>
-  <p class="panel-desc">PDF ka complete analysis, metadata, page sizes, encryption status sab dekho.</p>
-  <div class="dropzone">
-    <input type="file" id="inspect-input" accept=".pdf" onchange="inspectPDF(this)">
-    <div class="dz-icon">&#128196;</div><h3>PDF yahan drop karo</h3><p>Instant analysis milega</p>
-  </div>
-  <div id="inspect-result" style="display:none;margin-top:1.5rem">
-    <div class="stats-row" id="inspect-stats"></div>
-    <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.5rem;margin-top:1rem">
-      <table class="info-table" style="width:100%;border-collapse:collapse" id="inspect-details"></table>
-    </div>
-    <div style="margin-top:1rem">
-      <label class="form-label">Page Dimensions</label>
-      <div class="page-grid" id="inspect-pages" style="gap:0.75rem"></div>
-    </div>
-  </div>
-</div>
+
 
 <!--  OCR  -->
 <div class="panel" id="panel-ocr">
@@ -1230,78 +1090,13 @@
 </div>
 
 <!--  COMPARE  -->
-<div class="panel" id="panel-compare">
-  <h2 class="panel-title">Compare PDFs</h2>
-  <p class="panel-desc">Do PDFs ki properties aur page count compare karo side by side.</p>
-  <div class="two-col">
-    <div>
-      <p style="color:var(--text2);font-size:0.82rem;margin-bottom:0.5rem">PDF #1</p>
-      <div class="dropzone" style="padding:2rem">
-        <input type="file" id="compare1-input" accept=".pdf" onchange="loadCompare(this,1)">
-        <div class="dz-icon" style="font-size:2rem"></div><p style="font-size:0.82rem">First PDF</p>
-      </div>
-      <div id="compare1-info" style="display:none;margin-top:0.75rem"></div>
-    </div>
-    <div>
-      <p style="color:var(--text2);font-size:0.82rem;margin-bottom:0.5rem">PDF #2</p>
-      <div class="dropzone" style="padding:2rem">
-        <input type="file" id="compare2-input" accept=".pdf" onchange="loadCompare(this,2)">
-        <div class="dz-icon" style="font-size:2rem"></div><p style="font-size:0.82rem">Second PDF</p>
-      </div>
-      <div id="compare2-info" style="display:none;margin-top:0.75rem"></div>
-    </div>
-  </div>
-  <div id="compare-result" style="display:none;margin-top:1.5rem">
-    <h4 style="font-family:'Syne',sans-serif;margin-bottom:1rem"> Comparison Results</h4>
-    <div id="compare-table"></div>
-  </div>
-</div>
+
 
 <!--  REPAIR  -->
-<div class="panel" id="panel-repair">
-  <h2 class="panel-title">Repair PDF</h2>
-  <p class="panel-desc">Corrupt ya damaged PDF ko repair karo, pdf-lib re-parse karke clean copy banata hai.</p>
-  <div class="dropzone">
-    <input type="file" id="repair-input" accept=".pdf" onchange="repairPDF(this)">
-    <div class="dz-icon">&#128196;</div><h3>Damaged PDF yahan drop karo</h3><p>Auto-repair attempt hoga</p>
-  </div>
-  <div id="repair-progress" style="display:none;margin-top:1.5rem">
-    <p style="color:var(--text2);font-size:0.88rem;margin-bottom:0.5rem">Repairing...</p>
-    <div class="progress-bar"><div class="progress-fill" id="repair-fill" style="width:0%"></div></div>
-  </div>
-  <div class="result-banner" id="repair-result">
-    <div class="res-icon">&#10004;&#65039;</div><div class="res-text"><h4>PDF Repaired!</h4><p id="repair-result-text"></p></div>
-    <button class="btn btn-success" id="repair-download">&#11015;&#65039; Download</button>
-  </div>
-</div>
+
 
 <!--  ABOUT  -->
-<div class="panel" id="panel-cgpa">
-  <h2 class="panel-title">&#127891; CGPA Calculator</h2>
-  <p class="panel-desc">Semester-wise SGPA aur credits daalo, total CGPA instantly calculate ho jayega.</p>
-  <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1.25rem">
-    <div class="btn-row" style="justify-content:space-between;align-items:center">
-      <h3 style="font-family:'Syne',sans-serif;font-size:1rem">Semester Entries</h3>
-      <button class="btn btn-secondary" onclick="addCGPARow()">+ Add Semester</button>
-    </div>
-    <div id="cgpa-rows" style="display:grid;gap:0.9rem;margin-top:1rem"></div>
-    <div class="btn-row">
-      <button class="btn btn-primary" onclick="calculateCGPA()">Calculate CGPA</button>
-      <button class="btn btn-secondary" onclick="resetCGPA()">Reset</button>
-    </div>
-  </div>
-  <div class="stats-row" style="margin-top:1.25rem">
-    <div class="stat-card"><div class="st-val" id="cgpa-semesters">0</div><div class="st-label">Semesters</div></div>
-    <div class="stat-card"><div class="st-val" id="cgpa-credits">0</div><div class="st-label">Total Credits</div></div>
-    <div class="stat-card"><div class="st-val" id="cgpa-weighted">0.00</div><div class="st-label">Weighted Points</div></div>
-    <div class="stat-card"><div class="st-val" id="cgpa-final">0.00</div><div class="st-label">CGPA</div></div>
-  </div>
-  <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1.1rem;margin-top:1rem">
-    <h3 style="font-family:'Syne',sans-serif;font-size:1rem;margin-bottom:0.5rem">Quick Formula</h3>
-    <p style="color:var(--text2);font-size:0.88rem;line-height:1.7">CGPA = sum of (semester SGPA x semester credits) / total credits</p>
-    <p style="color:var(--text2);font-size:0.82rem;margin-top:0.45rem">Tip: Agar har semester ke credits same hain, bas credits me same value daal do.</p>
-  </div>
-</div>
+
 
 <div class="panel" id="panel-percentage">
   <h2 class="panel-title">Percentage Calculator</h2>
@@ -1326,36 +1121,7 @@
   </div>
 </div>
 
-<div class="panel" id="panel-gpa-converter">
-  <h2 class="panel-title">GPA to Percentage Converter</h2>
-  <p class="panel-desc">GPA ko percentage me ya percentage ko GPA me convert karo.</p>
-  <div class="two-col">
-    <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1.1rem">
-      <h3 style="font-family:'Syne',sans-serif;font-size:1rem;margin-bottom:0.8rem">GPA to Percentage</h3>
-      <div class="form-group">
-        <label class="form-label">GPA / CGPA</label>
-        <input type="number" id="gpa-input" min="0" max="10" step="0.01" placeholder="8.4">
-      </div>
-      <div class="btn-row">
-        <button class="btn btn-primary" onclick="convertGpaToPercentage()">Convert</button>
-      </div>
-      <div class="stat-card"><div class="st-val" id="gpa-to-percentage-result">0.00%</div><div class="st-label">Percentage</div></div>
-    </div>
-    <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1.1rem">
-      <h3 style="font-family:'Syne',sans-serif;font-size:1rem;margin-bottom:0.8rem">Percentage to GPA</h3>
-      <div class="form-group">
-        <label class="form-label">Percentage</label>
-        <input type="number" id="percentage-input" min="0" max="100" step="0.01" placeholder="79.8">
-      </div>
-      <div class="btn-row">
-        <button class="btn btn-primary" onclick="convertPercentageToGpa()">Convert</button>
-        <button class="btn btn-secondary" onclick="resetGpaConverter()">Reset</button>
-      </div>
-      <div class="stat-card"><div class="st-val" id="percentage-to-gpa-result">0.00</div><div class="st-label">Estimated GPA</div></div>
-    </div>
-  </div>
-  <p style="color:var(--text2);font-size:0.82rem;margin-top:0.75rem">Default formula used: Percentage = GPA  9.5, and GPA = Percentage / 9.5</p>
-</div>
+
 
 <div class="panel" id="panel-marks">
   <h2 class="panel-title">Marks Calculator</h2>
@@ -1555,48 +1321,11 @@
   </div>
 </div>
 
-<div class="panel" id="panel-study-planner">
-  <h2 class="panel-title">Study Planner</h2>
-  <p class="panel-desc">Subjects, daily hours aur exam days dekar study plan auto generate karo.</p>
-  <div class="two-col">
-    <div>
-      <div class="form-group"><label class="form-label">Subjects</label><textarea id="planner-subjects" rows="5" placeholder="Math&#10;English&#10;Computer Science"></textarea></div>
-      <div class="form-group"><label class="form-label">Study Hours Per Day</label><input type="number" id="planner-hours" min="1" step="0.5" placeholder="4"></div>
-      <div class="form-group"><label class="form-label">Days Left</label><input type="number" id="planner-days" min="1" step="1" placeholder="14"></div>
-      <div class="btn-row"><button class="btn btn-primary" onclick="generateStudyPlanner()">Generate Plan</button><button class="btn btn-secondary" onclick="copyOutput('planner-output')">Copy</button></div>
-    </div>
-    <div class="form-group"><label class="form-label">Study Plan</label><textarea id="planner-output" rows="20" placeholder="Study plan yahan aayega"></textarea></div>
-  </div>
-</div>
 
-<div class="panel" id="panel-attendance">
-  <h2 class="panel-title">Attendance Calculator</h2>
-  <p class="panel-desc">Current classes aur target attendance se pata karo kitni classes aur chahiye.</p>
-  <div class="two-col">
-    <div class="form-group"><label class="form-label">Classes Attended</label><input type="number" id="att-attended" min="0" step="1" placeholder="42"></div>
-    <div class="form-group"><label class="form-label">Total Classes</label><input type="number" id="att-total" min="0" step="1" placeholder="56"></div>
-    <div class="form-group"><label class="form-label">Target Percentage</label><input type="number" id="att-target" min="0" max="100" step="0.01" placeholder="75"></div>
-  </div>
-  <div class="btn-row"><button class="btn btn-primary" onclick="calculateAttendance()">Calculate</button><button class="btn btn-secondary" onclick="resetAttendanceCalculator()">Reset</button></div>
-  <div class="stats-row" style="margin-top:1rem">
-    <div class="stat-card"><div class="st-val" id="att-current-result">0.00%</div><div class="st-label">Current</div></div>
-    <div class="stat-card"><div class="st-val" id="att-need-result">0</div><div class="st-label">Classes Needed</div></div>
-    <div class="stat-card"><div class="st-val" id="att-can-miss-result">0</div><div class="st-label">Can Miss</div></div>
-  </div>
-</div>
 
-<div class="panel" id="panel-timetable">
-  <h2 class="panel-title">Time Table Generator</h2>
-  <p class="panel-desc">Days aur subjects ke saath ek neat timetable generate karo.</p>
-  <div class="two-col">
-    <div>
-      <div class="form-group"><label class="form-label">Days</label><textarea id="tt-days" rows="4" placeholder="Monday&#10;Tuesday&#10;Wednesday&#10;Thursday&#10;Friday"></textarea></div>
-      <div class="form-group"><label class="form-label">Subjects / Slots</label><textarea id="tt-subjects" rows="6" placeholder="Math - 9:00 AM&#10;English - 10:00 AM&#10;Physics Lab - 1:00 PM"></textarea></div>
-      <div class="btn-row"><button class="btn btn-primary" onclick="generateTimeTable()">Generate Time Table</button><button class="btn btn-secondary" onclick="copyOutput('tt-output')">Copy</button></div>
-    </div>
-    <div class="form-group"><label class="form-label">Time Table Output</label><textarea id="tt-output" rows="20" placeholder="Generated timetable yahan aayega"></textarea></div>
-  </div>
-</div>
+
+
+
 
 <div class="panel" id="panel-unit-converter">
   <h2 class="panel-title">Unit Converter</h2>
@@ -1878,6 +1607,10 @@
 </div>
 
 <div id="toast-container"></div>
+<div class="processing-overlay" id="global-processing">
+  <div class="spinner"></div>
+  <div class="processing-text" id="global-processing-text">Processing...</div>
+</div>
 <script src="./script.js"></script>
 
 <script>
