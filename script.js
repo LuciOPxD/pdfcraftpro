@@ -883,68 +883,6 @@ function toast(msg, icon = 'ℹ️', duration = 3500) {
 // ══════════════════════════════════════════════════════
 // HELPERS
 // ══════════════════════════════════════════════════════
-const fmtSize = b => b < 1024 ? b + ' B' : b < 1048576 ? (b / 1024).toFixed(1) + ' KB' : (b / 1048576).toFixed(1) + ' MB';
-const readAB = f => new Promise((res, rej) => { const r = new FileReader(); r.onload = e => res(e.target.result); r.onerror = rej; r.readAsArrayBuffer(f); });
-const readURL = f => new Promise((res, rej) => { const r = new FileReader(); r.onload = e => res(e.target.result); r.onerror = rej; r.readAsDataURL(f); });
-function dlBlob(blob, name) {
-  // 1. Determine correct Mime Type based on extension
-  const ext = name.split('.').pop().toLowerCase();
-  const mimeMap = {
-    'pdf': 'application/pdf',
-    'zip': 'application/zip',
-    'png': 'image/png',
-    'jpg': 'image/jpeg',
-    'jpeg': 'image/jpeg',
-    'txt': 'text/plain',
-    'xls': 'application/vnd.ms-excel',
-    'csv': 'text/csv'
-  };
-  const type = mimeMap[ext] || 'application/octet-stream';
-
-  // 2. Ensure we have a Blob with the explicit mime type
-  // Re-wrapping the blob ensures the browser treats it as the specified type
-  const safeBlob = (blob instanceof Blob)
-    ? new Blob([blob], { type: type })
-    : new Blob([blob], { type: type });
-
-  // 3. Handle Legacy IE (just in case)
-  if (window.navigator?.msSaveOrOpenBlob) {
-    window.navigator.msSaveOrOpenBlob(safeBlob, name);
-    return;
-  }
-
-  // 4. Create Object URL
-  const u = URL.createObjectURL(safeBlob);
-  const a = document.createElement('a');
-  a.href = u;
-  a.download = name;
-
-  // 5. Mobile/Android Robustness:
-  // Android browsers can be picky about the click event and the link state
-  const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-
-  a.style.display = 'none';
-  document.body.appendChild(a);
-
-  if (isMobile) {
-    // For mobile, a small timeout ensures the UI thread is ready to handle the download
-    setTimeout(() => {
-      a.click();
-      // Revoke after a longer delay (2 minutes) to ensure the download manager has started
-      setTimeout(() => {
-        if (a.parentNode) document.body.removeChild(a);
-        URL.revokeObjectURL(u);
-      }, 120000);
-    }, 150);
-  } else {
-    a.click();
-    // Revoke after 1 minute for desktop
-    setTimeout(() => {
-      if (a.parentNode) document.body.removeChild(a);
-      URL.revokeObjectURL(u);
-    }, 60000);
-  }
-}
 function showResult(id, text) { const el = document.getElementById(id + '-result'); if (el) el.classList.add('show'); const t = document.getElementById(id + '-result-text'); if (t && text) t.textContent = text; }
 function setProgress(id, pct, label) { const w = document.getElementById(id + '-progress'); const f = document.getElementById(id + '-fill'); if (w) w.classList.add('show'); if (f) f.style.width = pct + '%'; if (label) { const l = document.getElementById(id + '-plab'); if (l) l.textContent = label; } }
 function selectOpt(el, scope) { document.querySelectorAll(scope).forEach(c => c.classList.remove('selected')); el.classList.add('selected'); }
