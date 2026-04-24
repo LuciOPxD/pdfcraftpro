@@ -2175,22 +2175,25 @@ async function initTesseract() {
       throw new Error('Tesseract library not loaded');
     }
 
-    // Create worker with proper config
-    tesseractWorker = await Tesseract.createWorker({
-      corePath: 'https://cdn.jsdelivr.net/npm/tesseract.js-core@4/tesseract-core.wasm.js',
-      langPath: 'https://cdn.jsdelivr.net/npm/tesseract.js-data/4.0.0_best'
+    // Tesseract.js v5 API: createWorker(langs, oem, options)
+    tesseractWorker = await Tesseract.createWorker('eng', 1, {
+      corePath: 'https://cdn.jsdelivr.net/npm/tesseract.js-core@5/tesseract-core.wasm.js',
+      workerPath: 'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/worker.min.js',
+      langPath: 'https://cdn.jsdelivr.net/npm/tesseract.js-data/4.0.0_best',
+      logger: m => {
+        if (m.status === 'recognizing text') {
+          const plab = document.getElementById('ocr-plab');
+          if (plab) plab.textContent = `OCR Progress: ${Math.round(m.progress * 100)}%`;
+        }
+      }
     });
 
-    // Load English language
-    await tesseractWorker.loadLanguage('eng');
-    await tesseractWorker.initialize('eng');
-
     tesseractReady = true;
-    console.log('✅ Tesseract initialized successfully');
+    console.log('✅ Tesseract v5 initialized successfully');
     return tesseractWorker;
   } catch (e) {
     console.error('❌ Tesseract init error:', e);
-    throw new Error('OCR library load nahi ho paya. Internet check karo ya refresh karo.');
+    throw new Error('OCR initialization failed. Refresh karke dobara koshish karein.');
   }
 }
 
