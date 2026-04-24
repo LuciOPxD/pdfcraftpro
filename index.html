@@ -271,8 +271,9 @@
   </div>
   <div class="file-list" id="merge-list"></div>
   <div class="btn-row">
-    <button class="btn btn-primary" onclick="mergePDFs()">&#128279; Merge karo</button>
-    <button class="btn btn-secondary" onclick="state.mergeFiles=[];renderMergeList()">&#128465;&#65039; Clear All</button>
+    <button class="btn btn-primary" onclick="mergePDFs()">🔗 Merge karo</button>
+    <button class="btn btn-secondary" onclick="document.getElementById('merge-input').click()">➕ Add More PDFs</button>
+    <button class="btn btn-secondary" onclick="state.mergeFiles=[];renderMergeList()">🗑️ Clear All</button>
   </div>
   <div class="progress-wrap" id="merge-progress"><div class="progress-bar"><div class="progress-fill" id="merge-fill"></div></div><div class="progress-label" id="merge-plab"></div></div>
   <div class="result-banner" id="merge-result">

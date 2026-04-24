@@ -1129,15 +1129,18 @@ function toggleExtractPage(n, el) {
 // MERGE
 // ══════════════════════════════════════════════════════
 function handleMergeFiles(files) {
-  if (!files) return;
+  if (!files || files.length === 0) return;
   for (const f of files) {
-    if (f.type === 'application/pdf' || f.name.endsWith('.pdf')) {
+    if (f.type === 'application/pdf' || f.name.toLowerCase().endsWith('.pdf')) {
       state.mergeFiles.push(f);
     }
   }
+  // Clear input so same file can be selected again
+  const input = document.getElementById('merge-input');
+  if (input) input.value = '';
+  
   renderMergeList();
   if (state.mergeFiles.length > 0) {
-    // Small delay to ensure UI updates before heavy rendering
     setTimeout(() => {
       renderToolPdfPreview('merge', state.mergeFiles[state.mergeFiles.length - 1], 5);
     }, 50);
