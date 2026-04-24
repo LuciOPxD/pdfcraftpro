@@ -1934,6 +1934,7 @@ async function runOCR(inputOrFile) {
     return;
   }
 
+  const startTime = performance.now();
   const progress = document.getElementById('ocr-progress');
   const output = document.getElementById('ocr-output');
   const previewWrap = document.getElementById('ocr-preview-wrap');
