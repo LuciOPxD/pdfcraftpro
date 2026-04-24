@@ -924,6 +924,23 @@ function getPanelIdForTool(tool) {
   return map[tool] || tool;
 }
 
+function ensureToolPreviewContainer(tool, label = 'Preview') {
+  const panelId = getPanelIdForTool(tool);
+  const panel = document.getElementById(`panel-${panelId}`);
+  if (!panel) return {};
+  let wrap = document.getElementById(`${tool}-preview-wrap`);
+  let box = document.getElementById(`${tool}-preview-box`);
+  if (!wrap || !box) {
+    const dropzone = panel.querySelector('.dropzone');
+    if (!dropzone) return {};
+    wrap = document.createElement('div');
+    wrap.id = `${tool}-preview-wrap`;
+    wrap.style.display = 'none';
+    wrap.style.marginTop = '1.5rem';
+    wrap.innerHTML = `<label class="form-label">${label}</label><div class="pdf-preview-box preview-extended" id="${tool}-preview-box"></div>`;
+    dropzone.insertAdjacentElement('afterend', wrap);
+    box = document.getElementById(`${tool}-preview-box`);
+  }
   return { wrap, box };
 }
 
