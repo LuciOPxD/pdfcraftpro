@@ -924,24 +924,36 @@ function getPanelIdForTool(tool) {
   return map[tool] || tool;
 }
 
-function ensureToolPreviewContainer(tool, label = 'Preview') {
-  const panelId = getPanelIdForTool(tool);
-  const panel = document.getElementById(`panel-${panelId}`);
-  if (!panel) return {};
-  let wrap = document.getElementById(`${tool}-preview-wrap`);
-  let box = document.getElementById(`${tool}-preview-box`);
-  if (!wrap || !box) {
-    const dropzone = panel.querySelector('.dropzone');
-    if (!dropzone) return {};
-    wrap = document.createElement('div');
-    wrap.id = `${tool}-preview-wrap`;
-    wrap.style.display = 'none';
-    wrap.style.marginTop = '1.5rem';
-    wrap.innerHTML = `<label class="form-label">${label}</label><div class="pdf-preview-box preview-extended" id="${tool}-preview-box"></div>`;
-    dropzone.insertAdjacentElement('afterend', wrap);
-    box = document.getElementById(`${tool}-preview-box`);
-  }
   return { wrap, box };
+}
+
+function openInDevice(file) {
+  if (!file) return;
+  const url = URL.createObjectURL(file);
+  window.open(url, '_blank');
+}
+
+async function renderToolPdfPreview(tool, file) {
+  const { wrap, box } = ensureToolPreviewContainer(tool);
+  if (!wrap || !box) return;
+  wrap.style.display = 'block';
+  
+  const sizeStr = (file.size / 1024 / 1024).toFixed(2) + ' MB';
+  box.innerHTML = `
+    <div class="file-card-minimal">
+      <div class="fcm-icon">📄</div>
+      <div class="fcm-info">
+        <div class="fcm-name">${file.name}</div>
+        <div class="fcm-size">${sizeStr} • PDF Document</div>
+      </div>
+      <div class="fcm-actions">
+        <button class="btn btn-secondary btn-sm" onclick="openInDevice(state['${tool}File'] || state['${tool}InputFile'])">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14L21 3"/></svg>
+          Open in Device
+        </button>
+      </div>
+    </div>
+  `;
 }
 
 async function renderPdfPreviewIntoBox(box, file, maxPages = 10, scale = 0.9, qualityMode = 'text') {
@@ -1033,13 +1045,21 @@ async function handleSingleFile(input, tool) {
   const opts = document.getElementById(TOOL_CONFIG[tool]?.optionsId || tool + '-options');
   if (opts) opts.style.display = 'block';
   if (tool !== 'watermark' && tool !== 'sign' && tool !== 'annotate') {
-    await renderToolPdfPreview(tool, file, 10);
+    await renderToolPdfPreview(tool, file);
   }
   if (tool === 'sign') {
     await initSignPreview(file);
   }
   if (tool === 'annotate') {
     await initAnnotatePreview(file);
+  }
+  if (['split', 'reorder', 'delpages', 'extract'].includes(tool)) {
+    const ab = await readAB(file);
+    const pdf = await pdfjsLib.getDocument({ data: ab }).promise;
+    const gridId = { split: 'split-page-grid', reorder: 'reorder-page-grid', delpages: 'delpages-page-grid', extract: 'extract-page-grid' }[tool];
+    const clickFn = { split: toggleSplitPage, reorder: null, delpages: toggleDelPage, extract: toggleExtractPage }[tool];
+    if (gridId) renderPageGrid(gridId, pdf.numPages, clickFn);
+    if (tool === 'reorder') document.getElementById('reorder-total').textContent = pdf.numPages;
   }
   // show result banners hide
   const results = document.querySelectorAll('#panel-' + tool + ' .result-banner');
