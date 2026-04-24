@@ -34,6 +34,103 @@ const state = {
   passwordOptions: { upper: true, lower: true, number: true, symbol: true }
 };
 
+// ══════════════════════════════════════════════════════
+// UTILITIES (Core Helpers)
+// ══════════════════════════════════════════════════════
+function readAB(file) {
+  return new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload = () => res(r.result);
+    r.onerror = rej;
+    r.readAsArrayBuffer(file);
+  });
+}
+
+function readURL(file) {
+  return new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload = () => res(r.result);
+    r.onerror = rej;
+    r.readAsDataURL(file);
+  });
+}
+
+function dlBlob(blob, name) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = name; a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 100);
+}
+
+function fmtSize(bytes) {
+  if (!bytes) return '0 B';
+  if (bytes < 1024) return bytes + ' B';
+  if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+  return (bytes / 1048576).toFixed(1) + ' MB';
+}
+
+function loadImageFromFile(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => resolve(img);
+      img.onerror = reject;
+      img.src = e.target.result;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+// ══════════════════════════════════════════════════════
+// IMAGE TO PDF HANDLERS
+// ══════════════════════════════════════════════════════
+function handleImageFiles(files) {
+  if (!files || files.length === 0) return;
+  for (const f of files) {
+    if (f.type.startsWith('image/')) {
+      state.img2pdfFiles.push(f);
+    }
+  }
+  const opts = document.getElementById('img2pdf-options');
+  if (opts) opts.style.display = 'block';
+  renderImageFilesList();
+}
+
+function renderImageFilesList() {
+  const list = document.getElementById('img2pdf-list');
+  if (!list) return;
+  list.innerHTML = '';
+  if (state.img2pdfFiles.length === 0) {
+    list.innerHTML = '<div style="opacity:0.5;padding:1rem;text-align:center">No images added yet.</div>';
+    return;
+  }
+  state.img2pdfFiles.forEach((f, i) => {
+    const item = document.createElement('div');
+    item.className = 'file-list-item';
+    item.style.display = 'flex';
+    item.style.justifyContent = 'space-between';
+    item.style.alignItems = 'center';
+    item.style.padding = '0.75rem';
+    item.style.background = 'rgba(255,255,255,0.05)';
+    item.style.borderRadius = '8px';
+    item.style.marginBottom = '0.5rem';
+    
+    item.innerHTML = `
+      <div style="display:flex;align-items:center;gap:0.75rem">
+        <span style="font-size:1.25rem">🖼️</span>
+        <div>
+          <div style="font-weight:600;font-size:0.9rem">${f.name}</div>
+          <div style="font-size:0.75rem;opacity:0.6">${fmtSize(f.size)}</div>
+        </div>
+      </div>
+      <button class="btn btn-secondary btn-sm" onclick="state.img2pdfFiles.splice(${i}, 1); renderImageFilesList()" style="padding:0.25rem 0.5rem">✕</button>
+    `;
+    list.appendChild(item);
+  });
+}
+
 const TOOL_CONFIG = {
   watermark: { optionsId: 'wm-options' },
   annotate: { optionsId: 'ann-options' }
