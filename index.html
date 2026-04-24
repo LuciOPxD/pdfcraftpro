@@ -572,11 +572,12 @@
         <div class="checkbox-row"><input type="checkbox" id="pn-skip-first"><label for="pn-skip-first">First page skip karo (cover page)</label></div>
       </div>
     </div>
-    <div class="btn-row"><button class="btn btn-primary" onclick="addPageNumbers()"> Add Page Numbers</button></div>
+    <div class="btn-row"><button class="btn btn-primary" onclick="addPageNumbers()">🔢 Add Page Numbers</button></div>
   </div>
+  <div class="progress-wrap" id="pn-progress"><div class="progress-bar"><div class="progress-fill" id="pn-fill"></div></div><div class="progress-label" id="pn-plab">Adding numbers...</div></div>
   <div class="result-banner" id="pn-result">
-    <div class="res-icon">&#10004;&#65039;</div><div class="res-text"><h4>Page Numbers Added!</h4><p>PDF ready hai.</p></div>
-    <button class="btn btn-success" id="pn-download">&#11015;&#65039; Download</button>
+    <div class="res-icon">✅</div><div class="res-text"><h4>Numbers Added!</h4><p>PDF ready with page numbers.</p></div>
+    <button class="btn btn-success" id="pn-download">⬇️ Download</button>
   </div>
 </div>
 
@@ -608,11 +609,12 @@
         <div class="form-group"><label class="form-label">Start Page</label><input type="number" id="hf-start-page" value="1" min="1"></div>
       </div>
     </div>
-    <div class="btn-row"><button class="btn btn-primary" onclick="addHeaderFooter()">Add Header / Footer</button></div>
+    <div class="btn-row"><button class="btn btn-primary" onclick="addHeaderFooter()">📝 Add Header/Footer</button></div>
   </div>
+  <div class="progress-wrap" id="hf-progress"><div class="progress-bar"><div class="progress-fill" id="hf-fill"></div></div><div class="progress-label" id="hf-plab">Applying...</div></div>
   <div class="result-banner" id="hf-result">
-    <div class="res-icon">&#10004;&#65039;</div><div class="res-text"><h4>Header / Footer Added!</h4><p>PDF ready hai.</p></div>
-    <button class="btn btn-success" id="hf-download" >&#11015;&#65039; Download</button>
+    <div class="res-icon">✅</div><div class="res-text"><h4>Header/Footer Added!</h4><p>PDF ready for download.</p></div>
+    <button class="btn btn-success" id="hf-download">⬇️ Download</button>
   </div>
 </div>
 
@@ -635,11 +637,12 @@
       <div class="form-group"><label class="form-label">Left Margin (pt)</label><input type="number" id="crop-left" value="0" min="0" max="200"></div>
       <div class="form-group"><label class="form-label">Right Margin (pt)</label><input type="number" id="crop-right" value="0" min="0" max="200"></div>
     </div>
-    <div class="btn-row"><button class="btn btn-primary" onclick="cropPDF()"> Crop karo</button></div>
+    <div class="btn-row"><button class="btn btn-primary" onclick="cropPDF()">✂️ Crop karo</button></div>
   </div>
+  <div class="progress-wrap" id="crop-progress"><div class="progress-bar"><div class="progress-fill" id="crop-fill"></div></div><div class="progress-label" id="crop-plab">Cropping...</div></div>
   <div class="result-banner" id="crop-result">
-    <div class="res-icon">&#10004;&#65039;</div><div class="res-text"><h4>Pages Cropped!</h4><p>PDF ready hai.</p></div>
-    <button class="btn btn-success" id="crop-download">&#11015;&#65039; Download</button>
+    <div class="res-icon">✅</div><div class="res-text"><h4>Cropped Successfully!</h4><p>Margins adjusted.</p></div>
+    <button class="btn btn-success" id="crop-download">⬇️ Download</button>
   </div>
 </div>
 
@@ -649,7 +652,7 @@
   <p class="panel-desc">JPG, PNG, WebP, GIF images ko PDF mein convert karo. Multiple images ek PDF mein.</p>
   <div class="dropzone">
     <input type="file" id="img2pdf-input" multiple accept="image/*" onchange="handleImageFiles(this.files)">
-    <div class="dz-icon"></div><h3>Images yahan drop karo</h3><p>JPG, PNG, GIF, WebP, BMP  multiple files supported</p>
+    <div class="dz-icon">🖼️</div><h3>Images upload karo</h3><p>Multiple images choose karke single PDF banao</p>
   </div>
   <div class="file-list" id="img2pdf-list"></div>
   <div id="img2pdf-options" style="display:none">
@@ -665,11 +668,12 @@
         <select id="img2pdf-fit"><option value="fit">Fit to page (maintain ratio)</option><option value="stretch">Stretch to fill</option><option value="original">Original size</option></select>
       </div>
     </div>
-    <div class="btn-row"><button class="btn btn-primary" onclick="imageToPDF()"> Convert karo</button></div>
+    <div class="btn-row"><button class="btn btn-primary" onclick="imageToPDF()">🖼️ Create PDF</button></div>
   </div>
+  <div class="progress-wrap" id="img2pdf-progress"><div class="progress-bar"><div class="progress-fill" id="img2pdf-fill"></div></div><div class="progress-label" id="img2pdf-plab">Generating PDF...</div></div>
   <div class="result-banner" id="img2pdf-result">
-    <div class="res-icon">&#10004;&#65039;</div><div class="res-text"><h4>PDF Ready!</h4><p id="img2pdf-result-text"></p></div>
-    <button class="btn btn-success" id="img2pdf-download">&#11015;&#65039; Download PDF</button>
+    <div class="res-icon">✅</div><div class="res-text"><h4>PDF Generated!</h4><p>Saari images combine ho gayi hain.</p></div>
+    <button class="btn btn-success" id="img2pdf-download">⬇️ Download PDF</button>
   </div>
 </div>
 
@@ -679,7 +683,7 @@
   <p class="panel-desc">Image ko target KB ke aas-paas compress karo. Width limit, format aur quality browser mein hi control hogi.</p>
   <div class="dropzone">
     <input type="file" id="imgresize-input" multiple accept="image/*" onchange="handleImageResizeFile(this.files)">
-    <div class="dz-icon"></div><h3>Image yahan drop karo</h3><p>JPG, PNG, WebP supported</p>
+    <div class="dz-icon">🖼️</div><h3>Images upload karo</h3><p>Batch resize images to target KB</p>
   </div>
   <div class="file-list" id="imgresize-list"></div>
   <div id="imgresize-options" style="display:none;margin-top:1.5rem">
@@ -709,11 +713,12 @@
     </div>
     <div class="btn-row"><button class="btn btn-primary" onclick="resizeImageToTarget()"> Resize karo</button></div>
   </div>
-    <div class="result-banner" id="imgresize-result">
-    <div class="res-icon">&#10004;&#65039;</div><div class="res-text"><h4>Resized Images Ready!</h4><p id="imgresize-result-text"></p></div>
+  <div class="progress-wrap" id="imgresize-progress"><div class="progress-bar"><div class="progress-fill" id="imgresize-fill"></div></div><div class="progress-label" id="imgresize-plab">Resizing...</div></div>
+  <div class="result-banner" id="imgresize-result">
+    <div class="res-icon">✅</div><div class="res-text"><h4>Resize Done!</h4><p id="imgresize-result-text"></p></div>
     <div class="btn-row">
       <button class="btn btn-success" id="imgresize-download-zip" style="display:none">&#11015;&#65039; Download All (ZIP)</button>
-      <button class="btn btn-success" id="imgresize-download">&#11015;&#65039; Download Image</button>
+      <button class="btn btn-success" id="imgresize-download">⬇️ Download ZIP</button>
     </div>
   </div>
 </div>
@@ -725,9 +730,10 @@
     <input type="file" id="word2pdf-input" accept=".docx" onchange="convertWordToPDF(this)">
     <div class="dz-icon"></div><h3>DOCX yahan drop karo</h3><p>Word document ko PDF mein convert karo</p>
   </div>
+  <div class="progress-wrap" id="word2pdf-progress"><div class="progress-bar"><div class="progress-fill" id="word2pdf-fill"></div></div><div class="progress-label" id="word2pdf-plab">Converting...</div></div>
   <div class="result-banner" id="word2pdf-result">
-    <div class="res-icon">&#10004;&#65039;</div><div class="res-text"><h4>PDF Ready!</h4><p id="word2pdf-result-text"></p></div>
-    <button class="btn btn-success" id="word2pdf-download">&#11015;&#65039; Download PDF</button>
+    <div class="res-icon">✅</div><div class="res-text"><h4>PDF Ready!</h4><p id="word2pdf-result-text"></p></div>
+    <button class="btn btn-success" id="word2pdf-download">⬇️ Download PDF</button>
   </div>
 </div>
 
@@ -765,9 +771,10 @@
     <div class="dz-icon">&#128196;</div><h3>PDF yahan drop karo</h3><p>Text rows ko spreadsheet format mein nikalo</p>
   </div>
   <div class="result-banner" id="pdf2excel-result">
-    <div class="res-icon">&#10004;&#65039;</div><div class="res-text"><h4>Excel File Ready!</h4><p id="pdf2excel-result-text"></p></div>
-    <button class="btn btn-success" id="pdf2excel-download">&#11015;&#65039; Download XLS</button>
+    <div class="res-icon">✅</div><div class="res-text"><h4>Excel File Ready!</h4><p id="pdf2excel-result-text"></p></div>
+    <button class="btn btn-success" id="pdf2excel-download">⬇️ Download XLS</button>
   </div>
+  <div class="progress-wrap" id="pdf2excel-progress"><div class="progress-bar"><div class="progress-fill" id="pdf2excel-fill"></div></div><div class="progress-label" id="pdf2excel-plab">Extracting...</div></div>
 </div>
 
 <!--  PDF TO IMAGE  -->
