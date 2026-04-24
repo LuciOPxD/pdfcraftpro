@@ -1903,6 +1903,7 @@ async function runOCR(inputOrFile) {
   showLoading('Running OCR (Text Extract)...');
   progress.style.display = 'block';
   output.style.display = 'none';
+  try {
     let text = '', total = 0;
     const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
 
