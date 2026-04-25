@@ -132,43 +132,7 @@ function renderImageFilesList() {
     list.appendChild(item);
   });
 }
-splitFile: null, splitPages: 0, splitMethod: 'all', splitSelected: [],
-  compressFile: null, compressLevel: 'medium',
-    rotateFile: null, rotateAngle: 90,
-      img2pdfFiles: [],
-        imgResizeFile: null, imgResizeBlob: null, imgResizeMeta: null,
-          pdf2imgFile: null, pdf2imgCanvases: [],
-            pdf2txtFile: null,
-              wmFile: null,
-                wmPreviewDoc: null, wmCustomPos: { x: 0.5, y: 0.5 },
-wmPreviewPage: null, wmPreviewPageNum: 1, wmPreviewTotal: 0, wmDragging: false, wmDragFrame: 0,
-  pnFile: null,
-    stampFile: null,
-      hfFile: null,
-        duplicateFile: null,
-          metaeditFile: null,
-            cgpaRows: 0,
-              marksRows: 0,
-                timetableRows: 0,
-                  protectFile: null,
-                    unlockFile: null,
-                      signFile: null, signType: 'draw', signDrawing: false, signLastX: 0, signLastY: 0,
-                        redactFile: null,
-                          annFile: null, annType: 'textbox',
-                            inspectFile: null,
-                              reorderFile: null, reorderPageCount: 0,
-                                delFile: null, delSelected: [],
-                                  extractFile: null, extractSelected: [],
-                                    cropFile: null,
-                                      blankData: null,
-                                        repairFile: null,
-                                          previewDoc: null, previewPage: 1, previewTotal: 0,
-                                            compareData: [null, null],
-                                              htmlContent: '',
-                                                resultBlobs: { },
-qrDataUrl: '',
-  passwordOptions: { upper: true, lower: true, number: true, symbol: true }
-};
+
 
 let signCtx = null;
 let signListenersBound = false;
@@ -1586,13 +1550,6 @@ ${achievements}`;
       saveActivity('compress', `${fmtSize(orig)} → ${fmtSize(nw)}`);
     } catch (e) { toast('Error: ' + e.message, '❌'); }
     finally { hideLoading(); }
-    <div class="stat-card"><div class="st-val" style="color:var(--accent3)">${savings > 0 ? savings + '% saved' : 'Similar size'}</div><div class="st-label">Space Saved</div></div>`;
-    document.getElementById('compress-download').onclick=()=>dlBlob(blob,'compressed.pdf');
-    showResult('compress',`${ fmtSize(orig) } → ${ fmtSize(nw) } (${ savings }% smaller)`);
-    setProgress('compress',100);
-    toast('Compression complete!','✅');
-    saveActivity('compress', `${ fmtSize(state.compressFile.size) } → ${ fmtSize(blob.size) } `);
-  }catch(e){toast('Error: '+e.message,'❌');}
 }
 
 // ══════════════════════════════════════════════════════
