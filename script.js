@@ -171,6 +171,7 @@ qrDataUrl: '',
 };
 
 let signCtx = null;
+let signListenersBound = false;
 let signPreviewBound = false;
 let annPreviewBound = false;
 
@@ -200,48 +201,41 @@ function showPanel(id, addToHistory = true) {
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
   document.querySelectorAll('.mobile-tool-btn').forEach(b => b.classList.remove('active'));
+  
   const p = document.getElementById('panel-' + id);
   if (p) p.classList.add('active');
+  
+  if (id === 'sign') initSignCanvas();
+  if (id === 'annotate') initAnnotateCanvas();
+
   const b = document.getElementById('btn-' + id);
   if (b) b.classList.add('active');
+  
   const mb = document.getElementById('mbtn-' + id);
   if (mb) mb.classList.add('active');
-  if (b || mb) {
-    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-    document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
-    document.querySelectorAll('.mobile-tool-btn').forEach(b => b.classList.remove('active'));
-    const p = document.getElementById('panel-' + id);
-    if (p) p.classList.add('active');
-    if (id === 'sign') initSignCanvas();
-    if (id === 'annotate') initAnnotateCanvas();
-    const b = document.getElementById('btn-' + id);
-    if (b) b.classList.add('active');
-    const mb = document.getElementById('mbtn-' + id);
-    if (mb) mb.classList.add('active');
-    if (b || mb) {
-      const target = b || mb;
-      // Only scroll into view if on desktop or if specifically needed. 
-      // Smooth scroll on mobile can cause jumpy behavior when switching panels.
-      if (window.innerWidth > 768) {
-        target.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
-      }
-    }
-    const mainEl = document.querySelector('.main');
-    const appLayout = document.querySelector('.app-layout');
-    if (mainEl) mainEl.scrollTo({ top: 0, behavior: 'auto' });
-    if (appLayout) appLayout.scrollTo({ top: 0, behavior: 'auto' });
 
-    // Mobile/Android fix: ensure window also scrolls to top
-    window.scrollTo({ top: 0, behavior: 'auto' });
-    document.documentElement.scrollTop = 0;
-    document.body.scrollTop = 0;
-
-    if (addToHistory) {
-      const stateObj = { panelId: id };
-      const url = id === 'home' ? window.location.pathname : `?tool=${id}`;
-      history.pushState(stateObj, '', url);
+  const target = b || mb;
+  if (target) {
+    if (window.innerWidth > 768) {
+      target.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
     }
   }
+
+  const mainEl = document.querySelector('.main');
+  const appLayout = document.querySelector('.app-layout');
+  if (mainEl) mainEl.scrollTo({ top: 0, behavior: 'auto' });
+  if (appLayout) appLayout.scrollTo({ top: 0, behavior: 'auto' });
+
+  window.scrollTo({ top: 0, behavior: 'auto' });
+  document.documentElement.scrollTop = 0;
+  document.body.scrollTop = 0;
+
+  if (addToHistory) {
+    const stateObj = { panelId: id };
+    const url = id === 'home' ? window.location.pathname : `?tool=${id}`;
+    history.pushState(stateObj, '', url);
+  }
+}
 
   // Handle browser back/forward buttons
   window.addEventListener('popstate', (event) => {
@@ -2622,56 +2616,9 @@ async function htmlToPDF() {
   }
 }
 
-async function protectPDF() {
-  if (!state.protectFile) { toast('Pehle PDF upload karo!', '⚠️'); return; }
-  const pass = document.getElementById('protect-pass').value;
-  const pass2 = document.getElementById('protect-pass2').value;
-  if (!pass) { toast('Password enter karo!', '⚠️'); return; }
-  if (pass !== pass2) { toast('Passwords match nahi kar rahe!', '❌'); return; }
 
-  showLoading('Protecting PDF...');
-  try {
-    // Note: pdf-lib doesn't support encryption, so we simulate or set metadata
-    const ab = await readAB(state.protectFile);
-    const pdf = await PDFLib.PDFDocument.load(ab, { ignoreEncryption: true });
-    pdf.setKeywords(['protected', 'encrypted-simulated']);
-    pdf.setProducer('JustPDFCraft Protected');
 
-    const bytes = await pdf.save();
-    const blob = new Blob([bytes], { type: 'application/pdf' });
-    document.getElementById('protect-download').onclick = () => dlBlob(blob, 'protected.pdf');
-    showResult('protect');
-    toast('PDF Protected (Metadata Level)!', '✅');
-    saveActivity('protect', 'Password protection applied');
-  } catch (e) {
-    toast('Error: ' + e.message, '❌');
-  } finally {
-    hideLoading();
-  }
-}
 
-async function unlockPDF() {
-  if (!state.unlockFile) { toast('Pehle PDF upload karo!', '⚠️'); return; }
-  const pass = document.getElementById('unlock-pass').value;
-
-  showLoading('Unlocking PDF...');
-  try {
-    const ab = await readAB(state.unlockFile);
-    // pdf-lib can load encrypted files IF we provide the password
-    const pdf = await PDFLib.PDFDocument.load(ab, { password: pass, ignoreEncryption: false });
-
-    const bytes = await pdf.save(); // Re-saving removes encryption
-    const blob = new Blob([bytes], { type: 'application/pdf' });
-    document.getElementById('unlock-download').onclick = () => dlBlob(blob, 'unlocked.pdf');
-    showResult('unlock');
-    toast('PDF Unlocked & Decrypted!', '✅');
-    saveActivity('unlock', 'Password removed');
-  } catch (e) {
-    toast('Unlock fail: Password galat ho sakta hai ya encryption unsupported hai.', '❌');
-  } finally {
-    hideLoading();
-  }
-}
 
 function downloadOCR() {
   const text = document.getElementById('ocr-text').value;
@@ -2951,13 +2898,13 @@ async function initSignPreview(file) {
     state.signPreviewPageNum = Math.min(parseInt(document.getElementById('sign-page')?.value) || 1, state.signPreviewTotal);
     document.getElementById('sign-preview-total').textContent = state.signPreviewTotal;
     document.getElementById('sign-preview-wrap').style.display = 'block';
-    const bytes = await pdf.save();
-    const blob = new Blob([bytes], { type: 'application/pdf' });
-    document.getElementById('html2pdf-download').onclick = () => dlBlob(blob, 'document.pdf');
-    showResult('html2pdf', `${pdf.getPageCount()} pages generated, ${fmtSize(blob.size)}`);
-    toast('PDF created!', '✅');
-  } catch (e) { toast('Error: ' + e.message, '❌'); }
+    bindSignPreviewControls();
+    await setSignPreviewPage(state.signPreviewPageNum);
+  } catch (e) {
+    toast('Sign preview load error: ' + e.message, '❌');
+  }
 }
+
 
 // ══════════════════════════════════════════════════════
 // BLANK PDF
@@ -3044,7 +2991,6 @@ async function unlockPDF() {
 // ══════════════════════════════════════════════════════
 // signCtx is already declared at the top of the file
 
-let signListenersBound = false;
 function initSignCanvas() {
   const canvas = document.getElementById('sign-canvas');
   if (!canvas) return;
@@ -3161,40 +3107,31 @@ function bindSignPreviewControls() {
   if (pageField) {
     pageField.addEventListener('change', () => setSignPreviewPage(parseInt(pageField.value) || 1));
     pageField.addEventListener('input', () => setSignPreviewPage(parseInt(pageField.value) || 1));
-    // signPreviewBound is already declared at the top
+  }
+}
 
-    function bindSignPreviewControls() {
-      if (signPreviewBound) return;
-      signPreviewBound = true;
-      const pageField = document.getElementById('sign-page');
-      if (pageField) {
-        pageField.addEventListener('change', () => setSignPreviewPage(parseInt(pageField.value) || 1));
-        pageField.addEventListener('input', () => setSignPreviewPage(parseInt(pageField.value) || 1));
-      }
-    }
-
-    async function setSignPreviewPage(pageNum) {
-      if (!state.signPreviewDoc) return;
-      state.signPreviewPageNum = clamp(pageNum, 1, state.signPreviewTotal);
-      const pageField = document.getElementById('sign-page');
-      if (pageField) pageField.value = state.signPreviewPageNum;
-      document.getElementById('sign-preview-cur').textContent = state.signPreviewPageNum;
-      state.signPreviewPage = await state.signPreviewDoc.getPage(state.signPreviewPageNum);
-      const viewport = state.signPreviewPage.getViewport({ scale: getPreviewRenderScale(1.15, 'text') });
-      const canvas = document.getElementById('sign-preview-canvas');
-      canvas.width = viewport.width;
-      canvas.height = viewport.height;
-      await state.signPreviewPage.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
-    }
+async function setSignPreviewPage(pageNum) {
+  if (!state.signPreviewDoc) return;
+  state.signPreviewPageNum = clamp(pageNum, 1, state.signPreviewTotal);
+  const pageField = document.getElementById('sign-page');
+  if (pageField) pageField.value = state.signPreviewPageNum;
+  document.getElementById('sign-preview-cur').textContent = state.signPreviewPageNum;
+  state.signPreviewPage = await state.signPreviewDoc.getPage(state.signPreviewPageNum);
+  const viewport = state.signPreviewPage.getViewport({ scale: getPreviewRenderScale(1.15, 'text') });
+  const canvas = document.getElementById('sign-preview-canvas');
+  canvas.width = viewport.width;
+  canvas.height = viewport.height;
+  await state.signPreviewPage.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
+}
 
 
-    function prevSignPreviewPage() {
-      if (state.signPreviewPageNum > 1) setSignPreviewPage(state.signPreviewPageNum - 1);
-    }
+function prevSignPreviewPage() {
+  if (state.signPreviewPageNum > 1) setSignPreviewPage(state.signPreviewPageNum - 1);
+}
 
-    function nextSignPreviewPage() {
-      if (state.signPreviewPageNum < state.signPreviewTotal) setSignPreviewPage(state.signPreviewPageNum + 1);
-    }
+function nextSignPreviewPage() {
+  if (state.signPreviewPageNum < state.signPreviewTotal) setSignPreviewPage(state.signPreviewPageNum + 1);
+}
 
     async function initAnnotatePreview(file) {
       try {
@@ -3211,100 +3148,89 @@ function bindSignPreviewControls() {
       }
     }
 
-    let annPreviewBound = false;
-    function bindAnnotatePreviewControls() {
-      if (annPreviewBound) return;
-      annPreviewBound = true;
-      const stage = document.getElementById('ann-stage');
-      const pageField = document.getElementById('ann-page');
-      if (pageField) {
-        pageField.addEventListener('change', () => setAnnotatePreviewPage(parseInt(pageField.value) || 1));
-        pageField.addEventListener('input', () => setAnnotatePreviewPage(parseInt(pageField.value) || 1));
-        // annPreviewBound is already declared at the top
+function bindAnnotatePreviewControls() {
+  if (annPreviewBound) return;
+  annPreviewBound = true;
+  const stage = document.getElementById('ann-stage');
+  const pageField = document.getElementById('ann-page');
+  if (pageField) {
+    pageField.addEventListener('change', () => setAnnotatePreviewPage(parseInt(pageField.value) || 1));
+    pageField.addEventListener('input', () => setAnnotatePreviewPage(parseInt(pageField.value) || 1));
+  }
+  const getPos = e => {
+    const canvas = document.getElementById('ann-preview-canvas');
+    const rect = canvas.getBoundingClientRect();
+    const point = e.touches ? e.touches[0] : e;
+    return {
+      x: clamp((point.clientX - rect.left) / rect.width, 0, 1),
+      y: clamp((point.clientY - rect.top) / rect.height, 0, 1)
+    };
+  };
+  const update = e => {
+    const start = state.annSelectionStart || getPos(e);
+    const current = getPos(e);
+    state.annPlacement = {
+      page: state.annPreviewPageNum,
+      x1: Math.min(start.x, current.x),
+      x2: Math.max(start.x, current.x),
+      y1: Math.min(start.y, current.y),
+      y2: Math.max(start.y, current.y)
+    };
+    renderAnnotateSelectionOverlay();
+  };
+  stage.addEventListener('mousedown', e => {
+    state.annDragging = true;
+    state.annSelectionStart = getPos(e);
+    update(e);
+  });
+  window.addEventListener('mousemove', e => {
+    if (!state.annDragging) return;
+    update(e);
+  });
+  window.addEventListener('mouseup', () => {
+    state.annDragging = false;
+    state.annSelectionStart = null;
+  });
+  stage.addEventListener('touchstart', e => {
+    e.preventDefault();
+    state.annDragging = true;
+    state.annSelectionStart = getPos(e);
+    update(e);
+  }, { passive: false });
+  window.addEventListener('touchmove', e => {
+    if (!state.annDragging) return;
+    update(e);
+  }, { passive: false });
+  window.addEventListener('touchend', () => {
+    state.annDragging = false;
+    state.annSelectionStart = null;
+  });
+  stage.addEventListener('click', e => {
+    const p = getPos(e);
+    state.annPlacement = { page: state.annPreviewPageNum, x1: Math.max(0, p.x - 0.1), x2: Math.min(1, p.x + 0.1), y1: Math.max(0, p.y - 0.03), y2: Math.min(1, p.y + 0.03) };
+    renderAnnotateSelectionOverlay();
+  });
+  const colorField = document.getElementById('ann-color');
+  if (colorField) {
+    colorField.addEventListener('input', renderAnnotateSelectionOverlay);
+    colorField.addEventListener('change', renderAnnotateSelectionOverlay);
+  }
+}
 
-        function bindAnnotatePreviewControls() {
-          if (annPreviewBound) return;
-          annPreviewBound = true;
-          const stage = document.getElementById('ann-stage');
-          const pageField = document.getElementById('ann-page');
-          if (pageField) {
-            pageField.addEventListener('change', () => setAnnotatePreviewPage(parseInt(pageField.value) || 1));
-            pageField.addEventListener('input', () => setAnnotatePreviewPage(parseInt(pageField.value) || 1));
-          }
-          const getPos = e => {
-            const canvas = document.getElementById('ann-preview-canvas');
-            const rect = canvas.getBoundingClientRect();
-            const point = e.touches ? e.touches[0] : e;
-            return {
-              x: clamp((point.clientX - rect.left) / rect.width, 0, 1),
-              y: clamp((point.clientY - rect.top) / rect.height, 0, 1)
-            };
-          };
-          const update = e => {
-            const start = state.annSelectionStart || getPos(e);
-            const current = getPos(e);
-            state.annPlacement = {
-              page: state.annPreviewPageNum,
-              x1: Math.min(start.x, current.x),
-              x2: Math.max(start.x, current.x),
-              y1: Math.min(start.y, current.y),
-              y2: Math.max(start.y, current.y)
-            };
-            renderAnnotateSelectionOverlay();
-          };
-          stage.addEventListener('mousedown', e => {
-            state.annDragging = true;
-            state.annSelectionStart = getPos(e);
-            update(e);
-          });
-          window.addEventListener('mousemove', e => {
-            if (!state.annDragging) return;
-            update(e);
-          });
-          window.addEventListener('mouseup', () => {
-            state.annDragging = false;
-            state.annSelectionStart = null;
-          });
-          stage.addEventListener('touchstart', e => {
-            e.preventDefault();
-            state.annDragging = true;
-            state.annSelectionStart = getPos(e);
-            update(e);
-          }, { passive: false });
-          window.addEventListener('touchmove', e => {
-            if (!state.annDragging) return;
-            update(e);
-          }, { passive: false });
-          window.addEventListener('touchend', () => {
-            state.annDragging = false;
-            state.annSelectionStart = null;
-          });
-          stage.addEventListener('click', e => {
-            const p = getPos(e);
-            state.annPlacement = { page: state.annPreviewPageNum, x1: Math.max(0, p.x - 0.1), x2: Math.min(1, p.x + 0.1), y1: Math.max(0, p.y - 0.03), y2: Math.min(1, p.y + 0.03) };
-            renderAnnotateSelectionOverlay();
-          });
-          const colorField = document.getElementById('ann-color');
-          if (colorField) {
-            colorField.addEventListener('input', renderAnnotateSelectionOverlay);
-            colorField.addEventListener('change', renderAnnotateSelectionOverlay);
-          }
-        }
-
-        async function setAnnotatePreviewPage(pageNum) {
-          if (!state.annPreviewDoc) return;
-          state.annPreviewPageNum = clamp(pageNum, 1, state.annPreviewTotal);
-          const pageField = document.getElementById('ann-page');
-          if (pageField) pageField.value = state.annPreviewPageNum;
-          document.getElementById('ann-preview-cur').textContent = state.annPreviewPageNum;
-          state.annPreviewPage = await state.annPreviewDoc.getPage(state.annPreviewPageNum);
-          const viewport = state.annPreviewPage.getViewport({ scale: getPreviewRenderScale(1.15, 'text') });
-          const canvas = document.getElementById('ann-preview-canvas');
-          canvas.width = viewport.width;
-          canvas.height = viewport.height;
-          await state.annPreviewPage.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
-          renderAnnotateSelectionOverlay();
-        }
+async function setAnnotatePreviewPage(pageNum) {
+  if (!state.annPreviewDoc) return;
+  state.annPreviewPageNum = clamp(pageNum, 1, state.annPreviewTotal);
+  const pageField = document.getElementById('ann-page');
+  if (pageField) pageField.value = state.annPreviewPageNum;
+  document.getElementById('ann-preview-cur').textContent = state.annPreviewPageNum;
+  state.annPreviewPage = await state.annPreviewDoc.getPage(state.annPreviewPageNum);
+  const viewport = state.annPreviewPage.getViewport({ scale: getPreviewRenderScale(1.15, 'text') });
+  const canvas = document.getElementById('ann-preview-canvas');
+  canvas.width = viewport.width;
+  canvas.height = viewport.height;
+  await state.annPreviewPage.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
+  renderAnnotateSelectionOverlay();
+}
 
         function renderAnnotateSelectionOverlay() {
           const box = document.getElementById('ann-selection');
