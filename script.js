@@ -3099,7 +3099,6 @@ function isWeakExtractedText(text) {
   return longWords < 4;
 }
 
-let signPreviewBound = false;
 function bindSignPreviewControls() {
   if (signPreviewBound) return;
   signPreviewBound = true;
