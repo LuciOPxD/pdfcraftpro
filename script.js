@@ -2844,7 +2844,10 @@ async function resizeImageToTarget() {
     showResult('imgresize', `${state.imgResizeFiles.length} file(s) → Total: ${fmtSize(totalNew)} (Saved ${Math.round((1 - totalNew / totalOld) * 100)}%)`);
     toast(`${state.imgResizeFiles.length} images resized!`, '✅');
   } catch (e) { toast('Error: ' + e.message, '❌'); }
-  finally { setProgress('imgresize', 100); }
+  finally { 
+    setProgress('imgresize', 100); 
+    hideLoading();
+  }
 }
 
 async function initSignPreview(file) {
