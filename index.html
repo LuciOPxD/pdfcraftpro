@@ -1620,37 +1620,5 @@
   <div class="processing-text" id="global-processing-text">Processing...</div>
 </div>
 <script src="./script.js"></script>
-
-<script>
-// Register Service Worker and PWA install prompt
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/service-worker.js').then((reg) => {
-    console.log('Service Worker registered:', reg);
-  }).catch((err) => {
-    console.log('Service Worker registration failed:', err);
-  });
-}
-
-// Prompt to install app
-let installPrompt = null;
-window.addEventListener('beforeinstallprompt', (e) => {
-  e.preventDefault();
-  installPrompt = e;
-  console.log('App ready to install');
-});
-
-// You can optionally add an install button - here's the JS for it
-function installApp() {
-  if (installPrompt) {
-    installPrompt.prompt();
-    installPrompt.userChoice.then((choiceResult) => {
-      if (choiceResult.outcome === 'accepted') {
-        console.log('App installed');
-      }
-      installPrompt = null;
-    });
-  }
-}
-</script>
 </body>
 </html>

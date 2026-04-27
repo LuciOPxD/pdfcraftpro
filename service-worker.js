@@ -1,5 +1,5 @@
-const CACHE_NAME = 'justpdfcraft-v3';
-const RUNTIME_CACHE = 'justpdfcraft-runtime-v3';
+const CACHE_NAME = 'justpdfcraft-v4';
+const RUNTIME_CACHE = 'justpdfcraft-runtime-v4';
 
 const urlsToCache = [
   '/',
@@ -51,11 +51,17 @@ self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
-  // For navigations, prefer cache but fall back to network
+  // For navigations, prefer fresh HTML so tool fixes are not hidden by stale cache.
   if (request.mode === 'navigate') {
     event.respondWith(
-      caches.match(request)
-        .then((response) => response || fetch(request))
+      fetch(request)
+        .then((response) => {
+          const responseToCache = response.clone();
+          event.waitUntil(
+            caches.open(CACHE_NAME).then((cache) => cache.put('/index.html', responseToCache))
+          );
+          return response;
+        })
         .catch(() => caches.match('/index.html'))
     );
     return;
