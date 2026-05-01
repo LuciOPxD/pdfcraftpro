@@ -2,27 +2,27 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://justpdfcraft.xyz/</loc>
-    <lastmod>2026-04-19</lastmod>
+    <lastmod>2026-04-30</lastmod>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://justpdfcraft.xyz/#about</loc>
-    <lastmod>2026-04-19</lastmod>
+    <loc>https://justpdfcraft.xyz/about.html</loc>
+    <lastmod>2026-04-30</lastmod>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://justpdfcraft.xyz/#privacy</loc>
-    <lastmod>2026-04-19</lastmod>
+    <loc>https://justpdfcraft.xyz/privacy.html</loc>
+    <lastmod>2026-04-30</lastmod>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://justpdfcraft.xyz/#terms</loc>
-    <lastmod>2026-04-19</lastmod>
+    <loc>https://justpdfcraft.xyz/terms.html</loc>
+    <lastmod>2026-04-30</lastmod>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://justpdfcraft.xyz/#contact</loc>
-    <lastmod>2026-04-19</lastmod>
+    <loc>https://justpdfcraft.xyz/contact.html</loc>
+    <lastmod>2026-04-30</lastmod>
     <priority>0.5</priority>
   </url>
 </urlset>
